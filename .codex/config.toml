@@ -1,0 +1,16 @@
+# SocialPredict control-repo defaults (project-scoped, committed).
+#
+# Layering model for this workspace:
+#   1) ~/.codex/config.toml            -> user-global, machine-specific
+#   2) ./.codex/config.toml (this file)-> project-scoped shared defaults
+#
+# Keep this file portable for teammates: only commit settings that should apply
+# to everyone working in this control repo.
+personality = "pragmatic"
+model = "gpt-5.4"
+model_reasoning_effort = "xhigh"
+
+# Intentionally user-global (do not commit here):
+# - [projects."/absolute/path"] trust_level
+# - [mcp_servers.<name>] url
+# - Authentication/session state managed by `codex login`
