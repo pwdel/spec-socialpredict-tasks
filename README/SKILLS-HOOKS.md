@@ -1,20 +1,25 @@
 # Codex Skills and Hooks Customization
 
-This document covers safe customization points for local skills and guardrail hooks in this workspace.
+This document covers safe customization points for local skills and guardrail hooks in the two-repo topology.
+
+Topology reminder:
+
+- control repo: this workspace, including `.codex/skills`.
+- target repo: `../socialpredict`, including backend guardrail scripts.
 
 ## Paths
 
-- Skills root: `socialpredict/.codex/skills/`
+- Skills root: `.codex/skills/`
 - Skill examples:
   - `socialpredict-go-architecture-governance`
   - `socialpredict-go-testing-reliability`
   - `socialpredict-go-code-quality-guardrails`
   - `socialpredict-api-contract-drift-control`
 - Hook scripts:
-  - `socialpredict/backend/scripts/guardrails.sh`
-  - `socialpredict/backend/scripts/install-guardrail-hooks.sh`
+  - `../socialpredict/backend/scripts/guardrails.sh`
+  - `../socialpredict/backend/scripts/install-guardrail-hooks.sh`
 - Hook policy reference:
-  - `socialpredict/backend/README/BACKEND/GUARDRAILS.md`
+  - `../socialpredict/backend/README/BACKEND/GUARDRAILS.md`
 
 ## Skill Customization Workflow
 
@@ -31,7 +36,7 @@ python3 -m venv .venv-skill-validate
 4. Validate each edited skill with the venv interpreter:
 
 ```bash
-./.venv-skill-validate/bin/python /Users/patrick/.codex/skills/.system/skill-creator/scripts/quick_validate.py socialpredict/.codex/skills/<skill-name>
+./.venv-skill-validate/bin/python /Users/patrick/.codex/skills/.system/skill-creator/scripts/quick_validate.py .codex/skills/<skill-name>
 ```
 
 5. Repeat validation for all skills before handoff:
@@ -39,7 +44,7 @@ python3 -m venv .venv-skill-validate
 ```bash
 VALIDATOR_PY=./.venv-skill-validate/bin/python
 VALIDATOR_SCRIPT=/Users/patrick/.codex/skills/.system/skill-creator/scripts/quick_validate.py
-for skill in socialpredict/.codex/skills/*; do
+for skill in .codex/skills/*; do
   "$VALIDATOR_PY" "$VALIDATOR_SCRIPT" "$skill"
 done
 ```
@@ -51,14 +56,14 @@ done
 3. Validate behavior:
 
 ```bash
-bash socialpredict/backend/scripts/guardrails.sh pre-commit
-bash socialpredict/backend/scripts/guardrails.sh simulate-violation
+bash ../socialpredict/backend/scripts/guardrails.sh pre-commit
+bash ../socialpredict/backend/scripts/guardrails.sh simulate-violation
 ```
 
 4. Install hooks locally if needed:
 
 ```bash
-bash socialpredict/backend/scripts/install-guardrail-hooks.sh
+bash ../socialpredict/backend/scripts/install-guardrail-hooks.sh
 ```
 
 ## Guardrails for Customization

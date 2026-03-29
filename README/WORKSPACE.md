@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This workspace exists to operate and audit the SocialPredict PR #581 execution model:
+This workspace exists as the control repo to operate and audit the SocialPredict PR #581 execution model:
 
 - keep branch lineage anchored to PR #581 head SHA `94231f1d5f49c564d1a99c0135456d92101ed8f0`
 - enforce scope lock and backend/API governance rules
@@ -12,20 +12,27 @@ This workspace exists to operate and audit the SocialPredict PR #581 execution m
 
 ```text
 .
-├── README.md                         # root navigation entrypoint
-├── README/                           # operator docs for this workspace
+├── README.md                         # control-repo navigation entrypoint
+├── .codex/                           # control-repo skills/hooks/config assets
+│   └── skills/
+├── README/                           # control-repo operator docs
 │   ├── WORKSPACE.md
 │   ├── VERIFICATION.md
 │   ├── AGENTS.md
 │   └── SKILLS-HOOKS.md
-└── socialpredict/                    # checked out SocialPredict repo for PR #581 work
+└── (sibling) ../socialpredict/       # target repo checkout for PR #581 code work
 ```
 
-Useful in-repo references:
+Repository responsibilities:
 
-- `socialpredict/backend/README/BACKEND/GUARDRAILS.md`
-- `socialpredict/.codex/skills/*`
-- `socialpredict/README/PRODUCTION-NOTES/README.md`
+- control repo: task orchestration, docs, skills, and workspace governance.
+- target repo: source changes, branch lineage, backend/API guardrails.
+
+Useful references:
+
+- `../socialpredict/backend/README/BACKEND/GUARDRAILS.md`
+- `.codex/skills/*`
+- `../socialpredict/README/PRODUCTION-NOTES/README.md`
 
 ## Execution Boundaries
 
@@ -46,7 +53,7 @@ Future expansion (not active in this workspace run):
 Run these from workspace root to confirm expected baseline:
 
 ```bash
-git -C socialpredict branch --show-current
-git -C socialpredict rev-parse HEAD
-git -C socialpredict ls-remote https://github.com/openpredictionmarkets/socialpredict.git refs/pull/581/head
+git -C ../socialpredict branch --show-current
+git -C ../socialpredict rev-parse HEAD
+git -C ../socialpredict ls-remote https://github.com/openpredictionmarkets/socialpredict.git refs/pull/581/head
 ```

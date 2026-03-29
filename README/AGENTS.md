@@ -1,6 +1,11 @@
 # Agent Customization Guide
 
-This guide defines where to customize agent behavior for the PR #581 workspace and what boundaries must remain enforced.
+This guide defines where to customize agent behavior for the PR #581 workspace and what boundaries must remain enforced across control and target repos.
+
+Topology reminder:
+
+- control repo: this workspace for spec/task orchestration and `.codex` assets.
+- target repo: `../socialpredict` for backend/API code changes and branch checks.
 
 ## Customization Surfaces
 
@@ -18,7 +23,7 @@ This guide defines where to customize agent behavior for the PR #581 workspace a
 
 ## Boundary Rules (Do Not Relax)
 
-- Keep coding scope locked to `socialpredict/backend/**` and API contract artifacts unless explicitly re-scoped.
+- Keep coding scope locked to `../socialpredict/backend/**` and API contract artifacts unless explicitly re-scoped.
 - Preserve verifier gates for lineage, scope, guardrails, and quality checks.
 - Do not bypass guardrails without an auditable reason.
 - Do not assign frontend/infrastructure implementation to PR #581 backend/API waves.
