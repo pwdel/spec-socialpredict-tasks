@@ -47,11 +47,21 @@ bash socialpredict/backend/scripts/install-guardrail-hooks.sh
 
 ## 4) Skill Validation
 
-Validate all workspace skills:
+Set up a deterministic validator environment first (no implicit global Python deps):
 
 ```bash
+python3 -m venv .venv-skill-validate
+./.venv-skill-validate/bin/python -m pip install --upgrade pip
+./.venv-skill-validate/bin/python -m pip install pyyaml
+```
+
+Then validate all workspace skills with that interpreter:
+
+```bash
+VALIDATOR_PY=./.venv-skill-validate/bin/python
+VALIDATOR_SCRIPT=/Users/patrick/.codex/skills/.system/skill-creator/scripts/quick_validate.py
 for skill in socialpredict/.codex/skills/*; do
-  python /Users/patrick/.codex/skills/.system/skill-creator/scripts/quick_validate.py "$skill"
+  "$VALIDATOR_PY" "$VALIDATOR_SCRIPT" "$skill"
 done
 ```
 
