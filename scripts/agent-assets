@@ -1,0 +1,955 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# shellcheck source=scripts/lib/agent_assets_manifest.sh
+source "${SCRIPT_DIR}/lib/agent_assets_manifest.sh"
+# shellcheck source=scripts/lib/agent_assets_codex.sh
+source "${SCRIPT_DIR}/lib/agent_assets_codex.sh"
+# shellcheck source=scripts/lib/agent_assets_hooks.sh
+source "${SCRIPT_DIR}/lib/agent_assets_hooks.sh"
+
+INSTALLER_ID="spec-socialpredict-tasks"
+SUPPORTED_TOOL="codex"
+SUPPORTED_MODE="copy"
+
+COMMAND=""
+TOOL="codex"
+MODE="copy"
+HOME_DIR="${HOME}"
+GIT_CONFIG_FILE=""
+DRY_RUN=false
+ASSUME_YES=false
+OVERWRITE_UNMANAGED=false
+
+RUN_TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
+RUN_TIMESTAMP_ISO="$(aa_now_utc)"
+
+WORK_DIR=""
+CONFLICTS_TSV=""
+BACKUP_LOG_TSV=""
+DESIRED_INSTALL_TSV=""
+MANIFEST_ENTRIES_TSV=""
+UPDATE_DESIRED_TSV=""
+MANAGED_DIRS_LIST=""
+
+CODEX_ROOT=""
+HOOKS_ROOT=""
+MANAGED_ROOT=""
+MANIFEST_PATH=""
+STATE_PATH=""
+BACKUP_DIR=""
+TARGET_HOOKS_PATH="~/.git-hooks"
+TARGET_HOOKS_ABS=""
+
+CREATED=0
+UPDATED=0
+REMOVED=0
+BACKED_UP=0
+SKIPPED=0
+CONFLICT_COUNT=0
+
+log() {
+  printf '[agent-assets] %s\n' "$*"
+}
+
+warn() {
+  printf '[agent-assets] warning: %s\n' "$*" >&2
+}
+
+die() {
+  printf '[agent-assets] error: %s\n' "$*" >&2
+  exit 2
+}
+
+usage() {
+  cat <<'EOF'
+Usage:
+  ./scripts/agent-assets <command> [options]
+
+Commands:
+  install
+  update
+  uninstall
+  status
+
+Options:
+  --tool <name>               Tool payload to manage (v1: codex only)
+  --mode <name>               Install mode (v1: copy only)
+  --home <path>               Alternate home directory
+  --git-config-file <path>    Alternate global git config file
+  --dry-run                   Show planned actions, do not mutate
+  --yes                       Confirm mutation without prompt
+  --overwrite-unmanaged       Dangerous override for unmanaged file conflicts
+  -h, --help                  Show help
+
+Examples:
+  ./scripts/agent-assets install --tool codex --dry-run
+  ./scripts/agent-assets install --tool codex --yes
+  ./scripts/agent-assets status --tool codex
+  ./scripts/agent-assets update --tool codex --yes
+  ./scripts/agent-assets uninstall --tool codex --dry-run
+EOF
+}
+
+abs_path() {
+  python3 - "$1" <<'PY'
+import os
+import sys
+print(os.path.abspath(sys.argv[1]))
+PY
+}
+
+require_cmd() {
+  local command_name="$1"
+  if ! command -v "$command_name" >/dev/null 2>&1; then
+    die "Required command not found: ${command_name}"
+  fi
+}
+
+parse_args() {
+  if [[ $# -lt 1 ]]; then
+    usage
+    exit 2
+  fi
+
+  COMMAND="$1"
+  shift
+
+  case "$COMMAND" in
+  install | update | uninstall | status)
+    ;;
+  help | --help | -h)
+    usage
+    exit 0
+    ;;
+  *)
+    die "Unknown command: ${COMMAND}"
+    ;;
+  esac
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+    --tool)
+      [[ $# -ge 2 ]] || die "--tool requires a value"
+      TOOL="$2"
+      shift 2
+      ;;
+    --tool=*)
+      TOOL="${1#*=}"
+      shift
+      ;;
+    --mode)
+      [[ $# -ge 2 ]] || die "--mode requires a value"
+      MODE="$2"
+      shift 2
+      ;;
+    --mode=*)
+      MODE="${1#*=}"
+      shift
+      ;;
+    --home)
+      [[ $# -ge 2 ]] || die "--home requires a value"
+      HOME_DIR="$2"
+      shift 2
+      ;;
+    --home=*)
+      HOME_DIR="${1#*=}"
+      shift
+      ;;
+    --git-config-file)
+      [[ $# -ge 2 ]] || die "--git-config-file requires a value"
+      GIT_CONFIG_FILE="$2"
+      shift 2
+      ;;
+    --git-config-file=*)
+      GIT_CONFIG_FILE="${1#*=}"
+      shift
+      ;;
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    --yes)
+      ASSUME_YES=true
+      shift
+      ;;
+    --overwrite-unmanaged)
+      OVERWRITE_UNMANAGED=true
+      shift
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    *)
+      die "Unknown option: $1"
+      ;;
+    esac
+  done
+
+  if [[ "$TOOL" != "$SUPPORTED_TOOL" ]]; then
+    die "Unsupported tool '${TOOL}'. v1 supports only '${SUPPORTED_TOOL}'."
+  fi
+  if [[ "$MODE" != "$SUPPORTED_MODE" ]]; then
+    die "Unsupported mode '${MODE}'. v1 supports only '${SUPPORTED_MODE}'."
+  fi
+
+  HOME_DIR="$(abs_path "$HOME_DIR")"
+  if [[ -n "$GIT_CONFIG_FILE" ]]; then
+    GIT_CONFIG_FILE="$(abs_path "$GIT_CONFIG_FILE")"
+  fi
+
+  if [[ "$COMMAND" != "status" && "$DRY_RUN" != true && "$ASSUME_YES" != true ]]; then
+    die "Mutation command requires --yes (or use --dry-run)."
+  fi
+}
+
+setup_paths() {
+  CODEX_ROOT="${HOME_DIR}/.codex"
+  HOOKS_ROOT="${HOME_DIR}/.git-hooks"
+  MANAGED_ROOT="${HOME_DIR}/.codex/.managed/${INSTALLER_ID}"
+  MANIFEST_PATH="${MANAGED_ROOT}/manifest.json"
+  STATE_PATH="${MANAGED_ROOT}/hooks_state.json"
+  BACKUP_DIR="${MANAGED_ROOT}/backups/${RUN_TIMESTAMP}"
+  TARGET_HOOKS_ABS="${HOME_DIR}/.git-hooks"
+}
+
+setup_workspace() {
+  WORK_DIR="$(mktemp -d)"
+  CONFLICTS_TSV="${WORK_DIR}/conflicts.tsv"
+  BACKUP_LOG_TSV="${WORK_DIR}/backup-log.tsv"
+  DESIRED_INSTALL_TSV="${WORK_DIR}/desired-install.tsv"
+  MANIFEST_ENTRIES_TSV="${WORK_DIR}/manifest-entries.tsv"
+  UPDATE_DESIRED_TSV="${WORK_DIR}/desired-update.tsv"
+  MANAGED_DIRS_LIST="${WORK_DIR}/managed-dirs.txt"
+
+  : >"${CONFLICTS_TSV}"
+  : >"${BACKUP_LOG_TSV}"
+  : >"${DESIRED_INSTALL_TSV}"
+  : >"${MANIFEST_ENTRIES_TSV}"
+  : >"${UPDATE_DESIRED_TSV}"
+  : >"${MANAGED_DIRS_LIST}"
+}
+
+cleanup_workspace() {
+  if [[ -n "$WORK_DIR" && -d "$WORK_DIR" ]]; then
+    rm -rf "$WORK_DIR"
+  fi
+}
+
+manifest_exists() {
+  aa_manifest_exists "$MANIFEST_PATH"
+}
+
+load_manifest_entries() {
+  : >"${MANIFEST_ENTRIES_TSV}"
+  if manifest_exists; then
+    aa_manifest_list_files "$MANIFEST_PATH" >"${MANIFEST_ENTRIES_TSV}"
+  fi
+}
+
+collect_install_entries() {
+  : >"${DESIRED_INSTALL_TSV}"
+  aa_codex_collect_entries "$REPO_ROOT" "$DESIRED_INSTALL_TSV"
+  aa_hooks_collect_entries "$HOME_DIR" "$INSTALLER_ID" "$DESIRED_INSTALL_TSV"
+}
+
+lookup_entry_by_target() {
+  local target="$1"
+  local entries_tsv="$2"
+  awk -F'\t' -v wanted="$target" '$3 == wanted { print; exit }' "$entries_tsv"
+}
+
+target_abs_path() {
+  local target_rel="$1"
+  printf '%s/%s\n' "$HOME_DIR" "$target_rel"
+}
+
+entry_write_target() {
+  local kind="$1"
+  local source="$2"
+  local target_abs="$3"
+
+  case "$kind" in
+  codex)
+    aa_codex_write_target "$REPO_ROOT" "$source" "$target_abs"
+    ;;
+  hook)
+    aa_hooks_write_target "$HOME_DIR" "$INSTALLER_ID" "$source" "$target_abs"
+    ;;
+  *)
+    die "Unknown managed entry kind: ${kind}"
+    ;;
+  esac
+}
+
+add_conflict() {
+  local class_name="$1"
+  local target="$2"
+  local detail="$3"
+  printf '%s\t%s\t%s\n' "$class_name" "$target" "$detail" >>"${CONFLICTS_TSV}"
+  CONFLICT_COUNT=$((CONFLICT_COUNT + 1))
+}
+
+print_conflicts() {
+  if [[ "$CONFLICT_COUNT" -eq 0 ]]; then
+    return
+  fi
+
+  printf '\nConflicts detected (%s):\n' "$CONFLICT_COUNT" >&2
+  awk -F'\t' '{printf "  - [%s] %s: %s\n", $1, $2, $3}' "${CONFLICTS_TSV}" >&2
+}
+
+backup_file() {
+  local target_rel="$1"
+  local target_abs="$2"
+  local reason="$3"
+  local backup_abs="${BACKUP_DIR}/${target_rel}"
+
+  if [[ "$DRY_RUN" == true ]]; then
+    log "dry-run: backup ${target_rel} (${reason}) -> ${backup_abs}"
+    BACKED_UP=$((BACKED_UP + 1))
+    printf '%s\t%s\t%s\n' "$reason" "$target_rel" "$backup_abs" >>"${BACKUP_LOG_TSV}"
+    return
+  fi
+
+  mkdir -p "$(dirname "$backup_abs")"
+  cp -f "$target_abs" "$backup_abs"
+  BACKED_UP=$((BACKED_UP + 1))
+  printf '%s\t%s\t%s\n' "$reason" "$target_rel" "$backup_abs" >>"${BACKUP_LOG_TSV}"
+}
+
+apply_entry_set() {
+  local command_name="$1"
+  local desired_tsv="$2"
+
+  local line kind source target desired_digest
+  local target_abs manifest_line manifest_digest current_digest
+  local managed_local_mod unmanaged_existing
+
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    IFS=$'\t' read -r kind source target desired_digest <<<"$line"
+    target_abs="$(target_abs_path "$target")"
+    manifest_line="$(lookup_entry_by_target "$target" "${MANIFEST_ENTRIES_TSV}")"
+    manifest_digest=""
+    managed_local_mod=false
+    unmanaged_existing=false
+
+    if [[ -e "$target_abs" && ! -f "$target_abs" ]]; then
+      add_conflict "type-mismatch" "$target" "existing path is not a file"
+      continue
+    fi
+
+    if [[ -f "$target_abs" ]]; then
+      current_digest="$(aa_sha256_file "$target_abs")"
+
+      if [[ "$current_digest" == "$desired_digest" ]]; then
+        SKIPPED=$((SKIPPED + 1))
+        continue
+      fi
+
+      if [[ -n "$manifest_line" ]]; then
+        IFS=$'\t' read -r _ _ _ manifest_digest <<<"$manifest_line"
+        if [[ "$current_digest" != "$manifest_digest" ]]; then
+          managed_local_mod=true
+        fi
+      else
+        unmanaged_existing=true
+      fi
+
+      if [[ "$unmanaged_existing" == true && "$OVERWRITE_UNMANAGED" != true ]]; then
+        add_conflict "unmanaged-conflict" "$target" "existing unmanaged file differs from desired state"
+        continue
+      fi
+
+      if [[ "$managed_local_mod" == true ]]; then
+        backup_file "$target" "$target_abs" "managed-local-modification"
+      elif [[ "$unmanaged_existing" == true ]]; then
+        backup_file "$target" "$target_abs" "unmanaged-overwrite"
+      fi
+
+      if [[ "$DRY_RUN" == true ]]; then
+        log "dry-run: update ${target}"
+      else
+        entry_write_target "$kind" "$source" "$target_abs"
+      fi
+      UPDATED=$((UPDATED + 1))
+      continue
+    fi
+
+    if [[ "$DRY_RUN" == true ]]; then
+      log "dry-run: create ${target}"
+    else
+      entry_write_target "$kind" "$source" "$target_abs"
+    fi
+    CREATED=$((CREATED + 1))
+  done <"$desired_tsv"
+}
+
+build_update_entries_from_manifest() {
+  : >"${UPDATE_DESIRED_TSV}"
+
+  local latest_hooks_tsv="${WORK_DIR}/latest-hooks.tsv"
+  : >"${latest_hooks_tsv}"
+  aa_hooks_collect_entries "$HOME_DIR" "$INSTALLER_ID" "$latest_hooks_tsv"
+
+  local line kind source target _old_digest
+  local desired_line desired_source desired_digest
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    IFS=$'\t' read -r kind source target _old_digest <<<"$line"
+
+    case "$kind" in
+    codex)
+      if [[ "$source" != .codex/skills/* ]]; then
+        add_conflict "manifest-invalid" "$target" "unexpected codex source path '${source}'"
+        continue
+      fi
+      if [[ ! -f "${REPO_ROOT}/${source}" ]]; then
+        add_conflict "source-missing" "$target" "source path missing in repo: ${source}"
+        continue
+      fi
+      desired_digest="$(aa_sha256_file "${REPO_ROOT}/${source}")"
+      printf '%s\t%s\t%s\t%s\n' "$kind" "$source" "$target" "$desired_digest" >>"${UPDATE_DESIRED_TSV}"
+      ;;
+    hook)
+      desired_line="$(lookup_entry_by_target "$target" "$latest_hooks_tsv")"
+      if [[ -z "$desired_line" ]]; then
+        add_conflict "source-missing" "$target" "unable to render hook source for target"
+        continue
+      fi
+      IFS=$'\t' read -r _ desired_source _ desired_digest <<<"$desired_line"
+      printf '%s\t%s\t%s\t%s\n' "$kind" "$desired_source" "$target" "$desired_digest" >>"${UPDATE_DESIRED_TSV}"
+      ;;
+    *)
+      add_conflict "manifest-invalid" "$target" "unsupported kind '${kind}' in manifest"
+      ;;
+    esac
+  done <"${MANIFEST_ENTRIES_TSV}"
+}
+
+collect_managed_directories() {
+  local entries_tsv="$1"
+  : >"${MANAGED_DIRS_LIST}"
+
+  {
+    printf '.codex/skills\n'
+    printf '.codex/.managed/%s\n' "$INSTALLER_ID"
+    printf '.codex/.managed/%s/backups\n' "$INSTALLER_ID"
+    printf '.git-hooks\n'
+    printf '.git-hooks/.managed\n'
+    printf '.git-hooks/.managed/%s\n' "$INSTALLER_ID"
+    printf '.git-hooks/.managed/%s/bin\n' "$INSTALLER_ID"
+    printf '.git-hooks/.managed/%s/logs\n' "$INSTALLER_ID"
+  } >>"${MANAGED_DIRS_LIST}"
+
+  local line _kind _source target _digest dir parent
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    IFS=$'\t' read -r _kind _source target _digest <<<"$line"
+    dir="$(dirname "$target")"
+    while [[ "$dir" != "." && "$dir" != "/" ]]; do
+      printf '%s\n' "$dir" >>"${MANAGED_DIRS_LIST}"
+      parent="$(dirname "$dir")"
+      if [[ "$parent" == "$dir" ]]; then
+        break
+      fi
+      dir="$parent"
+    done
+  done <"$entries_tsv"
+
+  LC_ALL=C sort -u "${MANAGED_DIRS_LIST}" -o "${MANAGED_DIRS_LIST}"
+}
+
+write_manifest_for_entries() {
+  local entries_tsv="$1"
+  local installed_at="${2:-}"
+  collect_managed_directories "$entries_tsv"
+
+  if [[ "$DRY_RUN" == true ]]; then
+    log "dry-run: write manifest ${MANIFEST_PATH}"
+    return
+  fi
+
+  local source_commit
+  source_commit="$(git -C "$REPO_ROOT" rev-parse --verify HEAD 2>/dev/null || printf 'unknown')"
+
+  aa_manifest_write \
+    "$MANIFEST_PATH" \
+    "$INSTALLER_ID" \
+    "$TOOL" \
+    "$MODE" \
+    "$REPO_ROOT" \
+    "$source_commit" \
+    "$HOME_DIR" \
+    "$CODEX_ROOT" \
+    "$HOOKS_ROOT" \
+    "$RUN_TIMESTAMP_ISO" \
+    "$entries_tsv" \
+    "$MANAGED_DIRS_LIST" \
+    "$installed_at"
+}
+
+write_backup_metadata() {
+  local command_name="$1"
+  if [[ "$DRY_RUN" == true ]]; then
+    return
+  fi
+
+  mkdir -p "$BACKUP_DIR"
+
+  python3 - \
+    "$BACKUP_DIR/metadata.json" \
+    "$INSTALLER_ID" \
+    "$command_name" \
+    "$RUN_TIMESTAMP_ISO" \
+    "$BACKUP_LOG_TSV" \
+    "$CREATED" \
+    "$UPDATED" \
+    "$REMOVED" \
+    "$BACKED_UP" \
+    "$SKIPPED" \
+    "$CONFLICT_COUNT" <<'PY'
+import json
+import os
+import sys
+
+(
+    metadata_path,
+    installer_id,
+    command_name,
+    timestamp,
+    backup_log_tsv,
+    created,
+    updated,
+    removed,
+    backed_up,
+    skipped,
+    conflicts,
+) = sys.argv[1:12]
+
+backups = []
+if os.path.isfile(backup_log_tsv):
+    with open(backup_log_tsv, "r", encoding="utf-8") as handle:
+        for raw in handle:
+            line = raw.rstrip("\n")
+            if not line:
+                continue
+            reason, target, backup_path = line.split("\t")
+            backups.append(
+                {
+                    "reason": reason,
+                    "target": target,
+                    "backupPath": backup_path,
+                }
+            )
+
+payload = {
+    "schemaVersion": 1,
+    "installerId": installer_id,
+    "command": command_name,
+    "timestamp": timestamp,
+    "summary": {
+        "created": int(created),
+        "updated": int(updated),
+        "removed": int(removed),
+        "backedUp": int(backed_up),
+        "skipped": int(skipped),
+        "conflicts": int(conflicts),
+    },
+    "backups": backups,
+}
+
+with open(metadata_path, "w", encoding="utf-8") as handle:
+    json.dump(payload, handle, indent=2, sort_keys=True)
+    handle.write("\n")
+PY
+}
+
+ensure_hooks_path_for_install_or_update() {
+  local previous_hooks_path
+  previous_hooks_path="$(aa_git_config_get_hooks_path "$HOME_DIR" "$GIT_CONFIG_FILE")"
+  local current_hooks_abs
+  current_hooks_abs="$(aa_normalize_hooks_path "$HOME_DIR" "$previous_hooks_path")"
+
+  local existing_set_by_installer existing_previous
+  existing_set_by_installer="$(aa_state_read_field "$STATE_PATH" "hooksPath.setByInstaller" 2>/dev/null || printf '')"
+  existing_previous="$(aa_state_read_field "$STATE_PATH" "hooksPath.previous" 2>/dev/null || printf '')"
+
+  local set_by_installer="false"
+  local state_previous="$previous_hooks_path"
+  if [[ "$existing_set_by_installer" == "true" ]]; then
+    set_by_installer="true"
+    state_previous="$existing_previous"
+  fi
+
+  if [[ "$current_hooks_abs" != "$TARGET_HOOKS_ABS" ]]; then
+    set_by_installer="true"
+    if [[ "$existing_set_by_installer" != "true" ]]; then
+      state_previous="$previous_hooks_path"
+    fi
+    if [[ "$DRY_RUN" == true ]]; then
+      log "dry-run: set git core.hooksPath to ${TARGET_HOOKS_PATH} (was '${previous_hooks_path:-<unset>}')"
+    else
+      aa_git_config_set_hooks_path "$HOME_DIR" "$GIT_CONFIG_FILE" "$TARGET_HOOKS_PATH"
+    fi
+    UPDATED=$((UPDATED + 1))
+  fi
+
+  if [[ "$DRY_RUN" == true ]]; then
+    log "dry-run: record hooks state at ${STATE_PATH}"
+    return
+  fi
+
+  aa_state_write \
+    "$STATE_PATH" \
+    "$INSTALLER_ID" \
+    "$TARGET_HOOKS_PATH" \
+    "$state_previous" \
+    "$set_by_installer" \
+    "$RUN_TIMESTAMP_ISO"
+}
+
+restore_hooks_path_for_uninstall() {
+  local current_hooks_path current_hooks_abs
+  current_hooks_path="$(aa_git_config_get_hooks_path "$HOME_DIR" "$GIT_CONFIG_FILE")"
+  current_hooks_abs="$(aa_normalize_hooks_path "$HOME_DIR" "$current_hooks_path")"
+
+  local state_set_by_installer state_previous
+  state_set_by_installer="$(aa_state_read_field "$STATE_PATH" "hooksPath.setByInstaller" 2>/dev/null || printf 'false')"
+  state_previous="$(aa_state_read_field "$STATE_PATH" "hooksPath.previous" 2>/dev/null || printf '')"
+
+  if [[ "$state_set_by_installer" != "true" ]]; then
+    return
+  fi
+
+  if [[ "$current_hooks_abs" != "$TARGET_HOOKS_ABS" ]]; then
+    warn "Skipping core.hooksPath restore because current value drifted from managed target: '${current_hooks_path}'"
+    return
+  fi
+
+  if [[ "$DRY_RUN" == true ]]; then
+    if [[ -n "$state_previous" ]]; then
+      log "dry-run: restore core.hooksPath to '${state_previous}'"
+    else
+      log "dry-run: unset core.hooksPath"
+    fi
+    UPDATED=$((UPDATED + 1))
+    return
+  fi
+
+  if [[ -n "$state_previous" ]]; then
+    aa_git_config_set_hooks_path "$HOME_DIR" "$GIT_CONFIG_FILE" "$state_previous"
+  else
+    aa_git_config_unset_hooks_path "$HOME_DIR" "$GIT_CONFIG_FILE"
+  fi
+  UPDATED=$((UPDATED + 1))
+}
+
+remove_entry_set() {
+  local line kind _source target digest target_abs current_digest
+
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    IFS=$'\t' read -r kind _source target digest <<<"$line"
+    target_abs="$(target_abs_path "$target")"
+
+    if [[ ! -e "$target_abs" ]]; then
+      SKIPPED=$((SKIPPED + 1))
+      continue
+    fi
+    if [[ ! -f "$target_abs" ]]; then
+      add_conflict "type-mismatch" "$target" "cannot remove non-file managed path"
+      continue
+    fi
+
+    current_digest="$(aa_sha256_file "$target_abs")"
+    if [[ "$current_digest" != "$digest" ]]; then
+      backup_file "$target" "$target_abs" "managed-local-modification-uninstall"
+    fi
+
+    if [[ "$DRY_RUN" == true ]]; then
+      log "dry-run: remove ${target}"
+    else
+      rm -f "$target_abs"
+    fi
+    REMOVED=$((REMOVED + 1))
+  done <"${MANIFEST_ENTRIES_TSV}"
+}
+
+remove_empty_managed_directories() {
+  local dirs_file="${WORK_DIR}/manifest-dirs.txt"
+  local ordered_file="${WORK_DIR}/manifest-dirs-ordered.txt"
+  : >"${dirs_file}"
+  : >"${ordered_file}"
+
+  aa_manifest_list_directories "$MANIFEST_PATH" >"${dirs_file}" || true
+  awk '{printf "%05d\t%s\n", length($0), $0}' "${dirs_file}" | sort -r >"${ordered_file}"
+
+  local line dir_rel dir_abs
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    dir_rel="${line#*$'\t'}"
+    dir_abs="$(target_abs_path "$dir_rel")"
+
+    if [[ "$DRY_RUN" == true ]]; then
+      if [[ -d "$dir_abs" ]]; then
+        log "dry-run: prune directory if empty ${dir_rel}"
+      fi
+      continue
+    fi
+
+    if [[ -d "$dir_abs" ]]; then
+      rmdir "$dir_abs" 2>/dev/null || true
+    fi
+  done <"${ordered_file}"
+}
+
+print_summary() {
+  local heading="$1"
+  printf '\n%s\n' "$heading"
+  printf 'Created: %s\n' "$CREATED"
+  printf 'Updated: %s\n' "$UPDATED"
+  printf 'Removed: %s\n' "$REMOVED"
+  printf 'Backed up: %s\n' "$BACKED_UP"
+  printf 'Skipped: %s\n' "$SKIPPED"
+  printf 'Conflicts: %s\n' "$CONFLICT_COUNT"
+  printf 'Backup dir: %s\n' "$BACKUP_DIR"
+}
+
+run_install() {
+  collect_install_entries
+  load_manifest_entries
+  apply_entry_set "install" "$DESIRED_INSTALL_TSV"
+  if [[ "$CONFLICT_COUNT" -gt 0 ]]; then
+    print_conflicts
+    exit 1
+  fi
+
+  ensure_hooks_path_for_install_or_update
+  write_manifest_for_entries "$DESIRED_INSTALL_TSV"
+  write_backup_metadata "install"
+  print_summary "Install complete"
+}
+
+run_update() {
+  if ! manifest_exists; then
+    die "No manifest found at ${MANIFEST_PATH}. Run install first."
+  fi
+
+  load_manifest_entries
+  build_update_entries_from_manifest
+  if [[ "$CONFLICT_COUNT" -gt 0 ]]; then
+    print_conflicts
+    exit 1
+  fi
+
+  apply_entry_set "update" "$UPDATE_DESIRED_TSV"
+  if [[ "$CONFLICT_COUNT" -gt 0 ]]; then
+    print_conflicts
+    exit 1
+  fi
+
+  ensure_hooks_path_for_install_or_update
+
+  local installed_at
+  installed_at="$(aa_manifest_read_field "$MANIFEST_PATH" "installedAt" 2>/dev/null || printf '')"
+  write_manifest_for_entries "$UPDATE_DESIRED_TSV" "$installed_at"
+  write_backup_metadata "update"
+  print_summary "Update complete"
+}
+
+run_uninstall() {
+  if ! manifest_exists; then
+    log "No manifest found at ${MANIFEST_PATH}; nothing to uninstall."
+    return
+  fi
+
+  load_manifest_entries
+  remove_entry_set
+  if [[ "$CONFLICT_COUNT" -gt 0 ]]; then
+    print_conflicts
+    exit 1
+  fi
+
+  restore_hooks_path_for_uninstall
+  remove_empty_managed_directories
+
+  if [[ "$DRY_RUN" != true ]]; then
+    rm -f "$MANIFEST_PATH" "$STATE_PATH"
+  else
+    log "dry-run: remove ${MANIFEST_PATH}"
+    log "dry-run: remove ${STATE_PATH}"
+  fi
+
+  write_backup_metadata "uninstall"
+  print_summary "Uninstall complete"
+}
+
+print_kind_status() {
+  local kind="$1"
+  local desired_tsv="$2"
+  local manifest_tsv="$3"
+  local manifest_present="$4"
+
+  local manifest_count=0
+  local missing=0
+  local modified=0
+  local type_mismatch=0
+  local source_drift=0
+  local source_missing=0
+  local unmanaged_conflicts=0
+
+  local line _kind _source target digest target_abs current_digest desired_line desired_digest
+
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    IFS=$'\t' read -r _kind _source target digest <<<"$line"
+    [[ "$_kind" == "$kind" ]] || continue
+    manifest_count=$((manifest_count + 1))
+
+    target_abs="$(target_abs_path "$target")"
+    if [[ -e "$target_abs" && ! -f "$target_abs" ]]; then
+      type_mismatch=$((type_mismatch + 1))
+    elif [[ ! -f "$target_abs" ]]; then
+      missing=$((missing + 1))
+    else
+      current_digest="$(aa_sha256_file "$target_abs")"
+      if [[ "$current_digest" != "$digest" ]]; then
+        modified=$((modified + 1))
+      fi
+    fi
+
+    desired_line="$(lookup_entry_by_target "$target" "$desired_tsv")"
+    if [[ -z "$desired_line" ]]; then
+      source_missing=$((source_missing + 1))
+    else
+      IFS=$'\t' read -r _ _ _ desired_digest <<<"$desired_line"
+      if [[ "$desired_digest" != "$digest" ]]; then
+        source_drift=$((source_drift + 1))
+      fi
+    fi
+  done <"$manifest_tsv"
+
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    IFS=$'\t' read -r _kind _source target desired_digest <<<"$line"
+    [[ "$_kind" == "$kind" ]] || continue
+    if [[ -n "$(lookup_entry_by_target "$target" "$manifest_tsv")" ]]; then
+      continue
+    fi
+
+    target_abs="$(target_abs_path "$target")"
+    if [[ -e "$target_abs" && ! -f "$target_abs" ]]; then
+      type_mismatch=$((type_mismatch + 1))
+    elif [[ -f "$target_abs" ]]; then
+      current_digest="$(aa_sha256_file "$target_abs")"
+      if [[ "$current_digest" != "$desired_digest" ]]; then
+        unmanaged_conflicts=$((unmanaged_conflicts + 1))
+      fi
+    fi
+  done <"$desired_tsv"
+
+  local status="healthy"
+  if [[ "$manifest_present" != "true" || "$missing" -gt 0 || "$modified" -gt 0 || "$type_mismatch" -gt 0 || "$source_drift" -gt 0 || "$source_missing" -gt 0 || "$unmanaged_conflicts" -gt 0 ]]; then
+    status="drifted"
+  fi
+
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+    "$kind" \
+    "$status" \
+    "$missing" \
+    "$modified" \
+    "$type_mismatch" \
+    "$source_drift" \
+    "$source_missing" \
+    "$unmanaged_conflicts"
+}
+
+run_status() {
+  collect_install_entries
+  load_manifest_entries
+
+  local manifest_present="false"
+  if manifest_exists; then
+    manifest_present="true"
+  fi
+
+  local codex_line hook_line
+  codex_line="$(print_kind_status "codex" "$DESIRED_INSTALL_TSV" "$MANIFEST_ENTRIES_TSV" "$manifest_present")"
+  hook_line="$(print_kind_status "hook" "$DESIRED_INSTALL_TSV" "$MANIFEST_ENTRIES_TSV" "$manifest_present")"
+
+  local _kind codex_status codex_missing codex_modified codex_type codex_source_drift codex_source_missing codex_unmanaged
+  local hook_status hook_missing hook_modified hook_type hook_source_drift hook_source_missing hook_unmanaged
+  IFS=$'\t' read -r _kind codex_status codex_missing codex_modified codex_type codex_source_drift codex_source_missing codex_unmanaged <<<"$codex_line"
+  IFS=$'\t' read -r _kind hook_status hook_missing hook_modified hook_type hook_source_drift hook_source_missing hook_unmanaged <<<"$hook_line"
+
+  local current_hooks_path current_hooks_abs hooks_path_status
+  current_hooks_path="$(aa_git_config_get_hooks_path "$HOME_DIR" "$GIT_CONFIG_FILE")"
+  current_hooks_abs="$(aa_normalize_hooks_path "$HOME_DIR" "$current_hooks_path")"
+  hooks_path_status="drifted"
+  if [[ "$current_hooks_abs" == "$TARGET_HOOKS_ABS" ]]; then
+    hooks_path_status="healthy"
+  fi
+
+  local overall_status="healthy"
+  if [[ "$codex_status" != "healthy" || "$hook_status" != "healthy" || "$hooks_path_status" != "healthy" ]]; then
+    overall_status="drifted"
+  fi
+
+  printf 'Tool: %s\n' "$TOOL"
+  printf 'Home: %s\n' "$HOME_DIR"
+  printf 'Install Mode: %s\n' "$MODE"
+  printf 'Manifest: %s (%s)\n' "$manifest_present" "$MANIFEST_PATH"
+  printf '\n'
+  printf 'Codex assets: %s\n' "$codex_status"
+  printf '  missing=%s modified=%s type_mismatch=%s source_drift=%s source_missing=%s unmanaged_conflicts=%s\n' \
+    "$codex_missing" "$codex_modified" "$codex_type" "$codex_source_drift" "$codex_source_missing" "$codex_unmanaged"
+  printf 'Hooks: %s\n' "$hook_status"
+  printf '  missing=%s modified=%s type_mismatch=%s source_drift=%s source_missing=%s unmanaged_conflicts=%s\n' \
+    "$hook_missing" "$hook_modified" "$hook_type" "$hook_source_drift" "$hook_source_missing" "$hook_unmanaged"
+  printf 'core.hooksPath: %s\n' "$hooks_path_status"
+  printf '  current=%s expected=%s\n' "${current_hooks_path:-<unset>}" "$TARGET_HOOKS_PATH"
+  printf '\n'
+  printf 'Overall: %s\n' "$overall_status"
+
+  if [[ "$overall_status" == "healthy" ]]; then
+    exit 0
+  fi
+  exit 3
+}
+
+main() {
+  require_cmd bash
+  require_cmd git
+  require_cmd python3
+
+  parse_args "$@"
+  setup_paths
+  setup_workspace
+  trap cleanup_workspace EXIT
+
+  case "$COMMAND" in
+  install)
+    run_install
+    ;;
+  update)
+    run_update
+    ;;
+  uninstall)
+    run_uninstall
+    ;;
+  status)
+    run_status
+    ;;
+  *)
+    die "Unhandled command: ${COMMAND}"
+    ;;
+  esac
+}
+
+main "$@"

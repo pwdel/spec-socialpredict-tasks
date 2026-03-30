@@ -469,7 +469,7 @@ aa_normalize_hooks_path() {
     printf '%s\n' "$home_dir"
     ;;
   '~/'*)
-    printf '%s/%s\n' "$home_dir" "${hooks_path#~/}"
+    printf '%s/%s\n' "$home_dir" "${hooks_path#\~/}"
     ;;
   *)
     printf '%s\n' "$hooks_path"

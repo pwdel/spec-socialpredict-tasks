@@ -122,6 +122,7 @@ aa_manifest_write() {
   local timestamp="${10}"
   local entries_tsv="${11}"
   local directories_list="${12}"
+  local installed_at_override="${13:-}"
 
   mkdir -p "$(dirname "$manifest_path")"
 
@@ -137,7 +138,8 @@ aa_manifest_write() {
     "$hooks_root" \
     "$timestamp" \
     "$entries_tsv" \
-    "$directories_list" <<'PY'
+    "$directories_list" \
+    "$installed_at_override" <<'PY'
 import json
 import os
 import sys
@@ -155,7 +157,8 @@ import sys
     timestamp,
     entries_tsv,
     directories_list,
-) = sys.argv[1:13]
+    installed_at_override,
+) = sys.argv[1:14]
 
 managed_files = []
 if os.path.isfile(entries_tsv):
@@ -198,7 +201,7 @@ payload = {
         "path": source_repo_path,
         "commit": source_commit,
     },
-    "installedAt": timestamp,
+    "installedAt": installed_at_override or timestamp,
     "updatedAt": timestamp,
     "home": home_dir,
     "codexRoot": codex_root,
