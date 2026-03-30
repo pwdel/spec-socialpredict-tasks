@@ -16,6 +16,10 @@ What this wrapper manages:
   - Repo-local Codex payload:
     - .codex/skills/**
     - .codex/agents/**
+  - Repo-local hook payload:
+    - .git-hooks/pre-commit
+    - .git-hooks/pre-push
+    - .git-hooks/.managed/spec-socialpredict-tasks/bin/socialpredict-guardrails
   - Managed Git hooks:
     - ~/.git-hooks/pre-commit
     - ~/.git-hooks/pre-push
@@ -25,6 +29,8 @@ What it does not do:
   - It does not blindly mirror the entire .codex directory.
   - It does not copy user-local Codex state such as auth/session data.
   - It does not modify application code in ../socialpredict.
+  - It does not invent hook content at install time anymore; the repo-local
+    .git-hooks/** payload is now the source of truth.
 
 Usage:
   ./agent-assets <command> [options]

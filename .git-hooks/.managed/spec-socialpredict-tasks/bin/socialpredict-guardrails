@@ -1,0 +1,319 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+INSTALLER_ID="spec-socialpredict-tasks"
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+hooks_root="$(cd "${script_dir}/../../.." && pwd)"
+default_audit_log="${hooks_root}/.managed/${INSTALLER_ID}/logs/guardrail-bypass.log"
+
+ALLOWED_DB_ACCESS_FILES=(
+  "backend/handlers/admin/adduser.go"
+  "backend/handlers/stats/statshandler.go"
+  "backend/internal/service/auth/loggin.go"
+  "backend/handlers/cms/homepage/repo.go"
+  "backend/server/server.go"
+)
+
+log() {
+  printf '[socialpredict-guardrails] %s\n' "$*"
+}
+
+usage() {
+  cat <<'USAGE'
+Usage: socialpredict-guardrails <command>
+
+Commands:
+  pre-commit          Fast local gates (boundary + gofmt)
+  pre-push            Full gates (boundary + OpenAPI drift + quality)
+  boundary            Run boundary policy checks
+  openapi-drift       Run route/handler drift check + OpenAPI validation test
+  quality             Run gofmt/go vet/go test checks
+  all                 Run boundary + openapi-drift + quality (default)
+  help                Show this message
+
+Environment:
+  BASE_REF                            Optional base ref for openapi-drift check
+  GUARDRAIL_TEST_PACKAGES             Space-separated go test package list
+  GUARDRAIL_GOFMT_SCOPE               "changed" (default) or "all"
+  SOCIALPREDICT_GUARDRAIL_BYPASS      Set non-empty to bypass all gates
+  SOCIALPREDICT_GUARDRAIL_BYPASS_REASON
+                                      Required when bypassing; written to audit log
+  SOCIALPREDICT_GUARDRAIL_BYPASS_AUDIT_LOG
+                                      Optional custom bypass audit log file
+USAGE
+}
+
+require_cmd() {
+  local command="$1"
+  if ! command -v "${command}" >/dev/null 2>&1; then
+    printf 'Required command not found: %s\n' "${command}" >&2
+    exit 2
+  fi
+}
+
+resolve_repo_root() {
+  if ! git rev-parse --show-toplevel 2>/dev/null; then
+    printf 'Unable to resolve git repository root for guardrails\n' >&2
+    exit 1
+  fi
+}
+
+REPO_ROOT="$(resolve_repo_root)"
+BACKEND_DIR="${REPO_ROOT}/backend"
+
+if [[ ! -d "${BACKEND_DIR}" ]]; then
+  printf 'Expected backend directory at %s\n' "${BACKEND_DIR}" >&2
+  exit 1
+fi
+
+resolve_base_ref() {
+  if [[ -n "${BASE_REF:-}" ]]; then
+    printf '%s\n' "${BASE_REF}"
+    return
+  fi
+
+  local candidate
+  for candidate in \
+    "origin/fix/checkpoint20251020-80" \
+    "fix/checkpoint20251020-80" \
+    "94231f1d5f49c564d1a99c0135456d92101ed8f0" \
+    "HEAD~1"; do
+    if git -C "${REPO_ROOT}" rev-parse --verify --quiet "${candidate}^{commit}" >/dev/null 2>&1; then
+      printf '%s\n' "${candidate}"
+      return
+    fi
+  done
+
+  printf 'HEAD\n'
+}
+
+maybe_bypass() {
+  local mode="$1"
+
+  if [[ -z "${SOCIALPREDICT_GUARDRAIL_BYPASS:-}" ]]; then
+    return
+  fi
+
+  local reason="${SOCIALPREDICT_GUARDRAIL_BYPASS_REASON:-}"
+  if [[ -z "${reason}" ]]; then
+    printf 'SOCIALPREDICT_GUARDRAIL_BYPASS is set but SOCIALPREDICT_GUARDRAIL_BYPASS_REASON is empty.\n' >&2
+    exit 2
+  fi
+
+  local audit_log="${SOCIALPREDICT_GUARDRAIL_BYPASS_AUDIT_LOG:-${default_audit_log}}"
+  mkdir -p "$(dirname "${audit_log}")"
+
+  local branch
+  branch="$(git -C "${REPO_ROOT}" branch --show-current 2>/dev/null || printf 'unknown')"
+
+  printf '%s\tuser=%s\tbranch=%s\tmode=%s\treason=%s\n' \
+    "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+    "${USER:-unknown}" \
+    "${branch}" \
+    "${mode}" \
+    "${reason}" >>"${audit_log}"
+
+  log "Bypass enabled for '${mode}'. Audit recorded in ${audit_log}."
+  exit 0
+}
+
+check_boundary_db_access_allowlist() {
+  local allowed_regex
+  allowed_regex="$(printf '%s|' "${ALLOWED_DB_ACCESS_FILES[@]}")"
+  allowed_regex="${allowed_regex%|}"
+
+  local violations
+  violations="$({
+    cd "${REPO_ROOT}"
+    rg -n --glob '!**/*_test.go' 'util.GetDB\(|gorm\.io/gorm' backend/handlers backend/internal/service backend/server | rg -v "${allowed_regex}" || true
+  })"
+
+  if [[ -n "${violations}" ]]; then
+    log "Boundary violation: direct DB access outside allowlist."
+    printf '%s\n' "${violations}" >&2
+    return 1
+  fi
+
+  log "Boundary check passed: direct DB access allowlist."
+}
+
+check_no_handler_or_service_repo_imports() {
+  local matches
+  matches="$({
+    cd "${REPO_ROOT}"
+    rg -n --glob '!**/*_test.go' 'socialpredict/internal/repository/' backend/handlers backend/internal/service || true
+  })"
+
+  if [[ -n "${matches}" ]]; then
+    log "Boundary violation: handlers/internal service importing concrete repositories."
+    printf '%s\n' "${matches}" >&2
+    return 1
+  fi
+
+  log "Boundary check passed: handlers/internal service repository import rule."
+}
+
+check_no_domain_repo_imports() {
+  local matches
+  matches="$({
+    cd "${REPO_ROOT}"
+    rg -n --glob '!**/*_test.go' 'socialpredict/internal/repository/' backend/internal/domain || true
+  })"
+
+  if [[ -n "${matches}" ]]; then
+    log "Boundary violation: domain layer importing concrete repositories."
+    printf '%s\n' "${matches}" >&2
+    return 1
+  fi
+
+  log "Boundary check passed: domain repository import rule."
+}
+
+check_no_repository_handler_imports() {
+  local matches
+  matches="$({
+    cd "${REPO_ROOT}"
+    rg -n --glob '!**/*_test.go' 'socialpredict/handlers/' backend/internal/repository || true
+  })"
+
+  if [[ -n "${matches}" ]]; then
+    log "Boundary violation: repository layer importing handlers."
+    printf '%s\n' "${matches}" >&2
+    return 1
+  fi
+
+  log "Boundary check passed: repository->handler import rule."
+}
+
+run_boundary_gates() {
+  log "Running boundary policy gates..."
+  local rc=0
+  check_boundary_db_access_allowlist || rc=1
+  check_no_handler_or_service_repo_imports || rc=1
+  check_no_domain_repo_imports || rc=1
+  check_no_repository_handler_imports || rc=1
+  return "${rc}"
+}
+
+check_openapi_drift() {
+  local base_ref changed_files
+  base_ref="$(resolve_base_ref)"
+  changed_files="$(git -C "${REPO_ROOT}" diff --name-only "${base_ref}"...HEAD || true)"
+
+  if [[ -n "${changed_files}" ]] && printf '%s\n' "${changed_files}" | rg -q '^backend/server/server\.go$|^backend/handlers/.*\.go$'; then
+    if ! printf '%s\n' "${changed_files}" | rg -q '^backend/docs/openapi\.yaml$'; then
+      log "OpenAPI drift violation: handlers/server changed without backend/docs/openapi.yaml update."
+      printf '%s\n' "${changed_files}" >&2
+      return 1
+    fi
+  fi
+
+  log "OpenAPI drift path rule passed against ${base_ref}."
+  log "Running OpenAPI validation test..."
+  (cd "${BACKEND_DIR}" && go test ./... -run TestOpenAPISpecValidates -count=1)
+}
+
+check_gofmt() {
+  local scope="${GUARDRAIL_GOFMT_SCOPE:-changed}"
+  local -a go_files
+
+  if [[ "${scope}" == "all" ]]; then
+    mapfile -t go_files < <(cd "${REPO_ROOT}" && find backend -type f -name '*.go' | LC_ALL=C sort)
+  else
+    local base_ref
+    base_ref="$(resolve_base_ref)"
+    mapfile -t go_files < <(cd "${REPO_ROOT}" && git diff --name-only "${base_ref}"...HEAD -- 'backend/**/*.go' 'backend/*.go' | LC_ALL=C sort)
+  fi
+
+  if [[ "${#go_files[@]}" -eq 0 ]]; then
+    log "No Go files in scope for gofmt."
+    return 0
+  fi
+
+  local fmt_output
+  fmt_output="$(cd "${REPO_ROOT}" && gofmt -l "${go_files[@]}")"
+  if [[ -n "${fmt_output}" ]]; then
+    log "gofmt violation detected."
+    printf '%s\n' "${fmt_output}" >&2
+    return 1
+  fi
+
+  log "gofmt check passed."
+}
+
+check_go_vet() {
+  log "Running go vet..."
+  (cd "${BACKEND_DIR}" && go vet ./...)
+}
+
+check_go_test() {
+  if [[ -n "${GUARDRAIL_TEST_PACKAGES:-}" ]]; then
+    log "Running targeted go test packages: ${GUARDRAIL_TEST_PACKAGES}"
+    # shellcheck disable=SC2086
+    (cd "${BACKEND_DIR}" && go test ${GUARDRAIL_TEST_PACKAGES})
+    return
+  fi
+
+  log "Running go test ./..."
+  (cd "${BACKEND_DIR}" && go test ./...)
+}
+
+run_quality_gates() {
+  log "Running Go quality gates..."
+  check_gofmt
+  check_go_vet
+  check_go_test
+}
+
+run_all_gates() {
+  run_boundary_gates
+  check_openapi_drift
+  run_quality_gates
+}
+
+main() {
+  require_cmd git
+  require_cmd rg
+  require_cmd go
+  require_cmd gofmt
+
+  local mode="${1:-all}"
+  case "${mode}" in
+  pre-commit)
+    maybe_bypass "pre-commit"
+    run_boundary_gates
+    check_gofmt
+    ;;
+  pre-push)
+    maybe_bypass "pre-push"
+    run_all_gates
+    ;;
+  boundary)
+    maybe_bypass "boundary"
+    run_boundary_gates
+    ;;
+  openapi-drift)
+    maybe_bypass "openapi-drift"
+    check_openapi_drift
+    ;;
+  quality)
+    maybe_bypass "quality"
+    run_quality_gates
+    ;;
+  all)
+    maybe_bypass "all"
+    run_all_gates
+    ;;
+  help | --help | -h)
+    usage
+    ;;
+  *)
+    printf 'Unknown command: %s\n\n' "${mode}" >&2
+    usage >&2
+    exit 2
+    ;;
+  esac
+}
+
+main "$@"
