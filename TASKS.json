@@ -125,14 +125,14 @@
     {
       "id": "PR581-006",
       "title": "Align unchecked analytics files with SRP",
-      "status": "running",
+      "status": "pending",
       "prompt": "This task is sourced from the SRP checklist only. Work only in the unchecked analytics files and exact symbols defined here: internal/domain/analytics/models.go (FinancialSnapshot, FinancialSnapshotRequest, MetricWithExplanation, MoneyCreated, MoneyUtilized, Verification, SystemMetrics); internal/domain/analytics/repository.go (GormRepository, RepositoryOption, WithRepositoryPositionCalculator, NewGormRepository, WithContext, ListUsers, ListMarkets, ListBetsForMarket, ListBetsOrdered, UserMarketPositions, listUserBets, collectMarketIDs, listMarketsByIDs, buildMarketSnapshots, listBetsByMarketIDs, groupBetsByMarket, ensurePositionCalculator, calculateUserPositions); internal/domain/analytics/systemmetrics_integration_test.go (TestComputeSystemMetrics_BalancedAfterFinalLockedBet, TestResolveMarket_DistributesAllBetVolume); and internal/domain/analytics/systemmetrics_test.go (TestComputeSystemMetrics_EmptyDatabase, TestComputeSystemMetrics_WithData). Update every listed unchecked symbol to align with the Single Responsibility Principle while preserving the existing analytics/service.go boundary around ComputeSystemMetrics and ComputeGlobalLeaderboard.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-001",
         "PR581-005"
       ],
-      "attempts": 2,
+      "attempts": 0,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -142,26 +142,19 @@
         "The file and symbol inventory in the prompt is the execution scope; the PR comments are provenance only and should not be needed to discover work.",
         "Keep analytics/service.go as the established boundary owner for ComputeSystemMetrics and ComputeGlobalLeaderboard; this task should improve surrounding models, repository behavior, and test coverage without re-monolithizing that service.",
         "Every listed unchecked symbol should be reviewed and updated for SRP alignment before this task is considered done."
-      ],
-      "started_at": "2026-04-04T05:55:28.940235+00:00",
-      "finished_at": "2026-04-04T05:54:59.093314+00:00",
-      "last_exit_code": 1,
-      "runner_state": {
-        "resume_pending": false
-      },
-      "runner_pid": 3469
+      ]
     },
     {
       "id": "PR581-007",
       "title": "Align unchecked markets domain files with SRP",
-      "status": "running",
+      "status": "pending",
       "prompt": "This task is sourced from the SRP checklist only. Work only in the unchecked markets domain files and exact symbols defined here: internal/domain/markets/errors.go (domain error vars); internal/domain/markets/models.go (Market, MarketCreateRequest, UserPosition, MarketPositions, Bet, PayoutPosition, PublicMarket); internal/domain/markets/service_details_test.go (TestServiceGetMarketDetailsCalculatesMetrics, TestServiceGetMarketDetails_InvalidAndMissing); internal/domain/markets/service_marketbets_test.go (TestGetMarketBets_ReturnsProbabilities, TestGetMarketBets_EmptyWhenNoBets, TestGetMarketBets_ValidatesInputAndMarket, TestGetMarketPositions_ReturnsRepositoryData, TestGetMarketPositions_ValidatesInputAndMarket); internal/domain/markets/service_probability_test.go (TestProjectProbability_ComputesProjection, TestProjectProbability_InvalidOutcome, marketsToModel, modelsBet, absDiff); internal/domain/markets/service_resolve_test.go (TestResolveMarketRefundsOnNA, TestResolveMarketPaysWinners, TestResolveMarketRejectsUnauthorized); and internal/domain/markets/service_search_test.go (seedSearchMarkets, TestServiceSearchMarketsFiltersByStatus, TestServiceSearchMarketsInvalidInput). Update every listed unchecked symbol to align with the Single Responsibility Principle while keeping the markets service interface stable and avoiding direct handler or repository coupling.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-001",
         "PR581-002"
       ],
-      "attempts": 1,
+      "attempts": 0,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -171,9 +164,7 @@
         "The file and symbol inventory in the prompt is the execution scope; the PR comments are provenance only.",
         "markets/service.go remains the established boundary owner for SearchMarkets, ResolveMarket, and related orchestration; this task is about finishing the remaining unchecked models, errors, and service tests around that stable interface.",
         "Every listed unchecked symbol should be reviewed and updated for SRP alignment before this task is considered done."
-      ],
-      "started_at": "2026-04-04T06:00:31.623584+00:00",
-      "runner_pid": 3895
+      ]
     },
     {
       "id": "PR581-008",
@@ -199,13 +190,13 @@
     {
       "id": "PR581-009",
       "title": "Align unchecked bets files with SRP",
-      "status": "done",
+      "status": "pending",
       "prompt": "This task is sourced from the SRP checklist only. Work only in the unchecked bets files and exact symbols defined here: internal/domain/bets/errors.go (domain error vars, ErrDustCapExceeded, ErrDustCapExceeded.Error); internal/domain/bets/models.go (PlaceRequest, PlacedBet, SellRequest, SellResult); internal/domain/bets/service_helpers_test.go (stubMarketService.GetMarket, stubMarketService.GetUserPositionInMarket, gateClock.Now, TestMarketGate_Open, TestFeeCalculator_Calculate, TestBalanceGuard_EnsureSufficient, ledgerRepo.Create, ledgerRepo.UserHasBet, ledgerUsers.GetUser, ledgerUsers.ApplyTransaction, TestBetLedger_ChargeAndRecord, TestBetLedger_ChargeAndRecord_RollsBackOnRepoError, TestBetLedger_CreditSale, TestSaleCalculator_Calculate); and internal/domain/bets/service_test.go (fakeRepo.Create, fakeRepo.UserHasBet, fakeMarkets.GetMarket, fakeMarkets.GetUserPositionInMarket, fakeUsers.GetUser, fakeUsers.ApplyTransaction, fixedClock.Now, TestServicePlace_Succeeds, TestServicePlace_InsufficientBalance, TestServicePlace_InvalidOutcome, TestServicePlace_MarketClosed, TestServiceSell_Succeeds, TestServiceSell_NoPosition, TestServiceSell_DustCapExceeded, TestServiceSell_RequestTooSmall). Update every listed unchecked symbol to align with the Single Responsibility Principle without moving business rules back into handlers.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-004"
       ],
-      "attempts": 1,
+      "attempts": 0,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -215,32 +206,18 @@
         "The file and symbol inventory in the prompt is the execution scope; the PR comments are provenance only.",
         "internal/domain/bets/service.go is treated as the completed baseline and should remain the owner of place/sell business rules while these surrounding unchecked files and tests are finished.",
         "Preserve the already-completed handler/service split for market bet history, buy, and sell flows."
-      ],
-      "started_at": "2026-04-04T06:04:04.797580+00:00",
-      "runner_state": {
-        "segment": 1,
-        "session_id": "019d5717-6801-79d2-a311-1f259dffbacc",
-        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-009_20260404T060404Z_part01.ndjson",
-        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-009_20260404T060404Z_part01.stderr.log",
-        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-009_20260404T060404Z_part01.txt",
-        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-009_20260404T060404Z_part01.txt",
-        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-009_20260404T060404Z_part01.ndjson",
-        "resume_pending": false
-      },
-      "finished_at": "2026-04-04T06:06:02.728309+00:00",
-      "last_exit_code": 0,
-      "last_summary": "task_id: `PR581-009`  \nstatus: `blocked`\n\nThe required `dispatcher_agent` was spawned first and completed coordination. No code changes were made because the in-scope target files do not exist in the current checkout at `/workspace/socialpredict`: `backend/internal/domain/bets/errors.go`, `models.go`, `service_helpers_test.go`, and `service_test.go` are absent, and `backend/internal/domain/bets/` is missing entirely. The repo is currently on branch `main`, so proceeding in older `backend/handlers/bets/...` code would violate the task\u2019s stated scope and the `PR581-004` dependency.\n\nfiles_changed: `[]`\n\nchecks_run: `python3 /workspace/spec-socialpredict-tasks/scripts/codex-report.py read-summary --report-dir /workspace/socialpredict/.codex-reports/tasks/PR581-009`, `find /workspace/socialpredict/backend -maxdepth 3 -type d`, `rg -n \"ErrDustCapExceeded|PlaceRequest|SellResult|fakeRepo|stubMarketService\" /workspace/socialpredict/backend`, `git -C /workspace/socialpredict branch --show-current`\n\nfollow_ups: `Check out or merge the missing PR581-004 content so backend/internal/domain/bets/... exists, then rerun PR581-009.`"
+      ]
     },
     {
       "id": "PR581-010",
       "title": "Align unchecked math files with SRP",
-      "status": "done",
+      "status": "pending",
       "prompt": "This task is sourced from the SRP checklist only. Work only in the unchecked math files and exact symbols defined here: internal/domain/math/market/dust_test.go (TestGetMarketVolumeWithDust, TestCalculateDustStack, TestGetMarketDust, TestCalculateDustForSell_Placeholder, TestCurrencyConservationInvariant); internal/domain/math/market/marketvolume_test.go (TestGetMarketVolume); internal/domain/math/outcomes/dbpm/marketshares_test.go (generateCoursePayouts, TestDivideUpMarketPoolSharesDBPM, TestCalculateCoursePayoutsDBPM, TestCalculateNormalizationFactorsDBPM, TestCalculateScaledPayoutsDBPM, TestCalculateExcess, TestAdjustForPositiveExcess, TestAdjustForNegativeExcess, TestAdjustPayouts, TestAggregateUserPayoutsDBPM, TestNetAggregateMarketPositions, TestSingleCreditYesNoAllocator); internal/domain/math/positions/adjust_valuation.go (UserHolder, ByValBetTimeUsername, ByValBetTimeUsername.Len, ByValBetTimeUsername.Swap, ByValBetTimeUsername.Less, AdjustUserValuationsToMarketVolume, filterWinningValuations, buildUserHolders, adjustValuations); internal/domain/math/positions/adjust_valuation_test.go (TestAdjustUserValuationsToMarketVolume); internal/domain/math/positions/profitability.go (UserProfitability, CalculateMarketLeaderboard, CalculateUserSpend, GetEarliestBetTime, DeterminePositionType); internal/domain/math/positions/profitability_test.go (TestCalculateUserSpend, TestGetEarliestBetTime, TestDeterminePositionType, TestCalculateMarketLeaderboard_EmptyBets); and internal/domain/math/positions/valuation_test.go (makeUserPositions, TestCalculateRoundedUserValuationsFromUserMarketPositions). Update every listed unchecked symbol to align with the Single Responsibility Principle without pushing math back into handlers.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-004"
       ],
-      "attempts": 1,
+      "attempts": 0,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -250,21 +227,7 @@
         "The file and symbol inventory in the prompt is the execution scope; the PR comments are provenance only.",
         "Checked math implementation files such as dust.go, marketvolume.go, marketshares.go, positionsmath.go, valuation.go, and probabilities/wpam/*.go are excluded unless a listed unchecked symbol requires a narrow supporting change.",
         "Every listed unchecked symbol should be reviewed and updated for SRP alignment before this task is considered done."
-      ],
-      "started_at": "2026-04-04T06:11:25.703727+00:00",
-      "runner_state": {
-        "segment": 1,
-        "session_id": "019d571e-2259-70d0-a017-820f6ae8fd36",
-        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-010_20260404T061125Z_part01.ndjson",
-        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-010_20260404T061125Z_part01.stderr.log",
-        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-010_20260404T061125Z_part01.txt",
-        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-010_20260404T061125Z_part01.txt",
-        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-010_20260404T061125Z_part01.ndjson",
-        "resume_pending": false
-      },
-      "finished_at": "2026-04-04T06:20:14.810985+00:00",
-      "last_exit_code": 0,
-      "last_summary": "`task_id: PR581-010`  \n`status: completed`\n\n`files_changed:`\n- `backend/handlers/math/positions/adjust_valuation.go`\n- `backend/handlers/math/positions/profitability.go`\n- `backend/handlers/math/market/dust_test.go`\n- `backend/handlers/math/market/marketvolume_test.go`\n- `backend/handlers/math/outcomes/dbpm/marketshares_test.go`\n- `backend/handlers/math/positions/adjust_valuation_test.go`\n- `backend/handlers/math/positions/profitability_test.go`\n- `backend/handlers/math/positions/valuation_test.go`\n\nThe refactor stayed within the scoped unchecked math symbols, using the real checkout paths under `backend/handlers/math/...` since the prompt\u2019s `internal/domain/math/...` paths do not exist in this repo. I split leaderboard assembly/ranking, valuation-delta adjustment, and repeated test setup/assertion code into smaller helpers so each listed symbol has a narrower responsibility without moving math back into handlers.\n\n`checks_run:`\n- `gofmt -w` on all touched files\n- `GOCACHE=/workspace/socialpredict/.gocache GOPATH=/workspace/socialpredict/.gopath GOMODCACHE=/workspace/socialpredict/.gomodcache go test ./handlers/math/market ./handlers/math/positions ./handlers/math/outcomes/dbpm -count=1`\n- `GOCACHE=/workspace/socialpredict/.gocache GOPATH=/workspace/socialpredict/.gopath GOMODCACHE=/workspace/socialpredict/.gomodcache /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-testing-reliability/scripts/run_reliability_suite.sh /workspace/socialpredict ./handlers/math/...`\n- `/workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`  \n  Result: fails on pre-existing repo-wide boundary violations outside this task\u2019s files, plus the script assumes a missing `backend/internal/service` path.\n\n`follow_ups:`\n- Boundary-check script noise should be addressed separately; it is not caused by this scoped math refactor.\n- The canonical report for `PR581-010` was updated under `/workspace/socialpredict/.codex-reports/tasks/PR581-010`."
+      ]
     },
     {
       "id": "PR581-011",
