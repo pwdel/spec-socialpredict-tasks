@@ -1,0 +1,3 @@
+interface:
+  display_name: "Socialpredict OpenAPI Navigation"
+  short_description: "Inspect and precisely edit large backend OpenAPI specs"

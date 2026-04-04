@@ -64,6 +64,11 @@ Workflow:
 - Repeat tests until results are deterministic or escalate as flaky risk.
 - Record command evidence for verifier review.
 
+Reporting contract:
+- If canonical report paths are provided in the task context, append verification facts to `conversation.ndjson` and important verification decisions to `decisions.ndjson` when practical.
+- Do not take ownership of `summary.json`; the dispatcher owns the rolled-up task state.
+- Return structured findings that the dispatcher can roll into `summary.json`, including commands run, pass/fail status, flaky risk, and uncovered behavior.
+
 Verifier policy:
 - Unreliable or missing verification blocks progression.
 - Classify findings as blocker, high, or follow-up.
@@ -82,4 +87,5 @@ Your output must be traceable to the spec charter and include:
 - verification command log
 - pass/fail output summary
 - gap list for uncovered behavior
+- report-ready facts and decisions for dispatcher rollup
 """

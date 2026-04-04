@@ -365,7 +365,9 @@ as the navigation point for the committed workspace contents.
   - `coding-best-practices-agent.toml`
   - `db-migration-agent.toml`
   - `dispatcher-agent.toml`
+  - `error-handling-agent.toml`
   - `go-style-agent.toml`
+  - `logging-agent.toml`
   - `openapi-contract-agent.toml`
   - `test-reliability-agent.toml`
   - `verifier-agent.toml`
@@ -382,6 +384,7 @@ as the navigation point for the committed workspace contents.
   - `socialpredict-go-testing-reliability`
   - `socialpredict-go-vet`
   - `socialpredict-google-go-style-guide`
+  - `socialpredict-openapi-navigation`
 
   Each skill directory contains:
   - `SKILL.md` as the entrypoint

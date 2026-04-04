@@ -15,6 +15,8 @@ Use these specialists deliberately:
 - `architecture-agent` for package ownership, handler/core separation, DB acquisition and passing rules, transaction boundaries, raw DB access from handlers/auth, and extraction-readiness constraints.
 - `go-style-agent` for Google Go style authority, naming/commentary/clarity questions, local-consistency calls, and style-guide interpretation that should not be improvised from memory.
 - `coding-best-practices-agent` for backend quality gates and maintainability review, including gofmt, go vet, staticcheck, golangci-lint, gocyclo, hidden globals, hard-coded config, weak error handling, and tight coupling.
+- `error-handling-agent` for typed error taxonomy, sanitized public versus internal error behavior, raw `http.Error` cleanup, panic recovery placement, and extraction-safe error package design.
+- `logging-agent` for preferred logger usage, deprecated logger migration, request logging middleware, health or metrics endpoint observability, and extraction-safe observability package design.
 - `openapi-contract-agent` for route-to-spec parity, request or response DTO changes, JSON tags, payload-safety review, middleware-visible behavior changes, auth-visible contract drift, and `backend/docs/openapi.yaml` sync.
 - `db-migration-agent` for persisted schema changes, timestamped migrations, `backend/migration/migrate.go`, `backend/migration/migrate_test.go`, migration ordering, backfills, and migration-backed test helper expectations.
 - `test-reliability-agent` for deterministic test coverage, flaky-risk triage, behavior-to-test mapping, `modelstesting` helper usage, and reliable command evidence for changed backend/API behavior.
@@ -22,6 +24,8 @@ Use these specialists deliberately:
 
 Common routing patterns:
 - If a task changes handlers, routes, DTOs, or public payloads, strongly consider `architecture-agent`, `openapi-contract-agent`, `test-reliability-agent`, and `verifier-agent`.
+- If a task changes `backend/errors/**`, raw `http.Error(...)` usage, panic recovery, sanitized error messages, request-boundary error mapping, or middleware-visible error behavior, strongly consider `error-handling-agent`, `openapi-contract-agent` when the public contract changes, `test-reliability-agent`, and `verifier-agent`; add `architecture-agent` if package placement or layer ownership is unclear.
+- If a task changes `backend/logger/**`, deprecated `backend/logging/**`, imports of `socialpredict/logging`, request logging middleware, correlation IDs, `/health` or `/metrics` endpoints, tracing hooks, or operator-visible observability behavior, strongly consider `logging-agent`, `architecture-agent` when placement is unclear, `error-handling-agent` when failure-detail policy intersects, `openapi-contract-agent` when route-visible behavior changes, `test-reliability-agent`, and `verifier-agent`.
 - If a task changes persisted models, schema, defaults, enums, or backfills, strongly consider `db-migration-agent`, `openapi-contract-agent` when public behavior changes, `test-reliability-agent`, and `verifier-agent`.
 - If a task is mainly style interpretation or naming clarity, prefer `go-style-agent` over `coding-best-practices-agent`.
 - If a task is mainly maintainability or code-quality gating, prefer `coding-best-practices-agent`; add `go-style-agent` only when the question turns on Google Go style authority.
@@ -30,6 +34,15 @@ Common routing patterns:
 Overlap resolution rules:
 - If `architecture-agent` and `coding-best-practices-agent` both apply, `architecture-agent` owns package boundaries, dependency direction, DB-flow rules, and transaction shape; `coding-best-practices-agent` owns maintainability and quality-gate concerns within the accepted architecture.
 - If `go-style-agent` and `coding-best-practices-agent` both apply, `go-style-agent` owns normative Google Go style interpretation; `coding-best-practices-agent` owns tool-gate findings and non-normative maintainability advice.
+- If `error-handling-agent` and `architecture-agent` both apply, `architecture-agent` owns package boundaries, dependency direction, and layer placement; `error-handling-agent` owns typed error taxonomy, boundary-safe mapping, and public-versus-internal error policy within that architecture.
+- If `error-handling-agent` and `openapi-contract-agent` both apply, `error-handling-agent` owns internal-to-transport error mapping and sanitized message policy; `openapi-contract-agent` owns documented HTTP contract drift and spec synchronization.
+- If `error-handling-agent` and `coding-best-practices-agent` both apply, `error-handling-agent` owns explicit error-model design and boundary behavior; `coding-best-practices-agent` owns broader maintainability and quality concerns outside the explicit error-policy decisions.
+- If `error-handling-agent` and `test-reliability-agent` both apply, `error-handling-agent` owns scenario classification and expected public behavior; `test-reliability-agent` owns deterministic test evidence.
+- If `logging-agent` and `architecture-agent` both apply, `architecture-agent` owns package boundaries, dependency direction, and extraction-safe placement; `logging-agent` owns logger selection, observability policy, deprecated logger migration, and request-boundary instrumentation decisions within that architecture.
+- If `logging-agent` and `error-handling-agent` both apply, `error-handling-agent` owns sanitized public-versus-internal failure behavior and panic-recovery policy; `logging-agent` owns log-field policy, correlation, preferred logger usage, and observability behavior that surrounds those failures.
+- If `logging-agent` and `openapi-contract-agent` both apply, `logging-agent` owns internal logging and observability design; `openapi-contract-agent` owns route-visible contract drift for health, metrics, or related endpoints.
+- If `logging-agent` and `coding-best-practices-agent` both apply, `logging-agent` owns explicit logging and observability policy; `coding-best-practices-agent` owns broader maintainability and quality concerns outside that policy.
+- If `logging-agent` and `test-reliability-agent` both apply, `logging-agent` owns expected logging or observability behavior and migration intent; `test-reliability-agent` owns deterministic verification evidence.
 - If `openapi-contract-agent` and `architecture-agent` both apply, `openapi-contract-agent` owns externally visible contract drift and spec synchronization; `architecture-agent` owns DTO placement, package ownership, and boundary structure.
 - If `openapi-contract-agent` and `db-migration-agent` both apply, `db-migration-agent` owns persisted schema, migration mechanics, and ordering policy; `openapi-contract-agent` owns public contract impact and documentation drift.
 - If `db-migration-agent` and `test-reliability-agent` both apply, `db-migration-agent` owns migration correctness and required migration-test policy; `test-reliability-agent` owns determinism, command evidence, and broader regression coverage.
@@ -43,6 +56,25 @@ Operating rules:
 - Treat repo-level AGENTS.md as always-on policy.
 - Let specialists choose their relevant skills; do not micromanage skill scripts from here unless the task is explicitly about a script.
 - Use the specialists' TOML instructions as the source of truth for their scope and escalation triggers.
+- Treat these paths as read-only unless the user explicitly asks otherwise:
+  - `../socialpredict/backend/docs/API-ISSUES.md`
+  - `README.md`
+  - `README/**`
+  - `../socialpredict/backend/swagger-ui/**`
+  - `../socialpredict/CHECKPOINTS/**`
+  - `../socialpredict/backend/README/**`, including older files such as `API-DOCS.md`
+- `../socialpredict/backend/docs/openapi.yaml` is the allowed API-document source of truth and may be edited when the task requires contract work.
+
+Canonical reporting contract:
+- The runner bootstraps a canonical target-repo report directory under `../socialpredict/.codex-reports/tasks/<task-id>/`.
+- Treat `meta.json`, `summary.json`, `conversation.ndjson`, and `decisions.ndjson` as the authoritative curated task journal when those paths are present in the task prompt.
+- Read `summary.json` first when resuming or checkpointing work, and keep it current through the task.
+- The dispatcher owns `summary.json` and is responsible for the rolled-up task state, headline, current focus, files changed, checks run, open questions, and follow-ups.
+- Specialists do not own `summary.json`; they contribute facts and decisions that the dispatcher rolls up.
+- When delegating, pass the canonical report context forward when practical: report directory, conversation log path, decisions log path, summary path, and helper script path.
+- Prefer deterministic report I/O through `scripts/codex-report.py` when practical.
+- Use incremental reads from `conversation.ndjson` and `summary.json.last_event_seq` instead of rereading the full journal.
+- Before concluding, ensure `summary.json` reflects the final agreed state and that any important specialist findings are captured in the report files.
 
 When delegating, ask specialists for concise outputs:
 - recommendation
@@ -50,9 +82,84 @@ When delegating, ask specialists for concise outputs:
 - specific files or areas likely affected
 - whether follow-on delegation is needed
 - whether the change crosses into another specialist's explicit policy scope
+- facts and checks that should be appended to the canonical task report
+- any decision record that the dispatcher should append or mirror into `decisions.ndjson`
 
 Return a concise orchestration summary:
 - which specialists were used
 - the agreed implementation path
 - any remaining risk or blocker
+
+This file tells Codex how to operate in the SocialPredict repository. It is intentionally thin. Put detailed domain playbooks in specialized agents and skills, not here.
+
+## 0. Operating mode
+
+- You are an automated coding agent, not a human pair-programming partner.
+- Do not stop to ask clarifying questions when a reasonable, conservative interpretation exists.
+- Do not ask the user to confirm an approach before coding.
+- Make the smallest repo-consistent change that fully addresses the task.
+- State assumptions briefly in the final summary instead of blocking on them.
+- If a task is partly blocked by a missing secret, unavailable external system, or absent file, complete all unblocked work and report the exact blocker.
+
+## 1. Instruction precedence
+
+Use this precedence order when deciding how to code:
+
+1. The direct user request for the current task.
+2. This `AGENTS.md` file.
+3. SocialPredict repository conventions and README guidance.
+4. The existing patterns already present in the touched package.
+
+## 2. Delegation rule
+
+- For multi-step, cross-cutting, or ambiguous backend work, start with `dispatcher-agent`.
+- Prefer delegating specialized work instead of making the top-level agent improvise every concern itself.
+- Specialists own their domain:
+  - `architecture-agent`
+  - `go-style-agent`
+  - `coding-best-practices-agent`
+  - `error-handling-agent`
+  - `logging-agent`
+  - `openapi-contract-agent`
+  - `db-migration-agent`
+  - `test-reliability-agent`
+  - `verifier-agent`
+- Let delegated specialists decide whether and how to use their relevant skills.
+- Do not bypass a specialist just to run one of its scripts directly unless the task is explicitly about that script.
+- Defer general Go style interpretation to `go-style-agent`.
+
+## 3. SocialPredict backend invariants
+
+Preserve these repo-level rules unless the task explicitly requires changing them:
+
+- In this repo, a handler means an actual HTTP handler at the request boundary.
+- Keep reusable core logic out of `http.ResponseWriter` and `*http.Request` code when practical.
+- Acquire `*gorm.DB` once near the handler boundary and pass it downward.
+- Use transactions when multiple writes must succeed or fail together.
+- Preserve public versus private model boundaries in API responses.
+- Preserve integer-first accounting and market-economics behavior.
+- Keep time-based enforcement on the server side.
+- Use higher-order function injection selectively for real dependencies such as setup or economics loaders.
+- Preserve existing 32-bit safety guards when converting `uint64` to platform-sized `uint`.
+- Never log secrets, passwords, tokens, or API keys.
+
+## 4. Validation ownership
+
+- Let `dispatcher-agent` choose the smallest useful specialist set for the task.
+- Use `verifier-agent` near the end for final validation and diff sanity checks.
+- Do not hardcode a single validation command sequence here; validation should match the change.
+
+## 5. Final response
+
+When the task is complete, write a concise plain-text run summary that can be
+written directly to a summary file or last-message artifact. Summarize briefly:
+
+- what changed
+- what assumptions were made
+- what checks were run
+- any blocker or follow-up that remains
+
+Do not end by asking for confirmation if the requested work is already reasonably complete.
+
+
 """
