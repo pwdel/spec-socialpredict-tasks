@@ -13,7 +13,7 @@ and local target-repo work tracks `../socialpredict` branch `pilot/pr581-backend
 
 - [Workspace Purpose and Layout](README/WORKSPACE.md)
 - [Manual Verification Playbook](README/VERIFICATION.md)
-- [Agent Customization Guide](README/AGENTS.md)
+- [Agent Customization Guide](README/AGENTS-GUIDE.md)
 - [Codex Report Convention](README/CODEX-REPORTS.md)
 - [Codex Skills and Hook Customization Guide](README/SKILLS-HOOKS.md)
 

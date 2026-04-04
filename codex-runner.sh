@@ -438,7 +438,7 @@ build_prompt() {
   local conversation_file="$5"
   local decisions_file="$6"
   local helper_script="$7"
-  python3 - "$REPO_ROOT" "$DISPATCHER_AGENT" "$report_dir" "$meta_file" "$summary_file" "$conversation_file" "$decisions_file" "$helper_script" <<'PY' <<< "$task_json"
+  python3 - "$REPO_ROOT" "$DISPATCHER_AGENT" "$report_dir" "$meta_file" "$summary_file" "$conversation_file" "$decisions_file" "$helper_script" "$task_json" <<'PY'
 import json
 import sys
 
@@ -450,7 +450,7 @@ summary_file = sys.argv[5]
 conversation_file = sys.argv[6]
 decisions_file = sys.argv[7]
 helper_script = sys.argv[8]
-task = json.loads(sys.stdin.read())
+task = json.loads(sys.argv[9])
 
 print(f"""You are executing a queued automation task for the SocialPredict repository at {repo_root}.
 
@@ -489,7 +489,7 @@ build_resume_prompt() {
   local conversation_file="$4"
   local decisions_file="$5"
   local helper_script="$6"
-  python3 - "$report_dir" "$summary_file" "$conversation_file" "$decisions_file" "$helper_script" <<'PY' <<< "$task_json"
+  python3 - "$report_dir" "$summary_file" "$conversation_file" "$decisions_file" "$helper_script" "$task_json" <<'PY'
 import json
 import sys
 
@@ -498,7 +498,7 @@ summary_file = sys.argv[2]
 conversation_file = sys.argv[3]
 decisions_file = sys.argv[4]
 helper_script = sys.argv[5]
-task = json.loads(sys.stdin.read())
+task = json.loads(sys.argv[6])
 runner_state = task.get("runner_state") or {}
 checkpoint = runner_state.get("last_context_checkpoint") or {}
 
@@ -582,6 +582,20 @@ append_report_event() {
     --agent-role "$agent_role" \
     --event-type "$event_type" \
     --summary "$summary" >/dev/null
+}
+
+print_context_terminal_line() {
+  local task_id="$1"
+  local segment_index="$2"
+  local level="$3"
+  local used_pct="$4"
+  local used_tokens="$5"
+  local remaining_tokens="$6"
+  local context_window="$7"
+  local message="$8"
+
+  printf '[codex-runner][%s][task=%s][segment=%s][context=%s%% used][used=%s][remaining=%s/%s] %s\n' \
+    "$level" "$task_id" "$segment_index" "$used_pct" "$used_tokens" "$remaining_tokens" "$context_window" "$message" >&2
 }
 
 build_codex_exec_args() {
@@ -736,11 +750,11 @@ monitor_context_window() {
     local snapshot_json session_id has_snapshot used_tokens context_window remaining_tokens used_pct
     snapshot_json="$(snapshot_context_usage "$event_file")"
     IFS=$'\t' read -r session_id has_snapshot used_tokens context_window remaining_tokens used_pct < <(
-      python3 - <<'PY' <<< "$snapshot_json"
+      python3 - "$snapshot_json" <<'PY'
 import json
 import sys
 
-snapshot = json.loads(sys.stdin.read())
+snapshot = json.loads(sys.argv[1])
 print(
     (snapshot.get("session_id") or ""),
     "1" if snapshot.get("has_snapshot") else "0",
@@ -826,6 +840,7 @@ PY
 )
       append_context_log "$context_file" "$progress_json"
       update_report_context "$report_dir" "$session_id" "$used_tokens" "$context_window" "$remaining_tokens" "$used_pct" "context_progress" "$soft_handoff_requested"
+      print_context_terminal_line "$task_id" "$segment_index" "progress" "$used_pct" "$used_tokens" "$remaining_tokens" "$context_window" "Context usage updated."
       write_running_state "$task_id" "$task_title" "$event_file" "$stderr_file" "$message_file" "$prompt_file" "$context_file" "$segment_index" "$session_id" "$snapshot_json"
     fi
 
@@ -863,6 +878,7 @@ PY
       append_context_log "$context_file" "$soft_warning_json"
       append_report_event "$report_dir" "codex_runner" "runner" "context_soft_limit_reached" "Soft context threshold reached. Dispatcher should stop branching and write a clean handoff into summary.json and conversation.ndjson."
       update_report_context "$report_dir" "$session_id" "$used_tokens" "$context_window" "$remaining_tokens" "$used_pct" "soft_threshold_reached" "1"
+      print_context_terminal_line "$task_id" "$segment_index" "soft-threshold" "$used_pct" "$used_tokens" "$remaining_tokens" "$context_window" "Soft threshold reached. Dispatcher should wrap up toward checkpoint."
     fi
 
     if [[ "$(python3 - "$used_pct" "$CONTEXT_THRESHOLD_PCT" <<'PY'
@@ -937,6 +953,7 @@ PY
     append_context_log "$context_file" "$checkpoint_log_json"
     append_report_event "$report_dir" "codex_runner" "runner" "context_checkpoint_requested" "Hard context threshold reached. Runner is checkpointing and will resume the same task session."
     update_report_context "$report_dir" "$session_id" "$used_tokens" "$context_window" "$remaining_tokens" "$used_pct" "hard_threshold_reached" "1"
+    print_context_terminal_line "$task_id" "$segment_index" "hard-threshold" "$used_pct" "$used_tokens" "$remaining_tokens" "$context_window" "Hard threshold reached. Runner is checkpointing and resuming the session."
     write_running_state "$task_id" "$task_title" "$event_file" "$stderr_file" "$message_file" "$prompt_file" "$context_file" "$segment_index" "$session_id" "$snapshot_json"
     printf '%s\n' "$checkpoint_patch_json" > "$restart_request_file"
     kill -TERM "$codex_pid" >/dev/null 2>&1 || true
@@ -1106,12 +1123,23 @@ PY
   prompt_files_json="$(printf '%s\n' "${prompt_files[@]}" | python3 -c 'import json,sys; print(json.dumps([line.strip() for line in sys.stdin if line.strip()]))')"
   context_files_json="$(printf '%s\n' "${context_files[@]}" | python3 -c 'import json,sys; print(json.dumps([line.strip() for line in sys.stdin if line.strip()]))')"
 
-  runlog_json=$(python3 - "$task_id" "$task_title" "$start_ts" "$end_ts" "$task_status" "$exit_code" "$MODE" "$REPO_ROOT" "$task_workdir_rel" "$DISPATCHER_AGENT" "$last_event_file" "$last_stderr_file" "$last_message_file" "$last_prompt_file" "$last_context_file" "$last_session_id" "$segment_index" "$context_restart_count" "$CONTEXT_THRESHOLD_PCT" <<'PY'
+  runlog_json=$(python3 - "$task_id" "$task_title" "$start_ts" "$end_ts" "$task_status" "$exit_code" "$MODE" "$REPO_ROOT" "$task_workdir_rel" "$DISPATCHER_AGENT" "$last_event_file" "$last_stderr_file" "$last_message_file" "$last_prompt_file" "$last_context_file" "$last_session_id" "$segment_index" "$context_restart_count" "$CONTEXT_THRESHOLD_PCT" "$event_files_json" "$stderr_files_json" "$message_files_json" "$prompt_files_json" "$context_files_json" "$files_changed_json" <<'PY'
 import json
 import sys
 (task_id, task_title, start_ts, end_ts, task_status, exit_code, mode, repo_root,
  task_workdir_rel, dispatcher_agent, event_file, stderr_file, message_file,
- prompt_file, context_file, session_id, segments, context_restarts, context_threshold_pct) = sys.argv[1:]
+ prompt_file, context_file, session_id, segments, context_restarts,
+ context_threshold_pct, event_files_json, stderr_files_json, message_files_json,
+ prompt_files_json, context_files_json, files_changed_json) = sys.argv[1:]
+
+def load_json_arg(raw, default):
+    if raw is None or not raw.strip():
+        return default
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        return default
+
 record = {
   "record_type": "run_summary",
   "task_id": task_id,
@@ -1133,12 +1161,12 @@ record = {
   "message_file": message_file,
   "prompt_file": prompt_file,
   "context_file": context_file,
-  "event_files": json.loads('''$event_files_json'''),
-  "stderr_files": json.loads('''$stderr_files_json'''),
-  "message_files": json.loads('''$message_files_json'''),
-  "prompt_files": json.loads('''$prompt_files_json'''),
-  "context_files": json.loads('''$context_files_json'''),
-  "files_changed": json.loads('''$files_changed_json''')
+  "event_files": load_json_arg(event_files_json, []),
+  "stderr_files": load_json_arg(stderr_files_json, []),
+  "message_files": load_json_arg(message_files_json, []),
+  "prompt_files": load_json_arg(prompt_files_json, []),
+  "context_files": load_json_arg(context_files_json, []),
+  "files_changed": load_json_arg(files_changed_json, [])
 }
 print(json.dumps(record))
 PY

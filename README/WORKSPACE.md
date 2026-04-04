@@ -13,12 +13,16 @@ This workspace exists as the control repo to operate and audit the SocialPredict
 ```text
 .
 ├── README.md                         # control-repo navigation entrypoint
-├── .codex/                           # control-repo skills/hooks/config assets
+├── .codex/                           # control-repo config, agents, and skills
+│   ├── config.toml
+│   ├── agents/
 │   └── skills/
 ├── README/                           # control-repo operator docs
 │   ├── WORKSPACE.md
 │   ├── VERIFICATION.md
-│   ├── AGENTS.md
+│   ├── AGENTS-GUIDE.md
+│   ├── CODEX-CONFIG.md
+│   ├── CODEX-REPORTS.md
 │   └── SKILLS-HOOKS.md
 └── (sibling) ../socialpredict/       # target repo checkout for PR #581 code work
 ```
