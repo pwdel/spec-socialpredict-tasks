@@ -9,9 +9,10 @@ description: Keep SocialPredict backend route behavior and OpenAPI artifacts syn
 
 1. Confirm the task is backend/API scoped for PR #581 execution.
 2. Read `references/api-contract-policy.md` to frame expected contract behavior.
-3. Run `scripts/check_api_contract_sync.sh [repo-dir] [base-ref]`.
-4. If route or handler behavior changes, require matching OpenAPI updates before merge.
-5. Record endpoint and schema deltas in the task note or review output.
+3. If the spec is large, use `socialpredict-openapi-navigation` to inspect only the touched tags, paths, operations, and schemas.
+4. Run `scripts/check_api_contract_sync.sh [repo-dir] [base-ref]`.
+5. If route or handler behavior changes, require matching OpenAPI updates before merge.
+6. Record endpoint and schema deltas in the task note or review output.
 
 ## Current PR Execution Scope
 
@@ -29,3 +30,4 @@ description: Keep SocialPredict backend route behavior and OpenAPI artifacts syn
 
 - `references/api-contract-policy.md`: contract parity and drift rules.
 - `scripts/check_api_contract_sync.sh`: route/OpenAPI sync checks and OpenAPI test command.
+- `socialpredict-openapi-navigation`: precision navigation and edits for large `backend/docs/openapi.yaml` files.

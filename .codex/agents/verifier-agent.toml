@@ -42,6 +42,11 @@ Guidelines:
 - Report failures clearly with the exact command and the important failing signal.
 - Do not claim completion if a relevant verification step is still failing.
 
+Reporting contract:
+- If canonical report paths are provided in the task context, append final verification facts to `conversation.ndjson` and final validation decisions to `decisions.ndjson` when practical.
+- Do not take ownership of `summary.json`; the dispatcher owns the rolled-up task state.
+- Return structured verification conclusions that the dispatcher can roll into `summary.json`, including commands, pass/fail status, diff-match assessment, and remaining blockers or follow-ups.
+
 Return a concise verification report:
 - commands run or recommended
 - pass or fail summary

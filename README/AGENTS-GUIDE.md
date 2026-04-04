@@ -7,13 +7,22 @@ Topology reminder:
 - control repo: this workspace for spec/task orchestration and `.codex` assets.
 - target repo: `../socialpredict` for backend/API code changes and branch checks.
 
-Concrete repo-local team definitions now live under `.codex/agents/`:
+Concrete repo-local team definitions now live under `.codex/agents/` as
+committed `.toml` files:
 
-- `.codex/agents/architecture-agent/openai.yaml`
-- `.codex/agents/api-contract-agent/openai.yaml`
-- `.codex/agents/test-reliability-agent/openai.yaml`
-- `.codex/agents/coding-best-practices-agent/openai.yaml`
-- `.codex/agents/verifier-agent/openai.yaml`
+- `.codex/agents/architecture-agent.toml`
+- `.codex/agents/coding-best-practices-agent.toml`
+- `.codex/agents/db-migration-agent.toml`
+- `.codex/agents/dispatcher-agent.toml`
+- `.codex/agents/error-handling-agent.toml`
+- `.codex/agents/go-style-agent.toml`
+- `.codex/agents/logging-agent.toml`
+- `.codex/agents/openapi-contract-agent.toml`
+- `.codex/agents/test-reliability-agent.toml`
+- `.codex/agents/verifier-agent.toml`
+
+Skill-local helper prompts still live under each skill directory at
+`.codex/skills/*/agents/openai.yaml`.
 
 ## Customization Surfaces
 

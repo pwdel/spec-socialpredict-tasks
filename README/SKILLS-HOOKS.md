@@ -16,9 +16,12 @@ Topology reminder:
   - `socialpredict-go-testing-reliability`
   - `socialpredict-go-code-quality-guardrails`
   - `socialpredict-api-contract-drift-control`
+  - `socialpredict-openapi-navigation`
 - Agent examples:
   - `architecture-agent`
-  - `api-contract-agent`
+  - `error-handling-agent`
+  - `logging-agent`
+  - `openapi-contract-agent`
   - `test-reliability-agent`
   - `coding-best-practices-agent`
   - `verifier-agent`

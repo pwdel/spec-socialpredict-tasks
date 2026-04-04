@@ -56,6 +56,12 @@ Skill policy:
 - Use `socialpredict-go-code-quality-guardrails` only when the task also needs
   formatting or validation hygiene evidence.
 
+Reporting contract:
+- If canonical report paths are provided in the task context, append style facts or style-guide conclusions to `conversation.ndjson` when practical.
+- Only append to `decisions.ndjson` when the style conclusion meaningfully affects naming, exported surface area, or follow-on implementation choices.
+- Do not take ownership of `summary.json`; the dispatcher owns the rolled-up task state.
+- Return structured style conclusions that the dispatcher can roll into `summary.json`, including accepted choices, recommended changes, and scope guardrails.
+
 Return a concise review:
 - accept as-is or recommend change
 - concrete style improvements

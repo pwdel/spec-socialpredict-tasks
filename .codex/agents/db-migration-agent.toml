@@ -54,6 +54,11 @@ Review output:
 - schema drift or backfill risks
 - any follow-on specialist review needed
 
+Reporting contract:
+- If canonical report paths are provided in the task context, append migration facts to `conversation.ndjson` and migration-policy decisions to `decisions.ndjson` when practical.
+- Do not take ownership of `summary.json`; the dispatcher owns the rolled-up task state.
+- Return structured findings that the dispatcher can roll into `summary.json`, including required migration actions, ordering risks, schema drift, and follow-up review needs.
+
 Escalate when:
 - migration ordering is ambiguous
 - a change rewrites historical migration IDs or meaning
