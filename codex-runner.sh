@@ -252,6 +252,16 @@ for task in tasks:
         task['last_resumed_at'] = now
         selected = task
         break
+    if status == 'running' and not runner_pid_alive(task.get('runner_pid')):
+        session_id = runner_state.get('session_id')
+        if session_id:
+            runner_state['resume_pending'] = True
+            task['runner_pid'] = os.getpid()
+            task['last_resumed_at'] = now
+            selected = task
+            break
+        task['status'] = 'retry'
+        task.pop('runner_pid', None)
     deps = task.get('depends_on', []) or []
     max_attempts = int(task.get('max_attempts', 3))
     attempts = int(task.get('attempts', 0))
