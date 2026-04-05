@@ -1,0 +1,83 @@
+2026-04-05T01:23:35.372084Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /workspace/socialpredict/backend/internal/domain/bets/errors.go:
+func (e staticBetError) Error() string   { return e.message }
+func (e staticBetError) Message() string { return e.message }
+
+type betErrorFactory interface {
+	New(message string) BetError
+}
+
+type staticBetErrorFactory struct{}
+
+func (staticBetErrorFactory) New(message string) BetError {
+	return staticBetError{message: message}
+}
+
+func newDomainError(message string) error {
+	return staticBetError{message: message}
+}
+
+var (
+	// ErrInvalidOutcome is returned when the bet outcome is not recognised.
+	ErrInvalidOutcome = newDomainError("invalid outcome; expected YES or NO")
+	// ErrInvalidAmount is returned when the bet amount is not positive.
+	ErrInvalidAmount = newDomainError("bet amount must be greater than zero")
+	// ErrMarketClosed is returned when a bet is attempted on a closed or resolved market.
+	ErrMarketClosed = newDomainError("market is closed or resolved")
+	// ErrInsufficientBalance indicates the user would exceed the maximum allowed debt.
+	ErrInsufficientBalance = newDomainError("insufficient balance for requested bet")
+	// ErrNoPosition indicates the user has no position to sell.
+	ErrNoPosition = newDomainError("no position found for the given market and outcome")
+	// ErrInsufficientShares indicates the user cannot sell the requested credits.
+	ErrInsufficientShares = newDomainError("not enough shares to satisfy requested sale")
+)
+
+// ErrDustCapExceeded is returned when a sell transaction would generate dust above the configured cap.
+type ErrDustCapExceeded struct {
+	Cap       int64
+	Requested int64
+	formatter dustCapFormatter
+}
+
+func (e ErrDustCapExceeded) Error() string {
+	return e.resolveFormatter().Format(e.Cap, e.Requested)
+}
+2026-04-05T01:24:12.860427Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /workspace/socialpredict/backend/internal/domain/bets/errors.go:
+type betErrorFactory interface {
+	New(message string) BetError
+}
+
+type staticBetErrorFactory struct{}
+
+func (staticBetErrorFactory) New(message string) BetError {
+	return staticBetError{message: message}
+}
+
+func newDomainError(message string) error {
+	return staticBetErrorFactory{}.New(message)
+}
+2026-04-05T01:24:44.464502Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /workspace/socialpredict/backend/internal/domain/bets/models.go:
+type betModelBuilder interface {
+	Build() *models.Bet
+}
+
+type betResultAssembler[T any] interface {
+	Assemble() *T
+}
+
+type modelBetBuilder struct {
+	username string
+	marketID uint
+	amount   int64
+	outcome  string
+	placedAt time.Time
+}
+
+func (b modelBetBuilder) Build() *models.Bet {
+	return &models.Bet{
+		Username: b.username,
+		MarketID: b.marketID,
+		Amount:   b.amount,
+		Outcome:  b.outcome,
+		PlacedAt: b.placedAt,
+	}
+}

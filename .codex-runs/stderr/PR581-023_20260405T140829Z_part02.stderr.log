@@ -1,0 +1,6 @@
+2026-04-05T14:09:10.970097Z ERROR codex_core::tools::router: error=resources/list failed: unknown MCP server 'agents'
+2026-04-05T14:17:57.910660Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /workspace/socialpredict/backend/internal/domain/analytics/models.go:
+package analytics
+
+// FinancialSnapshot captures a user's financial aggregates.
+type FinancialSnapshot struct {

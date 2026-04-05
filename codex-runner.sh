@@ -35,6 +35,12 @@ Options:
   --once                 Run at most one ready task, then exit
   --codex-bin PATH       Codex executable. Default: codex
   --dispatcher NAME      Custom dispatcher agent name. Default: dispatcher_agent
+  --final-report-target PATH
+                         Path (relative or absolute) to the target repo used for the final status report. Default: ../socialpredict
+  --final-report-path PATH
+                         Path (relative to the target repo) where the final status report is written. Default: .codex-reports/runner-final-status.json
+  --final-report-message TEXT
+                         Message stored in the final summary when writing the final status report. Default: "All queued tasks completed."
   --help                 Show this help
 
 Task file:
@@ -82,6 +88,9 @@ VERBOSE_TERMINAL_OUTPUT="${VERBOSE_TERMINAL_OUTPUT:-1}"
 RUN_ONCE="0"
 CODEX_BIN="${CODEX_BIN:-codex}"
 DISPATCHER_AGENT="${DISPATCHER_AGENT:-dispatcher_agent}"
+FINAL_REPORT_TARGET_RELATIVE="${FINAL_REPORT_TARGET_RELATIVE:-../socialpredict}"
+FINAL_REPORT_PATH="${FINAL_REPORT_PATH:-.codex-reports/runner-final-status.json}"
+FINAL_REPORT_MESSAGE="${FINAL_REPORT_MESSAGE:-All queued tasks completed.}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -131,6 +140,18 @@ while [[ $# -gt 0 ]]; do
       ;;
     --dispatcher)
       DISPATCHER_AGENT="$2"
+      shift 2
+      ;;
+    --final-report-target)
+      FINAL_REPORT_TARGET_RELATIVE="$2"
+      shift 2
+      ;;
+    --final-report-path)
+      FINAL_REPORT_PATH="$2"
+      shift 2
+      ;;
+    --final-report-message)
+      FINAL_REPORT_MESSAGE="$2"
       shift 2
       ;;
     --help|-h)
@@ -396,9 +417,76 @@ for task in data.get('tasks', []):
     runner_state['paused_at'] = now
     break
 
-with open(path, 'w', encoding='utf-8') as f:
+  with open(path, 'w', encoding='utf-8') as f:
     json.dump(data, f, indent=2)
     f.write('\n')
+PY
+}
+
+all_tasks_done() {
+  python3 - "$TASKS_FILE" <<'PY'
+import json, sys
+
+path = sys.argv[1]
+with open(path, encoding='utf-8') as handle:
+    data = json.load(handle)
+tasks = data.get('tasks', [])
+print("1" if all(task.get("status") == "done" for task in tasks) else "0")
+PY
+}
+
+run_final_status_report() {
+  local target_repo="$1"
+  local output_path="$2"
+  local message="$3"
+
+  python3 - "$target_repo" "$REPO_ROOT" "$TASKS_FILE" "$output_path" "$message" "$RUNLOG_FILE" <<'PY'
+import json
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+def utc_now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+target_repo, control_repo, tasks_path, output_path, message, runlog = sys.argv[1:]
+tasks_path = Path(tasks_path)
+tasks_data = json.loads(tasks_path.read_text(encoding="utf-8"))
+tasks = tasks_data.get("tasks", [])
+if not all(task.get("status") == "done" for task in tasks):
+    raise SystemExit("Not all tasks are completed. Final report not written.")
+
+resolved_output = Path(output_path)
+if not resolved_output.is_absolute():
+    resolved_output = Path(target_repo) / resolved_output
+resolved_output.parent.mkdir(parents=True, exist_ok=True)
+
+summary = {
+    "status": "completed",
+    "generated_at": utc_now_iso(),
+    "task_count": len(tasks),
+    "tasks": [
+        {
+            "id": task.get("id"),
+            "status": task.get("status"),
+            "attempts": task.get("attempts"),
+            "started_at": task.get("started_at"),
+            "finished_at": task.get("finished_at"),
+        }
+        for task in tasks
+    ],
+    "target_repo": target_repo,
+    "control_repo": control_repo or None,
+}
+if message:
+    summary["message"] = message
+if runlog:
+    summary["runlog"] = runlog
+
+resolved_output.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+print(f"Final status report saved to {resolved_output}")
 PY
 }
 
@@ -1093,13 +1181,43 @@ while true; do
   task_json="$(pick_next_task)"
 
   if [[ -z "$task_json" ]]; then
-    state_json=$(python3 - <<'PY'
+    if [[ "$(all_tasks_done)" == "1" ]]; then
+      target_repo_root="$(resolve_target_repo_root "$REPO_ROOT/$FINAL_REPORT_TARGET_RELATIVE")"
+      if [[ "$FINAL_REPORT_PATH" == /* ]]; then
+        final_report_path="$FINAL_REPORT_PATH"
+      else
+        final_report_path="$target_repo_root/$FINAL_REPORT_PATH"
+      fi
+      run_final_status_report "$target_repo_root" "$final_report_path" "$FINAL_REPORT_MESSAGE"
+      state_message="All tasks complete; final report written to $final_report_path."
+      state_json=$(python3 - "$state_message" <<'PY'
 import json
+import sys
 from datetime import datetime, timezone
+
+message = sys.argv[1]
 print(json.dumps({
   "status": "idle",
   "timestamp": datetime.now(timezone.utc).isoformat(),
-  "message": "No ready tasks."
+  "message": message,
+}))
+PY
+)
+      write_state "$state_json"
+      printf '[codex-runner] %s\n' "$state_message" >&2
+      exit 0
+    fi
+    state_message="No ready tasks."
+    state_json=$(python3 - "$state_message" <<'PY'
+import json
+import sys
+from datetime import datetime, timezone
+
+message = sys.argv[1]
+print(json.dumps({
+  "status": "idle",
+  "timestamp": datetime.now(timezone.utc).isoformat(),
+  "message": message,
 }))
 PY
 )
