@@ -1,0 +1,10 @@
+task_id: `PR581-017`  
+status: `completed`
+
+files_changed: `internal/domain/users/errors.go`, `internal/domain/users/models.go`, `internal/domain/users/service.go`, `internal/domain/users/service_profile_test.go`, `internal/domain/users/service_transactions_test.go`, `internal/domain/users/transactions.go`
+
+checks_run: `gofmt -w` on the touched users files; `GOCACHE=/workspace/socialpredict/backend/.gocache GOMODCACHE=/workspace/socialpredict/backend/.gomodcache go test ./internal/domain/users`; `run_boundary_checks.sh /workspace/socialpredict`; `GOCACHE=/workspace/socialpredict/backend/.gocache GOMODCACHE=/workspace/socialpredict/backend/.gomodcache run_quality_guardrails.sh /workspace/socialpredict HEAD`; `GOCACHE=/workspace/socialpredict/backend/.gocache GOMODCACHE=/workspace/socialpredict/backend/.gomodcache run_reliability_suite.sh /workspace/socialpredict ./internal/domain/users`
+
+follow_ups: `none`
+
+Changed the scoped users-domain code toward OCP by moving repeated branching into reusable model helpers, transaction adjustment maps, profile field specs, password validator slices, and extensible test doubles. Assumption: scope remained strictly limited to the unchecked users-domain files and functions listed in the task metadata.

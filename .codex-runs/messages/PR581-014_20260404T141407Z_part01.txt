@@ -1,0 +1,24 @@
+task_id: `PR581-014`  
+status: `completed`
+
+`dispatcher_agent` was spawned first, coordinated the task, chose not to branch further for implementation, waited for verification, and its canonical report remains at [/workspace/socialpredict/.codex-reports/tasks/PR581-014/summary.json](/workspace/socialpredict/.codex-reports/tasks/PR581-014/summary.json).
+
+files_changed:
+- [errors.go](/workspace/socialpredict/backend/internal/domain/bets/errors.go)
+- [models.go](/workspace/socialpredict/backend/internal/domain/bets/models.go)
+- [bet_place.go](/workspace/socialpredict/backend/internal/domain/bets/bet_place.go)
+- [bet_sell.go](/workspace/socialpredict/backend/internal/domain/bets/bet_sell.go)
+- [service_helpers_test.go](/workspace/socialpredict/backend/internal/domain/bets/service_helpers_test.go)
+- [service_test.go](/workspace/socialpredict/backend/internal/domain/bets/service_test.go)
+
+The bets-domain OCP cleanup now routes place/sell construction through reusable model helpers, centralizes dust-cap error formatting/creation, and converts the scoped test doubles/fixtures into function-driven helpers so new cases extend through options instead of more concrete rewrites. Assumption: the existing in-progress `bet_place.go` and `bet_sell.go` changes in the worktree were the intended narrow supporting integrations for this task, so I validated and completed them in place.
+
+checks_run:
+- `env GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/gomod go test ./internal/domain/bets`
+- `gofmt -l /workspace/socialpredict/backend/internal/domain/bets/errors.go /workspace/socialpredict/backend/internal/domain/bets/models.go /workspace/socialpredict/backend/internal/domain/bets/bet_place.go /workspace/socialpredict/backend/internal/domain/bets/bet_sell.go /workspace/socialpredict/backend/internal/domain/bets/service_helpers_test.go /workspace/socialpredict/backend/internal/domain/bets/service_test.go`
+- `bash /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`
+- `env BASE_REF=fix/checkpoint20251020-80 GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/gomod /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-code-quality-guardrails/scripts/run_quality_guardrails.sh /workspace/socialpredict fix/checkpoint20251020-80`
+- `env GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/gomod RUNS=2 ENABLE_RACE=0 /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-testing-reliability/scripts/run_reliability_suite.sh /workspace/socialpredict ./internal/domain/bets`
+
+follow_ups:
+- none

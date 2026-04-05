@@ -1,0 +1,8 @@
+2026-04-04T15:00:08.969521Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /workspace/socialpredict/backend/internal/domain/analytics/service.go:
+func WithDebtCalculator(c DebtCalculator) ServiceOption {
+	return func(s *Service) {
+		if c != nil {
+			s.debtCalculator = c
+		}
+	}
+}

@@ -1,0 +1,24 @@
+task_id: `PR581-020`  
+status: `completed`
+
+Aligned the scoped `markets` LSP seams by simplifying top-level domain definitions, preserving default service behavior under `nil` option substitution, and hardening scoped test doubles so zero-value substitutes fail predictably instead of changing contracts. The main code changes are in [errors.go](/workspace/socialpredict/backend/internal/domain/markets/errors.go), [models.go](/workspace/socialpredict/backend/internal/domain/markets/models.go), and [service.go](/workspace/socialpredict/backend/internal/domain/markets/service.go). The scoped tests were updated in [service_details_test.go](/workspace/socialpredict/backend/internal/domain/markets/service_details_test.go), [service_listbystatus_test.go](/workspace/socialpredict/backend/internal/domain/markets/service_listbystatus_test.go), [service_marketbets_test.go](/workspace/socialpredict/backend/internal/domain/markets/service_marketbets_test.go), [service_probability_test.go](/workspace/socialpredict/backend/internal/domain/markets/service_probability_test.go), [service_resolve_test.go](/workspace/socialpredict/backend/internal/domain/markets/service_resolve_test.go), and [service_search_test.go](/workspace/socialpredict/backend/internal/domain/markets/service_search_test.go).
+
+Assumption: I applied the same LSP interpretation already used in the adjacent `bets` work, namely that substitutable collaborators must preserve the default contract when `nil` or zero-valued rather than introducing special-case behavior.
+
+checks_run:
+- `bash /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`
+- `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go test ./internal/domain/markets/...`
+
+files_changed:
+- `/workspace/socialpredict/backend/internal/domain/markets/errors.go`
+- `/workspace/socialpredict/backend/internal/domain/markets/models.go`
+- `/workspace/socialpredict/backend/internal/domain/markets/service.go`
+- `/workspace/socialpredict/backend/internal/domain/markets/service_details_test.go`
+- `/workspace/socialpredict/backend/internal/domain/markets/service_listbystatus_test.go`
+- `/workspace/socialpredict/backend/internal/domain/markets/service_marketbets_test.go`
+- `/workspace/socialpredict/backend/internal/domain/markets/service_probability_test.go`
+- `/workspace/socialpredict/backend/internal/domain/markets/service_resolve_test.go`
+- `/workspace/socialpredict/backend/internal/domain/markets/service_search_test.go`
+
+follow_ups:
+- `none`

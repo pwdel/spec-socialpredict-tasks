@@ -1,0 +1,9 @@
+Refactored the markets HTTP boundaries so the public handler functions stay thin around the service layer, while keeping DTO usage and no-direct-DB behavior intact. The main cleanup is in [searchmarkets.go](/workspace/socialpredict/backend/handlers/markets/searchmarkets.go), [listmarkets.go](/workspace/socialpredict/backend/handlers/markets/listmarkets.go), with shared request/JSON helpers in [http_helpers.go](/workspace/socialpredict/backend/handlers/markets/http_helpers.go) and focused coverage in [listmarkets_handler_test.go](/workspace/socialpredict/backend/handlers/markets/listmarkets_handler_test.go). I also corrected the canonical report at [/workspace/socialpredict/.codex-reports/tasks/PR581-008/summary.json](/workspace/socialpredict/.codex-reports/tasks/PR581-008/summary.json).
+
+Assumption: `handler.go` still depends on `listMarketsParams.status/limit/offset`, so those compatibility fields were kept instead of widening this task into the legacy handler path.
+
+- `task_id`: `PR581-008`
+- `status`: `completed`
+- `files_changed`: `/workspace/socialpredict/backend/handlers/markets/searchmarkets.go`, `/workspace/socialpredict/backend/handlers/markets/listmarkets.go`, `/workspace/socialpredict/backend/handlers/markets/http_helpers.go`, `/workspace/socialpredict/backend/handlers/markets/listmarkets_handler_test.go`
+- `checks_run`: `gofmt -w handlers/markets/searchmarkets.go handlers/markets/listmarkets.go handlers/markets/listmarkets_handler_test.go`; `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod GOPATH=/workspace/socialpredict/.cache/go go test ./handlers/markets -run "TestSearchMarketsHandler|TestListMarketsHandlerFactory"`; `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod GOPATH=/workspace/socialpredict/.cache/go go test ./handlers/markets`
+- `follow_ups`: none

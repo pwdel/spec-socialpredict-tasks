@@ -1,0 +1,12 @@
+2026-04-04T13:34:20.495212Z ERROR codex_core::tools::router: error=apply_patch verification failed: invalid hunk at line 305, Unexpected line found in update hunk: '*** Update File: /workspace/socialpredict/backend/internal/domain/bets/service_test.go'. Every line should start with ' ' (context line), '+' (added line), or '-' (removed line)
+2026-04-04T13:34:34.453487Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /workspace/socialpredict/backend/internal/domain/bets/models.go:
+package bets
+
+import "time"
+2026-04-04T13:35:16.243084Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /workspace/socialpredict/backend/internal/domain/bets/bet_sell.go:
+func validateDustCap(dust int64, cap int64) error {
+	if cap > 0 && dust > cap {
+		return ErrDustCapExceeded{Cap: cap, Requested: dust}
+	}
+	return nil
+}

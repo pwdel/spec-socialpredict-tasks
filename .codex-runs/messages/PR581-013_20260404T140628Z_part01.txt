@@ -1,0 +1,23 @@
+task_id: `PR581-013`  
+status: `completed`
+
+`files_changed`:
+- [models.go](/workspace/socialpredict/backend/internal/domain/analytics/models.go)
+- [system_metrics.go](/workspace/socialpredict/backend/internal/domain/analytics/system_metrics.go)
+- [financialsnapshot_test.go](/workspace/socialpredict/backend/internal/domain/analytics/financialsnapshot_test.go)
+- [leaderboard_test.go](/workspace/socialpredict/backend/internal/domain/analytics/leaderboard_test.go)
+- [systemmetrics_test.go](/workspace/socialpredict/backend/internal/domain/analytics/systemmetrics_test.go)
+- [systemmetrics_integration_test.go](/workspace/socialpredict/backend/internal/domain/analytics/systemmetrics_integration_test.go)
+- [summary.json](/workspace/socialpredict/.codex-reports/tasks/PR581-013/summary.json)
+- [decisions.ndjson](/workspace/socialpredict/.codex-reports/tasks/PR581-013/decisions.ndjson)
+
+The scoped analytics OCP update replaced interface-backed metrics with typed `Int64Metric` and `BoolMetric` DTOs plus constructors, updated the system metrics assembler to emit those typed models, and refactored the listed analytics tests to use reusable service/result helpers so future strategy-option changes stay localized. Assumption: keeping the existing JSON field shape while removing runtime type assertions satisfies the OCP checklist intent for these files.
+
+`checks_run`:
+- `gofmt -w /workspace/socialpredict/backend/internal/domain/analytics/models.go /workspace/socialpredict/backend/internal/domain/analytics/system_metrics.go /workspace/socialpredict/backend/internal/domain/analytics/financialsnapshot_test.go /workspace/socialpredict/backend/internal/domain/analytics/leaderboard_test.go /workspace/socialpredict/backend/internal/domain/analytics/systemmetrics_test.go /workspace/socialpredict/backend/internal/domain/analytics/systemmetrics_integration_test.go`
+- `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go test ./internal/domain/analytics -run 'TestComputeUserFinancials_NewUser_NoPositions|TestComputeUserFinancials_NegativeBalance|TestComputeUserFinancials_WithActivePositions|TestAggregateLeaderboardUserStats|TestFindEarliestBetsPerUser|TestRankLeaderboardEntries_TieBreaksByEarliestBet|TestComputeGlobalLeaderboard_OrdersByProfit|TestComputeSystemMetrics_EmptyDatabase|TestComputeSystemMetrics_WithData|TestComputeSystemMetrics_BalancedAfterFinalLockedBet|TestResolveMarket_DistributesAllBetVolume'`
+- `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go vet ./...`
+- `/workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`
+- `BASE_REF=fix/checkpoint20251020-80 GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-code-quality-guardrails/scripts/run_quality_guardrails.sh /workspace/socialpredict fix/checkpoint20251020-80`
+
+`follow_ups`: none.

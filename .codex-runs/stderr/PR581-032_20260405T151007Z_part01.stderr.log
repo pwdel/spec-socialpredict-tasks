@@ -1,0 +1,16 @@
+2026-04-05T15:13:15.666158Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /workspace/socialpredict/backend/internal/domain/users/service.go:
+// NewService creates a new users service
+func NewService(repo Repository, analyticsSvc AnalyticsService, sanitizer Sanitizer) *Service {
+	deps := serviceDependenciesFromRepository(repo)
+	return &Service{
+		reader:      deps.reader,
+		balanceRepo: deps.balanceRepo,
+		writer:      deps.writer,
+		lister:      deps.lister,
+		portfolio:   deps.portfolio,
+		markets:     deps.markets,
+		credentials: deps.credentials,
+		analytics:   analyticsSvc,
+		sanitizer:   sanitizer,
+	}
+}

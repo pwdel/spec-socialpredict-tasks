@@ -125,14 +125,14 @@
     {
       "id": "PR581-006",
       "title": "Align unchecked analytics files with SRP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the SRP checklist only. Work only in the unchecked analytics files and exact symbols defined here: internal/domain/analytics/models.go (FinancialSnapshot, FinancialSnapshotRequest, MetricWithExplanation, MoneyCreated, MoneyUtilized, Verification, SystemMetrics); internal/domain/analytics/repository.go (GormRepository, RepositoryOption, WithRepositoryPositionCalculator, NewGormRepository, WithContext, ListUsers, ListMarkets, ListBetsForMarket, ListBetsOrdered, UserMarketPositions, listUserBets, collectMarketIDs, listMarketsByIDs, buildMarketSnapshots, listBetsByMarketIDs, groupBetsByMarket, ensurePositionCalculator, calculateUserPositions); internal/domain/analytics/systemmetrics_integration_test.go (TestComputeSystemMetrics_BalancedAfterFinalLockedBet, TestResolveMarket_DistributesAllBetVolume); and internal/domain/analytics/systemmetrics_test.go (TestComputeSystemMetrics_EmptyDatabase, TestComputeSystemMetrics_WithData). Update every listed unchecked symbol to align with the Single Responsibility Principle while preserving the existing analytics/service.go boundary around ComputeSystemMetrics and ComputeGlobalLeaderboard.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-001",
         "PR581-005"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -142,19 +142,33 @@
         "The file and symbol inventory in the prompt is the execution scope; the PR comments are provenance only and should not be needed to discover work.",
         "Keep analytics/service.go as the established boundary owner for ComputeSystemMetrics and ComputeGlobalLeaderboard; this task should improve surrounding models, repository behavior, and test coverage without re-monolithizing that service.",
         "Every listed unchecked symbol should be reviewed and updated for SRP alignment before this task is considered done."
-      ]
+      ],
+      "started_at": "2026-04-04T12:56:17.307395+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d5890-ccc5-7b90-9591-6e20e1435538",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-006_20260404T125617Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-006_20260404T125617Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-006_20260404T125617Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-006_20260404T125617Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-006_20260404T125617Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-04T13:01:45.960919+00:00",
+      "last_exit_code": 0,
+      "last_summary": "`task_id: PR581-006`  \n`status: completed`\n\nScoped SRP cleanup is in place under the analytics-only boundary, without moving `ComputeSystemMetrics` or `ComputeGlobalLeaderboard` out of `analytics/service.go`. The main changes were typed metric accessors in [models.go](/workspace/socialpredict/backend/internal/domain/analytics/models.go), repository helper cleanup and DB/context responsibility tightening in [repository.go](/workspace/socialpredict/backend/internal/domain/analytics/repository.go), and test updates in [systemmetrics_test.go](/workspace/socialpredict/backend/internal/domain/analytics/systemmetrics_test.go) and [systemmetrics_integration_test.go](/workspace/socialpredict/backend/internal/domain/analytics/systemmetrics_integration_test.go) so assertions go through the model-layer helpers instead of ad hoc type assertions.\n\n`files_changed:`\n- `backend/internal/domain/analytics/models.go`\n- `backend/internal/domain/analytics/repository.go`\n- `backend/internal/domain/analytics/systemmetrics_test.go`\n- `backend/internal/domain/analytics/systemmetrics_integration_test.go`\n\n`checks_run:`\n- `gofmt -w backend/internal/domain/analytics/{models.go,repository.go,systemmetrics_test.go,systemmetrics_integration_test.go}`\n- `./scripts/run_boundary_checks.sh /workspace/socialpredict`\n- `GOPATH=/workspace/.gopath GOCACHE=/workspace/.gocache GOMODCACHE=/workspace/.gomodcache go vet ./internal/domain/analytics`\n- `GOPATH=/workspace/.gopath GOCACHE=/workspace/.gocache GOMODCACHE=/workspace/.gomodcache go test -count=1 ./internal/domain/analytics` twice\n\n`follow_ups:`\n- none\n\nAssumption: workspace-local Go cache paths were used because `/home/agent/go` was not writable."
     },
     {
       "id": "PR581-007",
       "title": "Align unchecked markets domain files with SRP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the SRP checklist only. Work only in the unchecked markets domain files and exact symbols defined here: internal/domain/markets/errors.go (domain error vars); internal/domain/markets/models.go (Market, MarketCreateRequest, UserPosition, MarketPositions, Bet, PayoutPosition, PublicMarket); internal/domain/markets/service_details_test.go (TestServiceGetMarketDetailsCalculatesMetrics, TestServiceGetMarketDetails_InvalidAndMissing); internal/domain/markets/service_marketbets_test.go (TestGetMarketBets_ReturnsProbabilities, TestGetMarketBets_EmptyWhenNoBets, TestGetMarketBets_ValidatesInputAndMarket, TestGetMarketPositions_ReturnsRepositoryData, TestGetMarketPositions_ValidatesInputAndMarket); internal/domain/markets/service_probability_test.go (TestProjectProbability_ComputesProjection, TestProjectProbability_InvalidOutcome, marketsToModel, modelsBet, absDiff); internal/domain/markets/service_resolve_test.go (TestResolveMarketRefundsOnNA, TestResolveMarketPaysWinners, TestResolveMarketRejectsUnauthorized); and internal/domain/markets/service_search_test.go (seedSearchMarkets, TestServiceSearchMarketsFiltersByStatus, TestServiceSearchMarketsInvalidInput). Update every listed unchecked symbol to align with the Single Responsibility Principle while keeping the markets service interface stable and avoiding direct handler or repository coupling.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-001",
         "PR581-002"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -164,19 +178,33 @@
         "The file and symbol inventory in the prompt is the execution scope; the PR comments are provenance only.",
         "markets/service.go remains the established boundary owner for SearchMarkets, ResolveMarket, and related orchestration; this task is about finishing the remaining unchecked models, errors, and service tests around that stable interface.",
         "Every listed unchecked symbol should be reviewed and updated for SRP alignment before this task is considered done."
-      ]
+      ],
+      "started_at": "2026-04-04T13:14:09.813929+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d58a1-2b2e-7963-aa06-5b7f426b57ee",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-007_20260404T131409Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-007_20260404T131409Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-007_20260404T131409Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-007_20260404T131409Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-007_20260404T131409Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-04T13:21:03.461701+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-007`  \nstatus: `completed`\n\nChanged the remaining scoped markets-domain files for SRP without changing the service interface. In [errors.go](/workspace/socialpredict/backend/internal/domain/markets/errors.go) I added semantic error helpers around the existing sentinel vars. In [models.go](/workspace/socialpredict/backend/internal/domain/markets/models.go) I added small model-focused helpers such as market ownership/state checks, position normalization, and payout classification. In the listed service tests, I split fixture setup, conversion, and assertion responsibilities into narrower helpers and updated the exact unchecked tests/helpers in [service_details_test.go](/workspace/socialpredict/backend/internal/domain/markets/service_details_test.go), [service_marketbets_test.go](/workspace/socialpredict/backend/internal/domain/markets/service_marketbets_test.go), [service_probability_test.go](/workspace/socialpredict/backend/internal/domain/markets/service_probability_test.go), [service_resolve_test.go](/workspace/socialpredict/backend/internal/domain/markets/service_resolve_test.go), and [service_search_test.go](/workspace/socialpredict/backend/internal/domain/markets/service_search_test.go).\n\nfiles_changed:\n- `/workspace/socialpredict/backend/internal/domain/markets/errors.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/models.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/service_details_test.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/service_marketbets_test.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/service_probability_test.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/service_resolve_test.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/service_search_test.go`\n- `/workspace/socialpredict/.codex-reports/tasks/PR581-007/summary.json`\n- `/workspace/socialpredict/.codex-reports/tasks/PR581-007/conversation.ndjson`\n- `/workspace/socialpredict/.codex-reports/tasks/PR581-007/decisions.ndjson`\n\nchecks_run:\n- `gofmt -w` on touched files\n- `gofmt -l` on touched files\n- `GOCACHE=/workspace/.gocache GOMODCACHE=/workspace/.gomodcache go test ./internal/domain/markets/...`\n- `GOCACHE=/workspace/.gocache GOMODCACHE=/workspace/.gomodcache go vet ./internal/domain/markets/...`\n- `bash /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`\n\nfollow_ups:\n- `run_quality_guardrails.sh /workspace/socialpredict HEAD` could not complete as-is because this environment cannot write the default Go module cache under `/home/agent/go`; I substituted targeted `go vet` with local cache paths and recorded that in the task report."
     },
     {
       "id": "PR581-008",
       "title": "Reduce remaining complexity in markets HTTP handlers",
-      "status": "pending",
+      "status": "done",
       "prompt": "Refactor the remaining high-complexity markets handlers without undoing the service-backed architecture. Work explicitly in handlers/markets/searchmarkets.go (SearchMarketsHandler, parseSearchRequest, extractQuery, sanitizeQuery, parseLimit, parseOffset, buildSearchResponse) and handlers/markets/listmarkets.go (ListMarketsHandlerFactory, parseListMarketsParams, parseListLimit, parseListOffset, fetchMarkets, writeListMarketsError). Extract request parsing, pagination and status parsing, sanitization, DTO mapping, and response writing helpers as needed so those exact functions remain thin HTTP boundaries around the domain service.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-002",
         "PR581-007"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -185,18 +213,32 @@
         "The file and function inventory in the prompt is the execution scope; no comment archaeology should be required.",
         "The PR body marks these handlers as migrated and service-backed already; this task is follow-up cleanup to reduce complexity and coupling, not a rollback of the migration.",
         "Keep AuthService, DTO usage, and the no-direct-DB rule intact while performing the cleanup."
-      ]
+      ],
+      "started_at": "2026-04-04T13:21:03.525373+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d58a7-78d8-74b3-9542-e05cf21cb659",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-008_20260404T132103Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-008_20260404T132103Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-008_20260404T132103Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-008_20260404T132103Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-008_20260404T132103Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-04T13:28:12.340922+00:00",
+      "last_exit_code": 0,
+      "last_summary": "Refactored the markets HTTP boundaries so the public handler functions stay thin around the service layer, while keeping DTO usage and no-direct-DB behavior intact. The main cleanup is in [searchmarkets.go](/workspace/socialpredict/backend/handlers/markets/searchmarkets.go), [listmarkets.go](/workspace/socialpredict/backend/handlers/markets/listmarkets.go), with shared request/JSON helpers in [http_helpers.go](/workspace/socialpredict/backend/handlers/markets/http_helpers.go) and focused coverage in [listmarkets_handler_test.go](/workspace/socialpredict/backend/handlers/markets/listmarkets_handler_test.go). I also corrected the canonical report at [/workspace/socialpredict/.codex-reports/tasks/PR581-008/summary.json](/workspace/socialpredict/.codex-reports/tasks/PR581-008/summary.json).\n\nAssumption: `handler.go` still depends on `listMarketsParams.status/limit/offset`, so those compatibility fields were kept instead of widening this task into the legacy handler path.\n\n- `task_id`: `PR581-008`\n- `status`: `completed`\n- `files_changed`: `/workspace/socialpredict/backend/handlers/markets/searchmarkets.go`, `/workspace/socialpredict/backend/handlers/markets/listmarkets.go`, `/workspace/socialpredict/backend/handlers/markets/http_helpers.go`, `/workspace/socialpredict/backend/handlers/markets/listmarkets_handler_test.go`\n- `checks_run`: `gofmt -w handlers/markets/searchmarkets.go handlers/markets/listmarkets.go handlers/markets/listmarkets_handler_test.go`; `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod GOPATH=/workspace/socialpredict/.cache/go go test ./handlers/markets -run \"TestSearchMarketsHandler|TestListMarketsHandlerFactory\"`; `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod GOPATH=/workspace/socialpredict/.cache/go go test ./handlers/markets`\n- `follow_ups`: none"
     },
     {
       "id": "PR581-009",
       "title": "Align unchecked bets files with SRP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the SRP checklist only. Work only in the unchecked bets files and exact symbols defined here: internal/domain/bets/errors.go (domain error vars, ErrDustCapExceeded, ErrDustCapExceeded.Error); internal/domain/bets/models.go (PlaceRequest, PlacedBet, SellRequest, SellResult); internal/domain/bets/service_helpers_test.go (stubMarketService.GetMarket, stubMarketService.GetUserPositionInMarket, gateClock.Now, TestMarketGate_Open, TestFeeCalculator_Calculate, TestBalanceGuard_EnsureSufficient, ledgerRepo.Create, ledgerRepo.UserHasBet, ledgerUsers.GetUser, ledgerUsers.ApplyTransaction, TestBetLedger_ChargeAndRecord, TestBetLedger_ChargeAndRecord_RollsBackOnRepoError, TestBetLedger_CreditSale, TestSaleCalculator_Calculate); and internal/domain/bets/service_test.go (fakeRepo.Create, fakeRepo.UserHasBet, fakeMarkets.GetMarket, fakeMarkets.GetUserPositionInMarket, fakeUsers.GetUser, fakeUsers.ApplyTransaction, fixedClock.Now, TestServicePlace_Succeeds, TestServicePlace_InsufficientBalance, TestServicePlace_InvalidOutcome, TestServicePlace_MarketClosed, TestServiceSell_Succeeds, TestServiceSell_NoPosition, TestServiceSell_DustCapExceeded, TestServiceSell_RequestTooSmall). Update every listed unchecked symbol to align with the Single Responsibility Principle without moving business rules back into handlers.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-004"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -206,18 +248,32 @@
         "The file and symbol inventory in the prompt is the execution scope; the PR comments are provenance only.",
         "internal/domain/bets/service.go is treated as the completed baseline and should remain the owner of place/sell business rules while these surrounding unchecked files and tests are finished.",
         "Preserve the already-completed handler/service split for market bet history, buy, and sell flows."
-      ]
+      ],
+      "started_at": "2026-04-04T13:28:12.407202+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d58ae-044a-7002-83e3-ec34701cb51d",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-009_20260404T132812Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-009_20260404T132812Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-009_20260404T132812Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-009_20260404T132812Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-009_20260404T132812Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-04T13:37:58.492550+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-009`  \nstatus: `completed`\n\nSRP cleanup is in place for the scoped bets-domain slice. Request/result translation now lives on the bets model types, dust-cap error construction/matching is centralized in the bets error definitions, and the helper/service tests use narrower per-method fakes with deterministic timestamps. The only adjacent production edits outside the explicitly listed symbols were the narrow call-site updates in [bet_place.go](/workspace/socialpredict/backend/internal/domain/bets/bet_place.go) and [bet_sell.go](/workspace/socialpredict/backend/internal/domain/bets/bet_sell.go) so `service.go` keeps ownership of place/sell orchestration. The canonical report is updated at `/workspace/socialpredict/.codex-reports/tasks/PR581-009`.\n\nfiles_changed:\n- [errors.go](/workspace/socialpredict/backend/internal/domain/bets/errors.go)\n- [models.go](/workspace/socialpredict/backend/internal/domain/bets/models.go)\n- [bet_place.go](/workspace/socialpredict/backend/internal/domain/bets/bet_place.go)\n- [bet_sell.go](/workspace/socialpredict/backend/internal/domain/bets/bet_sell.go)\n- [service_helpers_test.go](/workspace/socialpredict/backend/internal/domain/bets/service_helpers_test.go)\n- [service_test.go](/workspace/socialpredict/backend/internal/domain/bets/service_test.go)\n\nchecks_run:\n- `env GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/gomod go test ./internal/domain/bets`\n- `env GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/gomod go test ./internal/domain/bets -run 'TestService|TestMarketGate|TestFeeCalculator|TestBalanceGuard|TestBetLedger|TestSaleCalculator'`\n- `bash /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`\n- `git diff --check -- internal/domain/bets/errors.go internal/domain/bets/models.go internal/domain/bets/bet_place.go internal/domain/bets/bet_sell.go internal/domain/bets/service_helpers_test.go internal/domain/bets/service_test.go`\n\nfollow_ups:\n- `none`\n\nAssumption: the narrow `bet_place.go` and `bet_sell.go` call-site edits were required supporting changes for the scoped `models.go` and `errors.go` SRP refactor."
     },
     {
       "id": "PR581-010",
       "title": "Align unchecked math files with SRP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the SRP checklist only. Work only in the unchecked math files and exact symbols defined here: internal/domain/math/market/dust_test.go (TestGetMarketVolumeWithDust, TestCalculateDustStack, TestGetMarketDust, TestCalculateDustForSell_Placeholder, TestCurrencyConservationInvariant); internal/domain/math/market/marketvolume_test.go (TestGetMarketVolume); internal/domain/math/outcomes/dbpm/marketshares_test.go (generateCoursePayouts, TestDivideUpMarketPoolSharesDBPM, TestCalculateCoursePayoutsDBPM, TestCalculateNormalizationFactorsDBPM, TestCalculateScaledPayoutsDBPM, TestCalculateExcess, TestAdjustForPositiveExcess, TestAdjustForNegativeExcess, TestAdjustPayouts, TestAggregateUserPayoutsDBPM, TestNetAggregateMarketPositions, TestSingleCreditYesNoAllocator); internal/domain/math/positions/adjust_valuation.go (UserHolder, ByValBetTimeUsername, ByValBetTimeUsername.Len, ByValBetTimeUsername.Swap, ByValBetTimeUsername.Less, AdjustUserValuationsToMarketVolume, filterWinningValuations, buildUserHolders, adjustValuations); internal/domain/math/positions/adjust_valuation_test.go (TestAdjustUserValuationsToMarketVolume); internal/domain/math/positions/profitability.go (UserProfitability, CalculateMarketLeaderboard, CalculateUserSpend, GetEarliestBetTime, DeterminePositionType); internal/domain/math/positions/profitability_test.go (TestCalculateUserSpend, TestGetEarliestBetTime, TestDeterminePositionType, TestCalculateMarketLeaderboard_EmptyBets); and internal/domain/math/positions/valuation_test.go (makeUserPositions, TestCalculateRoundedUserValuationsFromUserMarketPositions). Update every listed unchecked symbol to align with the Single Responsibility Principle without pushing math back into handlers.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-004"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -227,18 +283,32 @@
         "The file and symbol inventory in the prompt is the execution scope; the PR comments are provenance only.",
         "Checked math implementation files such as dust.go, marketvolume.go, marketshares.go, positionsmath.go, valuation.go, and probabilities/wpam/*.go are excluded unless a listed unchecked symbol requires a narrow supporting change.",
         "Every listed unchecked symbol should be reviewed and updated for SRP alignment before this task is considered done."
-      ]
+      ],
+      "started_at": "2026-04-04T13:37:58.560113+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d58b6-f5f1-7cb0-add7-cade9edfbcca",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-010_20260404T133758Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-010_20260404T133758Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-010_20260404T133758Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-010_20260404T133758Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-010_20260404T133758Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-04T13:47:40.905756+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-010`  \nstatus: `completed`\n\nRefactored the scoped SRP targets in [adjust_valuation.go](/workspace/socialpredict/backend/internal/domain/math/positions/adjust_valuation.go), [profitability.go](/workspace/socialpredict/backend/internal/domain/math/positions/profitability.go), [dust_test.go](/workspace/socialpredict/backend/internal/domain/math/market/dust_test.go), [marketvolume_test.go](/workspace/socialpredict/backend/internal/domain/math/market/marketvolume_test.go), [marketshares_test.go](/workspace/socialpredict/backend/internal/domain/math/outcomes/dbpm/marketshares_test.go), [adjust_valuation_test.go](/workspace/socialpredict/backend/internal/domain/math/positions/adjust_valuation_test.go), [profitability_test.go](/workspace/socialpredict/backend/internal/domain/math/positions/profitability_test.go), and [valuation_test.go](/workspace/socialpredict/backend/internal/domain/math/positions/valuation_test.go). The production changes keep math in the domain layer and split orchestration from ranking/building logic; the test changes extract local helpers, shared assertions, and deterministic timestamps without changing expected behavior.\n\nchecks_run: `gofmt -w` on the touched files; `go test ./internal/domain/math/market ./internal/domain/math/outcomes/dbpm ./internal/domain/math/positions`; `go vet ./internal/domain/math/market ./internal/domain/math/outcomes/dbpm ./internal/domain/math/positions`; `run_boundary_checks.sh /workspace/socialpredict`\n\nfollow_ups: `none`\n\nAssumption: the task scope stayed limited to the listed unchecked symbols/files, so checked math implementation files were left unchanged. The canonical report under `/workspace/socialpredict/.codex-reports/tasks/PR581-010` was updated accordingly."
     },
     {
       "id": "PR581-011",
       "title": "Align unchecked users files with SRP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the SRP checklist only. Work only in the unchecked users files and exact symbols defined here: internal/domain/users/errors.go (domain error vars); internal/domain/users/models.go (User, PublicUser, UserCreateRequest, UserUpdateRequest, UserBet, MarketUserPosition, PortfolioItem, Portfolio, UserMarket, PersonalLinks, Credentials, PrivateProfile); internal/domain/users/service_profile_test.go (newFakeRepository, fakeRepository.GetByUsername, UpdateBalance, Create, Update, Delete, List, ListUserBets, GetMarketQuestion, GetUserPositionInMarket, ComputeUserFinancials, ListUserMarkets, GetCredentials, UpdatePassword, newServiceWithUser, TestServiceUpdateDescription, TestServiceUpdateDisplayName, TestServiceUpdateEmoji, TestServiceUpdatePersonalLinks, TestServiceChangePassword, TestServiceGetPrivateProfile); internal/domain/users/service.go (ServiceInterface, Repository, ListFilters, Sanitizer, AnalyticsService, Service, NewService, ValidateUserExists, ValidateUserBalance, DeductBalance, GetUser, GetPublicUser, CreateUser, UpdateUser, ListUsers, DeleteUser, ApplyTransaction, GetUserCredit, GetUserPortfolio, ListUserMarkets, GetUserFinancials, UpdateDescription, UpdateDisplayName, UpdateEmoji, UpdatePersonalLinks, sanitizePersonalLinks, financialSnapshotToMap, GetPrivateProfile, PasswordHashCost, validatePasswordChangeInputs, ChangePassword); and internal/domain/users/transactions.go (transaction-type constants). Update every listed unchecked symbol to align with the Single Responsibility Principle while avoiding further splitting of small contract files unless there is a concrete behavior or API reason.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-003"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -249,18 +319,32 @@
         "service_transactions_test.go is treated as part of the completed baseline from the supplied summaries unless a listed unchecked symbol change forces a narrow supporting update.",
         "Thread guidance from the follow-up discussion: package-level errors.go and transactions.go are acceptable as focused contract files and should not be split further without a concrete behavior-driven reason.",
         "Every listed unchecked symbol should be reviewed and updated for SRP alignment before this task is considered done."
-      ]
+      ],
+      "started_at": "2026-04-04T13:47:40.967687+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d58bf-d8f6-7ab3-86b5-dfd32918f1ad",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-011_20260404T134741Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-011_20260404T134741Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-011_20260404T134741Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-011_20260404T134741Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-011_20260404T134741Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-04T13:59:25.848922+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-011`  \nstatus: `completed`\n\nI aligned the scoped users-domain SRP hotspots without widening scope. User/public-private projection and link-field mutation now live on the model layer in [models.go](/workspace/socialpredict/backend/internal/domain/users/models.go#L28), transaction balance semantics moved alongside the transaction constants in [transactions.go](/workspace/socialpredict/backend/internal/domain/users/transactions.go#L3), and [service.go](/workspace/socialpredict/backend/internal/domain/users/service.go#L74) now stays focused on orchestration, validation, sanitization, and persistence. I also cleaned the scoped fake repository in [service_profile_test.go](/workspace/socialpredict/backend/internal/domain/users/service_profile_test.go#L24) so it matches the current service contract. [errors.go](/workspace/socialpredict/backend/internal/domain/users/errors.go) was reviewed and left unchanged because it already fits the allowed \u201csmall focused contract file\u201d exception.\n\nfiles_changed: `backend/internal/domain/users/models.go`, `backend/internal/domain/users/service.go`, `backend/internal/domain/users/service_profile_test.go`, `backend/internal/domain/users/transactions.go`\n\nchecks_run: `gofmt -w /workspace/socialpredict/backend/internal/domain/users/{models.go,service.go,service_profile_test.go,transactions.go}`  \nchecks_run: `/workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`  \nchecks_run: `env GOMODCACHE=/workspace/socialpredict/.cache/gomod GOCACHE=/workspace/socialpredict/.cache/gocache go test ./internal/domain/users`  \nchecks_run: `env GOMODCACHE=/workspace/socialpredict/.cache/gomod GOCACHE=/workspace/socialpredict/.cache/gocache /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-code-quality-guardrails/scripts/run_quality_guardrails.sh /workspace/socialpredict`  \nchecks_run: `env GOMODCACHE=/workspace/socialpredict/.cache/gomod GOCACHE=/workspace/socialpredict/.cache/gocache /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-testing-reliability/scripts/run_reliability_suite.sh /workspace/socialpredict ./internal/domain/users`\n\nfollow_ups: `none`"
     },
     {
       "id": "PR581-012",
       "title": "Clean up remaining dependency-boundary hotspots outside the checklists",
-      "status": "pending",
+      "status": "done",
       "prompt": "Work only in the remaining non-checklist hotspot files and exact symbols defined here. Reduce hidden global state and concrete coupling in util/postgres.go (DB, DBConfig, DBFactory, PostgresFactory, LoadDBConfigFromEnv, BuildPostgresDSN, PostgresFactory.Open, InitDB, GetDB, firstNonEmpty); tighten auth login flow boundaries in internal/service/auth/loggin.go (getJWTKey, UserClaims, LoginHandler, decodeLoginRequest, validateAndSanitizeLogin, authenticateUser, findUserByUsername, generateJWT, writeLoginResponse); and narrow sanitizer responsibilities in security/sanitizer.go (NewSanitizer, createBasicPolicy, SanitizeUsername, SanitizeDisplayName, SanitizeDescription, SanitizeMarketTitle, SanitizePersonalLink, validatePersonalLinkLength, parseURLWithScheme, validateAllowedScheme, SanitizeEmoji, SanitizePassword, CheckPasswordLength, CheckPasswordChars, containsSuspiciousPatterns, containsMaliciousDomain, isValidEmoji, isEmojiRune, isASCIIEmojiRune, hasUppercase, hasLowercase, hasDigit). Resolve the remaining boundary and validation issues in those exact symbols without weakening existing protections.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-001"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -269,18 +353,32 @@
         "The file and symbol inventory in the prompt is the execution scope; the PR comments are provenance only.",
         "Keep this task focused on hidden global state, concrete DB coupling, login/auth boundary cleanup, and narrower sanitizer responsibilities rather than broad unrelated refactors.",
         "This task comes from the general review comment and cyclomatic-complexity follow-up rather than from the later OCP/LSP/ISP/DIP markdown tables."
-      ]
+      ],
+      "started_at": "2026-04-04T13:59:25.920771+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d58ca-9ae2-7201-a5b3-84ebf16782ba",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-012_20260404T135926Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-012_20260404T135926Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-012_20260404T135926Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-012_20260404T135926Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-012_20260404T135926Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-04T14:06:27.876433+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-012`  \nstatus: `completed`\n\nChanged the scoped backend hotspots and kept the patch inside the requested seam. In [postgres.go](/workspace/socialpredict/backend/util/postgres.go#L13) I reduced hidden global DB state by guarding `DB` access with a mutex, trimming env-derived config before DSN assembly, and rejecting nil factory results in `InitDB`. In [loggin.go](/workspace/socialpredict/backend/internal/service/auth/loggin.go#L32) I tightened the login boundary by decoding JSON strictly, sanitizing/validating before DB use, passing DB and JWT key explicitly through the scoped helpers, and failing closed when DB or signing key state is missing. In [sanitizer.go](/workspace/socialpredict/backend/security/sanitizer.go#L32) I narrowed sanitizer responsibilities by making URL policy/scheme/host checks more precise, hardening malicious-domain detection for private and loopback targets, rejecting whitespace/control chars in passwords, and narrowing ASCII emoji acceptance so plain text no longer passes. I also added focused coverage in [middleware_test.go](/workspace/socialpredict/backend/internal/service/auth/middleware_test.go#L209) and [sanitizer_test.go](/workspace/socialpredict/backend/security/sanitizer_test.go#L294), and updated the canonical summary at [summary.json](/workspace/socialpredict/.codex-reports/tasks/PR581-012/summary.json).\n\nfiles_changed: `backend/util/postgres.go`, `backend/internal/service/auth/loggin.go`, `backend/security/sanitizer.go`, `backend/internal/service/auth/middleware_test.go`, `backend/security/sanitizer_test.go`, `.codex-reports/tasks/PR581-012/summary.json`\n\nchecks_run:\n- `/workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`\n- `gofmt -l /workspace/socialpredict/backend/util/postgres.go /workspace/socialpredict/backend/internal/service/auth/loggin.go /workspace/socialpredict/backend/security/sanitizer.go /workspace/socialpredict/backend/internal/service/auth/middleware_test.go /workspace/socialpredict/backend/security/sanitizer_test.go`\n- `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go test ./util ./internal/service/auth ./security`\n- `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go vet ./...`\n\nfollow_ups:\n- Assumption: repo-wide callers still rely on `util.GetDB()`. This task reduced hidden state within the scoped seam without doing a broader DI migration."
     },
     {
       "id": "PR581-013",
       "title": "Align unchecked analytics files with OCP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the OCP checklist only. Work only in the unchecked analytics files: internal/domain/analytics/financialsnapshot_test.go (newAnalyticsService, TestComputeUserFinancials_NewUser_NoPositions, TestComputeUserFinancials_NegativeBalance, TestComputeUserFinancials_WithActivePositions); internal/domain/analytics/leaderboard_test.go (TestAggregateLeaderboardUserStats, TestFindEarliestBetsPerUser, TestRankLeaderboardEntries_TieBreaksByEarliestBet, TestComputeGlobalLeaderboard_OrdersByProfit); internal/domain/analytics/models.go (all top-level analytics model definitions); internal/domain/analytics/systemmetrics_integration_test.go (TestComputeSystemMetrics_BalancedAfterFinalLockedBet, TestResolveMarket_DistributesAllBetVolume); and internal/domain/analytics/systemmetrics_test.go (TestComputeSystemMetrics_EmptyDatabase, TestComputeSystemMetrics_WithData). Update every listed unchecked function and file-level definition to align with the Open/Closed Principle. internal/domain/analytics/repository.go and internal/domain/analytics/service.go are already marked done for OCP and are out of scope except for narrow supporting changes.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-006"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -288,18 +386,32 @@
       "notes": [
         "Source of truth for scope is the OCP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-04T14:06:27.942629+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d58d1-0b37-7b33-b32a-61ccc969d84c",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-013_20260404T140628Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-013_20260404T140628Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-013_20260404T140628Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-013_20260404T140628Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-013_20260404T140628Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-04T14:14:07.598548+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-013`  \nstatus: `completed`\n\n`files_changed`:\n- [models.go](/workspace/socialpredict/backend/internal/domain/analytics/models.go)\n- [system_metrics.go](/workspace/socialpredict/backend/internal/domain/analytics/system_metrics.go)\n- [financialsnapshot_test.go](/workspace/socialpredict/backend/internal/domain/analytics/financialsnapshot_test.go)\n- [leaderboard_test.go](/workspace/socialpredict/backend/internal/domain/analytics/leaderboard_test.go)\n- [systemmetrics_test.go](/workspace/socialpredict/backend/internal/domain/analytics/systemmetrics_test.go)\n- [systemmetrics_integration_test.go](/workspace/socialpredict/backend/internal/domain/analytics/systemmetrics_integration_test.go)\n- [summary.json](/workspace/socialpredict/.codex-reports/tasks/PR581-013/summary.json)\n- [decisions.ndjson](/workspace/socialpredict/.codex-reports/tasks/PR581-013/decisions.ndjson)\n\nThe scoped analytics OCP update replaced interface-backed metrics with typed `Int64Metric` and `BoolMetric` DTOs plus constructors, updated the system metrics assembler to emit those typed models, and refactored the listed analytics tests to use reusable service/result helpers so future strategy-option changes stay localized. Assumption: keeping the existing JSON field shape while removing runtime type assertions satisfies the OCP checklist intent for these files.\n\n`checks_run`:\n- `gofmt -w /workspace/socialpredict/backend/internal/domain/analytics/models.go /workspace/socialpredict/backend/internal/domain/analytics/system_metrics.go /workspace/socialpredict/backend/internal/domain/analytics/financialsnapshot_test.go /workspace/socialpredict/backend/internal/domain/analytics/leaderboard_test.go /workspace/socialpredict/backend/internal/domain/analytics/systemmetrics_test.go /workspace/socialpredict/backend/internal/domain/analytics/systemmetrics_integration_test.go`\n- `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go test ./internal/domain/analytics -run 'TestComputeUserFinancials_NewUser_NoPositions|TestComputeUserFinancials_NegativeBalance|TestComputeUserFinancials_WithActivePositions|TestAggregateLeaderboardUserStats|TestFindEarliestBetsPerUser|TestRankLeaderboardEntries_TieBreaksByEarliestBet|TestComputeGlobalLeaderboard_OrdersByProfit|TestComputeSystemMetrics_EmptyDatabase|TestComputeSystemMetrics_WithData|TestComputeSystemMetrics_BalancedAfterFinalLockedBet|TestResolveMarket_DistributesAllBetVolume'`\n- `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go vet ./...`\n- `/workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`\n- `BASE_REF=fix/checkpoint20251020-80 GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-code-quality-guardrails/scripts/run_quality_guardrails.sh /workspace/socialpredict fix/checkpoint20251020-80`\n\n`follow_ups`: none."
     },
     {
       "id": "PR581-014",
       "title": "Align unchecked bets files with OCP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the OCP checklist only. Work only in the unchecked bets files: internal/domain/bets/errors.go (all top-level bet error vars, ErrDustCapExceeded, ErrDustCapExceeded.Error); internal/domain/bets/models.go (all top-level bet model definitions); internal/domain/bets/service_helpers_test.go (stubMarketService.GetMarket, stubMarketService.GetUserPositionInMarket, gateClock.Now, TestMarketGate_Open, TestFeeCalculator_Calculate, TestBalanceGuard_EnsureSufficient, ledgerRepo.Create, ledgerRepo.UserHasBet, ledgerUsers.GetUser, ledgerUsers.ApplyTransaction, TestBetLedger_ChargeAndRecord, TestBetLedger_ChargeAndRecord_RollsBackOnRepoError, TestBetLedger_CreditSale, TestSaleCalculator_Calculate); and internal/domain/bets/service_test.go (fakeRepo.Create, fakeRepo.UserHasBet, fakeMarkets.GetMarket, fakeMarkets.GetUserPositionInMarket, fakeUsers.GetUser, fakeUsers.ApplyTransaction, fixedClock.Now, TestServicePlace_Succeeds, TestServicePlace_InsufficientBalance, TestServicePlace_InvalidOutcome, TestServicePlace_MarketClosed, TestServiceSell_Succeeds, TestServiceSell_NoPosition, TestServiceSell_DustCapExceeded, TestServiceSell_RequestTooSmall). Update every listed unchecked function and file-level definition to align with the Open/Closed Principle. internal/domain/bets/service.go is already marked done for OCP and is out of scope except for narrow supporting changes.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-009"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -307,18 +419,32 @@
       "notes": [
         "Source of truth for scope is the OCP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-04T14:14:07.665210+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d58d8-0ef5-77e1-830b-9714be7394ba",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-014_20260404T141407Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-014_20260404T141407Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-014_20260404T141407Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-014_20260404T141407Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-014_20260404T141407Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-04T14:21:51.237243+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-014`  \nstatus: `completed`\n\n`dispatcher_agent` was spawned first, coordinated the task, chose not to branch further for implementation, waited for verification, and its canonical report remains at [/workspace/socialpredict/.codex-reports/tasks/PR581-014/summary.json](/workspace/socialpredict/.codex-reports/tasks/PR581-014/summary.json).\n\nfiles_changed:\n- [errors.go](/workspace/socialpredict/backend/internal/domain/bets/errors.go)\n- [models.go](/workspace/socialpredict/backend/internal/domain/bets/models.go)\n- [bet_place.go](/workspace/socialpredict/backend/internal/domain/bets/bet_place.go)\n- [bet_sell.go](/workspace/socialpredict/backend/internal/domain/bets/bet_sell.go)\n- [service_helpers_test.go](/workspace/socialpredict/backend/internal/domain/bets/service_helpers_test.go)\n- [service_test.go](/workspace/socialpredict/backend/internal/domain/bets/service_test.go)\n\nThe bets-domain OCP cleanup now routes place/sell construction through reusable model helpers, centralizes dust-cap error formatting/creation, and converts the scoped test doubles/fixtures into function-driven helpers so new cases extend through options instead of more concrete rewrites. Assumption: the existing in-progress `bet_place.go` and `bet_sell.go` changes in the worktree were the intended narrow supporting integrations for this task, so I validated and completed them in place.\n\nchecks_run:\n- `env GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/gomod go test ./internal/domain/bets`\n- `gofmt -l /workspace/socialpredict/backend/internal/domain/bets/errors.go /workspace/socialpredict/backend/internal/domain/bets/models.go /workspace/socialpredict/backend/internal/domain/bets/bet_place.go /workspace/socialpredict/backend/internal/domain/bets/bet_sell.go /workspace/socialpredict/backend/internal/domain/bets/service_helpers_test.go /workspace/socialpredict/backend/internal/domain/bets/service_test.go`\n- `bash /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`\n- `env BASE_REF=fix/checkpoint20251020-80 GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/gomod /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-code-quality-guardrails/scripts/run_quality_guardrails.sh /workspace/socialpredict fix/checkpoint20251020-80`\n- `env GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/gomod RUNS=2 ENABLE_RACE=0 /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-testing-reliability/scripts/run_reliability_suite.sh /workspace/socialpredict ./internal/domain/bets`\n\nfollow_ups:\n- none"
     },
     {
       "id": "PR581-015",
       "title": "Align unchecked markets domain files with OCP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the OCP checklist only. Work only in the unchecked markets files: internal/domain/markets/errors.go (all top-level market error vars); internal/domain/markets/models.go (all top-level market model definitions); internal/domain/markets/service_details_test.go (TestServiceGetMarketDetailsCalculatesMetrics, TestServiceGetMarketDetails_InvalidAndMissing); internal/domain/markets/service_listbystatus_test.go (noopUserService.ValidateUserExists, noopUserService.ValidateUserBalance, noopUserService.DeductBalance, noopUserService.ApplyTransaction, noopUserService.GetPublicUser, fixedClock.Now, setupServiceWithDB, TestServiceListByStatusFiltersMarkets, TestServiceListByStatusInvalidStatus); internal/domain/markets/service_marketbets_test.go (betsRepo.Create, UpdateLabels, List, ListByStatus, Search, Delete, GetByID, ResolveMarket, GetUserPosition, ListMarketPositions, ListBetsForMarket, CalculatePayoutPositions, GetPublicMarket, nopUserService.ValidateUserExists, ValidateUserBalance, DeductBalance, ApplyTransaction, GetPublicUser, betsClock.Now, TestGetMarketBets_ReturnsProbabilities, TestGetMarketBets_EmptyWhenNoBets, TestGetMarketBets_ValidatesInputAndMarket, TestGetMarketPositions_ReturnsRepositoryData, TestGetMarketPositions_ValidatesInputAndMarket); internal/domain/markets/service_probability_test.go (projectionRepo.Create, UpdateLabels, List, ListByStatus, Search, Delete, ResolveMarket, GetUserPosition, ListMarketPositions, ListBetsForMarket, GetByID, CalculatePayoutPositions, GetPublicMarket, projectionClock.Now, TestProjectProbability_ComputesProjection, TestProjectProbability_InvalidOutcome, marketsToModel, modelsBet, absDiff); internal/domain/markets/service_resolve_test.go (resolveRepo.Create, UpdateLabels, List, ListByStatus, Search, Delete, GetByID, ResolveMarket, GetUserPosition, ListMarketPositions, ListBetsForMarket, CalculatePayoutPositions, GetPublicMarket, resolveUserService.ValidateUserExists, ValidateUserBalance, DeductBalance, ApplyTransaction, GetPublicUser, nopClock.Now, TestResolveMarketRefundsOnNA, TestResolveMarketPaysWinners, TestResolveMarketRejectsUnauthorized); and internal/domain/markets/service_search_test.go (seedSearchMarkets, TestServiceSearchMarketsFiltersByStatus, TestServiceSearchMarketsInvalidInput). Update every listed unchecked function and file-level definition to align with the Open/Closed Principle. internal/domain/markets/service.go is already marked done for OCP and is out of scope except for narrow supporting changes.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-007"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -326,18 +452,32 @@
       "notes": [
         "Source of truth for scope is the OCP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-04T14:21:51.311150+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d58df-221d-75a2-bcd4-7c2d6abc59f9",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-015_20260404T142151Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-015_20260404T142151Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-015_20260404T142151Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-015_20260404T142151Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-015_20260404T142151Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-04T14:31:44.418601+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-015`  \nstatus: `completed`\n\nSpawned `dispatcher_agent` first as requested. It did not need additional specialists. I kept `service.go` untouched and limited the work to the listed markets-domain files. The main change was converting the scoped domain error/model helpers and test doubles to extension-oriented patterns: reusable error factories/assemblers in the domain types, and configurable hook-based test stubs instead of `panic(\"unexpected call\")` implementations.\n\nfiles_changed:\n- `/workspace/socialpredict/backend/internal/domain/markets/errors.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/models.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/service_details_test.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/service_listbystatus_test.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/service_marketbets_test.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/service_probability_test.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/service_resolve_test.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/service_search_test.go`\n\nchecks_run:\n- `gofmt -w` on the scoped files\n- `/workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`\n- `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go test ./internal/domain/markets`\n- `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-testing-reliability/scripts/run_reliability_suite.sh /workspace/socialpredict ./internal/domain/markets`\n- `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-code-quality-guardrails/scripts/run_quality_guardrails.sh /workspace/socialpredict`\n\nfollow_ups:\n- none\n\nThe canonical report under `/workspace/socialpredict/.codex-reports/tasks/PR581-015` is updated to `completed`."
     },
     {
       "id": "PR581-016",
       "title": "Align unchecked math files with OCP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the OCP checklist only. Work only in the unchecked math files: internal/domain/math/market/dust_test.go (TestGetMarketVolumeWithDust, TestCalculateDustStack, TestGetMarketDust, TestCalculateDustForSell_Placeholder, TestCurrencyConservationInvariant); internal/domain/math/market/marketvolume_test.go (TestGetMarketVolume); internal/domain/math/outcomes/dbpm/marketshares_test.go (generateCoursePayouts, TestDivideUpMarketPoolSharesDBPM, TestCalculateCoursePayoutsDBPM, TestCalculateNormalizationFactorsDBPM, TestCalculateScaledPayoutsDBPM, TestCalculateExcess, TestAdjustForPositiveExcess, TestAdjustForNegativeExcess, TestAdjustPayouts, TestAggregateUserPayoutsDBPM, TestNetAggregateMarketPositions, TestSingleCreditYesNoAllocator); internal/domain/math/outcomes/dbpm/marketshares.go (DivideUpMarketPoolSharesDBPM, CalculateCoursePayoutsDBPM, CalculateNormalizationFactorsDBPM, CalculateScaledPayoutsDBPM, calculateExcess, adjustForPositiveExcess, adjustForNegativeExcess, AdjustPayouts, AggregateUserPayoutsDBPM, NetAggregateMarketPositions, singleCreditYesNoAllocator); internal/domain/math/positions/adjust_valuation_test.go (TestAdjustUserValuationsToMarketVolume); internal/domain/math/positions/adjust_valuation.go (ByValBetTimeUsername.Len, ByValBetTimeUsername.Swap, ByValBetTimeUsername.Less, AdjustUserValuationsToMarketVolume, filterWinningValuations, buildUserHolders, adjustValuations); internal/domain/math/positions/positionsmath_test.go (TestCalculateMarketPositions_WPAM_DBPM, TestCalculateMarketPositions_IncludesZeroPositionUsers); internal/domain/math/positions/profitability_test.go (TestCalculateUserSpend, TestGetEarliestBetTime, TestDeterminePositionType, TestCalculateMarketLeaderboard_EmptyBets); internal/domain/math/positions/profitability.go (CalculateMarketLeaderboard, CalculateUserSpend, GetEarliestBetTime, DeterminePositionType); internal/domain/math/positions/valuation_test.go (makeUserPositions, TestCalculateRoundedUserValuationsFromUserMarketPositions); internal/domain/math/positions/valuation.go (CalculateRoundedUserValuationsFromUserMarketPositions, getFinalProbabilityFromMarketModel); internal/domain/math/probabilities/wpam/wpam_current_test.go (TestGetCurrentProbability); internal/domain/math/probabilities/wpam/wpam_current.go (GetCurrentProbability); internal/domain/math/probabilities/wpam/wpam_marketprobabilities_test.go (TestCalculateMarketProbabilitiesWPAM); and internal/domain/math/probabilities/wpam/wpam_marketprobabilities.go (StaticSeedProvider.Seeds, NewProbabilityCalculator, ProbabilityCalculator.Seeds, CalculateMarketProbabilitiesWPAM function, ProbabilityCalculator.CalculateMarketProbabilitiesWPAM method, ProjectNewProbabilityWPAM function, ProbabilityCalculator.ProjectNewProbabilityWPAM method). Update every listed unchecked function and file-level definition to align with the Open/Closed Principle. Checked OCP files such as dust.go, marketvolume.go, and positionsmath.go are out of scope except for narrow supporting changes.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-010"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -345,18 +485,32 @@
       "notes": [
         "Source of truth for scope is the OCP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-04T14:31:44.482025+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d58e8-2f7f-7821-99f4-305cfaebb4ec",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-016_20260404T143144Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-016_20260404T143144Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-016_20260404T143144Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-016_20260404T143144Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-016_20260404T143144Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-04T14:39:05.764371+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-016`  \nstatus: `completed`\n\nI aligned the scoped unchecked math files toward OCP by extracting replaceable rule tables and helper seams in the DBPM, WPAM, profitability, valuation, and related math tests, while preserving the existing public entrypoints. I also updated the canonical report at `/workspace/socialpredict/.codex-reports/tasks/PR581-016`.\n\nfiles_changed: `backend/internal/domain/math/market/dust_test.go`, `backend/internal/domain/math/market/marketvolume_test.go`, `backend/internal/domain/math/outcomes/dbpm/marketshares.go`, `backend/internal/domain/math/outcomes/dbpm/marketshares_test.go`, `backend/internal/domain/math/positions/adjust_valuation.go`, `backend/internal/domain/math/positions/adjust_valuation_test.go`, `backend/internal/domain/math/positions/positionsmath_test.go`, `backend/internal/domain/math/positions/profitability.go`, `backend/internal/domain/math/positions/profitability_test.go`, `backend/internal/domain/math/positions/valuation.go`, `backend/internal/domain/math/positions/valuation_test.go`, `backend/internal/domain/math/probabilities/wpam/wpam_current.go`, `backend/internal/domain/math/probabilities/wpam/wpam_current_test.go`, `backend/internal/domain/math/probabilities/wpam/wpam_marketprobabilities.go`, `backend/internal/domain/math/probabilities/wpam/wpam_marketprobabilities_test.go`\n\nchecks_run: `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go test ./internal/domain/math/outcomes/dbpm ./internal/domain/math/positions ./internal/domain/math/probabilities/wpam ./internal/domain/math/market -count=1`; `gofmt -l` on the scoped math files\n\nfollow_ups: dispatcher agent was spawned as requested but did not return a final coordination summary before convergence, so I completed the implementation, validation, report updates, and then shut it down cleanly. No code blocker remains."
     },
     {
       "id": "PR581-017",
       "title": "Align unchecked users files with OCP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the OCP checklist only. Work only in the unchecked users files: internal/domain/users/errors.go (all top-level user error vars); internal/domain/users/models.go (all top-level user model definitions); internal/domain/users/service_profile_test.go (newFakeRepository, fakeRepository.GetByUsername, UpdateBalance, Create, Update, Delete, List, ListUserBets, GetMarketQuestion, GetUserPositionInMarket, ComputeUserFinancials, ListUserMarkets, GetCredentials, UpdatePassword, newServiceWithUser, TestServiceUpdateDescription, TestServiceUpdateDisplayName, TestServiceUpdateEmoji, TestServiceUpdatePersonalLinks, TestServiceChangePassword, TestServiceGetPrivateProfile); internal/domain/users/service_transactions_test.go (fakeAnalyticsService.ComputeUserFinancials, TestServiceApplyTransaction, TestServiceGetUserCredit, TestServiceGetUserPortfolio, TestServiceGetUserFinancials); internal/domain/users/service.go (NewService, ValidateUserExists, ValidateUserBalance, DeductBalance, GetUser, GetPublicUser, CreateUser, UpdateUser, ListUsers, DeleteUser, ApplyTransaction, GetUserCredit, GetUserPortfolio, ListUserMarkets, GetUserFinancials, UpdateDescription, UpdateDisplayName, UpdateEmoji, UpdatePersonalLinks, sanitizePersonalLinks, financialSnapshotToMap, GetPrivateProfile, PasswordHashCost, validatePasswordChangeInputs, ChangePassword); and internal/domain/users/transactions.go (all transaction-type constants). Update every listed unchecked function and file-level definition to align with the Open/Closed Principle.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-011"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -364,18 +518,32 @@
       "notes": [
         "Source of truth for scope is the OCP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-04T14:39:05.834047+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d58ee-eb4d-7b10-b074-583d59004441",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-017_20260404T143905Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-017_20260404T143905Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-017_20260404T143905Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-017_20260404T143905Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-017_20260404T143905Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-04T14:50:59.237534+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-017`  \nstatus: `completed`\n\nfiles_changed: `internal/domain/users/errors.go`, `internal/domain/users/models.go`, `internal/domain/users/service.go`, `internal/domain/users/service_profile_test.go`, `internal/domain/users/service_transactions_test.go`, `internal/domain/users/transactions.go`\n\nchecks_run: `gofmt -w` on the touched users files; `GOCACHE=/workspace/socialpredict/backend/.gocache GOMODCACHE=/workspace/socialpredict/backend/.gomodcache go test ./internal/domain/users`; `run_boundary_checks.sh /workspace/socialpredict`; `GOCACHE=/workspace/socialpredict/backend/.gocache GOMODCACHE=/workspace/socialpredict/backend/.gomodcache run_quality_guardrails.sh /workspace/socialpredict HEAD`; `GOCACHE=/workspace/socialpredict/backend/.gocache GOMODCACHE=/workspace/socialpredict/backend/.gomodcache run_reliability_suite.sh /workspace/socialpredict ./internal/domain/users`\n\nfollow_ups: `none`\n\nChanged the scoped users-domain code toward OCP by moving repeated branching into reusable model helpers, transaction adjustment maps, profile field specs, password validator slices, and extensible test doubles. Assumption: scope remained strictly limited to the unchecked users-domain files and functions listed in the task metadata."
     },
     {
       "id": "PR581-018",
       "title": "Align all analytics files with LSP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the LSP checklist only. None of the listed analytics files are done for LSP. Work in all LSP-listed analytics files: internal/domain/analytics/financialsnapshot_test.go (newAnalyticsService, TestComputeUserFinancials_NewUser_NoPositions, TestComputeUserFinancials_NegativeBalance, TestComputeUserFinancials_WithActivePositions); internal/domain/analytics/leaderboard_test.go (TestAggregateLeaderboardUserStats, TestFindEarliestBetsPerUser, TestRankLeaderboardEntries_TieBreaksByEarliestBet, TestComputeGlobalLeaderboard_OrdersByProfit); internal/domain/analytics/models.go (all top-level analytics model definitions); internal/domain/analytics/repository.go (WithRepositoryPositionCalculator, NewGormRepository, WithContext, ListUsers, ListMarkets, ListBetsForMarket, ListBetsOrdered, UserMarketPositions, listUserBets, collectMarketIDs, listMarketsByIDs, buildMarketSnapshots, listBetsByMarketIDs, groupBetsByMarket, ensurePositionCalculator, calculateUserPositions); internal/domain/analytics/service.go (WithDebtCalculator, WithVolumeCalculator, WithFeeCalculator, WithMetricsAssembler, WithPositionCalculator, NewService, ensureStrategyDefaults); internal/domain/analytics/systemmetrics_integration_test.go (TestComputeSystemMetrics_BalancedAfterFinalLockedBet, TestResolveMarket_DistributesAllBetVolume); and internal/domain/analytics/systemmetrics_test.go (TestComputeSystemMetrics_EmptyDatabase, TestComputeSystemMetrics_WithData). Update every listed function and file-level definition to align with the Liskov Substitution Principle.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-013"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -383,18 +551,32 @@
       "notes": [
         "Source of truth for scope is the LSP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-04T14:50:59.315004+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d58f9-cec0-7510-b47a-267a374dd793",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-018_20260404T145059Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-018_20260404T145059Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-018_20260404T145059Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-018_20260404T145059Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-018_20260404T145059Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-04T15:01:41.026862+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-018`\nstatus: `completed`\n\nChanged the analytics LSP-targeted files to remove untyped metric payloads and normalize collaborator substitution paths. `models.go` now uses typed metric DTOs instead of `interface{}`-backed values, `repository.go` and `service.go` now collapse nil collaborator overrides to default implementations consistently, and the targeted analytics tests were updated to use shared helpers and typed metric access.\n\nfiles_changed: `backend/internal/domain/analytics/financialsnapshot_test.go`, `backend/internal/domain/analytics/leaderboard_test.go`, `backend/internal/domain/analytics/models.go`, `backend/internal/domain/analytics/repository.go`, `backend/internal/domain/analytics/service.go`, `backend/internal/domain/analytics/systemmetrics_integration_test.go`, `backend/internal/domain/analytics/systemmetrics_test.go`\n\nchecks_run: `gofmt -w` on the touched analytics files; `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go test ./internal/domain/analytics/...`; `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go vet ./internal/domain/analytics/...`; `bash /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`\n\nfollow_ups: none. The packaged quality-guardrail wrapper itself still assumes `/home/agent/go` for module cache in this environment, so I used equivalent local-cache `go test` and `go vet` runs instead."
     },
     {
       "id": "PR581-019",
       "title": "Align all bets files with LSP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the LSP checklist only. None of the listed bets files are done for LSP. Work in all LSP-listed bets files: internal/domain/bets/errors.go (all top-level bet error vars, ErrDustCapExceeded, ErrDustCapExceeded.Error); internal/domain/bets/models.go (all top-level bet model definitions); internal/domain/bets/service_helpers_test.go (stubMarketService.GetMarket, stubMarketService.GetUserPositionInMarket, gateClock.Now, TestMarketGate_Open, TestFeeCalculator_Calculate, TestBalanceGuard_EnsureSufficient, ledgerRepo.Create, ledgerRepo.UserHasBet, ledgerUsers.GetUser, ledgerUsers.ApplyTransaction, TestBetLedger_ChargeAndRecord, TestBetLedger_ChargeAndRecord_RollsBackOnRepoError, TestBetLedger_CreditSale, TestSaleCalculator_Calculate); internal/domain/bets/service_test.go (fakeRepo.Create, fakeRepo.UserHasBet, fakeMarkets.GetMarket, fakeMarkets.GetUserPositionInMarket, fakeUsers.GetUser, fakeUsers.ApplyTransaction, fixedClock.Now, TestServicePlace_Succeeds, TestServicePlace_InsufficientBalance, TestServicePlace_InvalidOutcome, TestServicePlace_MarketClosed, TestServiceSell_Succeeds, TestServiceSell_NoPosition, TestServiceSell_DustCapExceeded, TestServiceSell_RequestTooSmall); and internal/domain/bets/service.go (serviceClock.Now, WithPlaceValidator, WithSellValidator, WithMarketGate, WithFeeCalculator, WithBalanceGuard, WithBetLedger, WithSaleCalculator, WithClock, NewService, ensureDefaults). Update every listed function and file-level definition to align with the Liskov Substitution Principle.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-014"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -402,18 +584,32 @@
       "notes": [
         "Source of truth for scope is the LSP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-05T01:20:22.542403+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d5b3a-06dc-7911-9923-b6f0489cddf0",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-019_20260405T012022Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-019_20260405T012022Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-019_20260405T012022Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-019_20260405T012022Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-019_20260405T012022Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-05T01:27:00.746885+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-019`\nstatus: `completed`\n\nI aligned the listed bets LSP surface by removing unnecessary abstraction layers from the bet error/model definitions, making `Service` option/default wiring resilient to nil and typed-nil collaborators, and hardening the listed test doubles so their zero values behave predictably under the interfaces they substitute. I also updated the canonical report at `/workspace/socialpredict/.codex-reports/tasks/PR581-019`, with `summary.json` finalized under `dispatcher_agent` ownership.\n\nfiles_changed: `backend/internal/domain/bets/errors.go`, `backend/internal/domain/bets/models.go`, `backend/internal/domain/bets/service.go`, `backend/internal/domain/bets/service_helpers_test.go`, `backend/internal/domain/bets/service_test.go`\n\nchecks_run: `bash /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`; `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go test ./internal/domain/bets`; `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go vet ./internal/domain/bets`\n\nfollow_ups: the repo quality guardrails script was not run as-is because it hardcodes the unwritable default Go module cache path `/home/agent/go` in this environment; equivalent local-cache `go test` and `go vet` checks passed instead."
     },
     {
       "id": "PR581-020",
       "title": "Align all markets files with LSP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the LSP checklist only. None of the listed markets files are done for LSP. Work in all LSP-listed markets files: internal/domain/markets/errors.go (all top-level market error vars); internal/domain/markets/models.go (all top-level market model definitions); internal/domain/markets/service_details_test.go (TestServiceGetMarketDetailsCalculatesMetrics, TestServiceGetMarketDetails_InvalidAndMissing); internal/domain/markets/service_listbystatus_test.go (noopUserService.ValidateUserExists, noopUserService.ValidateUserBalance, noopUserService.DeductBalance, noopUserService.ApplyTransaction, noopUserService.GetPublicUser, fixedClock.Now, setupServiceWithDB, TestServiceListByStatusFiltersMarkets, TestServiceListByStatusInvalidStatus); internal/domain/markets/service_marketbets_test.go (betsRepo.Create, UpdateLabels, List, ListByStatus, Search, Delete, GetByID, ResolveMarket, GetUserPosition, ListMarketPositions, ListBetsForMarket, CalculatePayoutPositions, GetPublicMarket, nopUserService.ValidateUserExists, ValidateUserBalance, DeductBalance, ApplyTransaction, GetPublicUser, betsClock.Now, TestGetMarketBets_ReturnsProbabilities, TestGetMarketBets_EmptyWhenNoBets, TestGetMarketBets_ValidatesInputAndMarket, TestGetMarketPositions_ReturnsRepositoryData, TestGetMarketPositions_ValidatesInputAndMarket); internal/domain/markets/service_probability_test.go (projectionRepo.Create, UpdateLabels, List, ListByStatus, Search, Delete, ResolveMarket, GetUserPosition, ListMarketPositions, ListBetsForMarket, GetByID, CalculatePayoutPositions, GetPublicMarket, projectionClock.Now, TestProjectProbability_ComputesProjection, TestProjectProbability_InvalidOutcome, marketsToModel, modelsBet, absDiff); internal/domain/markets/service_resolve_test.go (resolveRepo.Create, UpdateLabels, List, ListByStatus, Search, Delete, GetByID, ResolveMarket, GetUserPosition, ListMarketPositions, ListBetsForMarket, CalculatePayoutPositions, GetPublicMarket, resolveUserService.ValidateUserExists, ValidateUserBalance, DeductBalance, ApplyTransaction, GetPublicUser, nopClock.Now, TestResolveMarketRefundsOnNA, TestResolveMarketPaysWinners, TestResolveMarketRejectsUnauthorized); internal/domain/markets/service_search_test.go (seedSearchMarkets, TestServiceSearchMarketsFiltersByStatus, TestServiceSearchMarketsInvalidInput); and internal/domain/markets/service.go (serviceClock.Now, WithCreationPolicy, WithResolutionPolicy, WithProbabilityEngine, WithProbabilityValidator, WithSearchPolicy, WithMetricsCalculator, WithLeaderboardCalculator, WithStatusPolicy, WithClock, NewService, ensureDefaults). Update every listed function and file-level definition to align with the Liskov Substitution Principle.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-015"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -421,18 +617,32 @@
       "notes": [
         "Source of truth for scope is the LSP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-05T01:27:00.810592+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d5b40-1a7d-7462-9d84-f6ff900c8b29",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-020_20260405T012700Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-020_20260405T012700Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-020_20260405T012700Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-020_20260405T012700Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-020_20260405T012700Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-05T01:34:18.451183+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-020`  \nstatus: `completed`\n\nAligned the scoped `markets` LSP seams by simplifying top-level domain definitions, preserving default service behavior under `nil` option substitution, and hardening scoped test doubles so zero-value substitutes fail predictably instead of changing contracts. The main code changes are in [errors.go](/workspace/socialpredict/backend/internal/domain/markets/errors.go), [models.go](/workspace/socialpredict/backend/internal/domain/markets/models.go), and [service.go](/workspace/socialpredict/backend/internal/domain/markets/service.go). The scoped tests were updated in [service_details_test.go](/workspace/socialpredict/backend/internal/domain/markets/service_details_test.go), [service_listbystatus_test.go](/workspace/socialpredict/backend/internal/domain/markets/service_listbystatus_test.go), [service_marketbets_test.go](/workspace/socialpredict/backend/internal/domain/markets/service_marketbets_test.go), [service_probability_test.go](/workspace/socialpredict/backend/internal/domain/markets/service_probability_test.go), [service_resolve_test.go](/workspace/socialpredict/backend/internal/domain/markets/service_resolve_test.go), and [service_search_test.go](/workspace/socialpredict/backend/internal/domain/markets/service_search_test.go).\n\nAssumption: I applied the same LSP interpretation already used in the adjacent `bets` work, namely that substitutable collaborators must preserve the default contract when `nil` or zero-valued rather than introducing special-case behavior.\n\nchecks_run:\n- `bash /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`\n- `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go test ./internal/domain/markets/...`\n\nfiles_changed:\n- `/workspace/socialpredict/backend/internal/domain/markets/errors.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/models.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/service.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/service_details_test.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/service_listbystatus_test.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/service_marketbets_test.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/service_probability_test.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/service_resolve_test.go`\n- `/workspace/socialpredict/backend/internal/domain/markets/service_search_test.go`\n\nfollow_ups:\n- `none`"
     },
     {
       "id": "PR581-021",
       "title": "Align all math files with LSP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the LSP checklist only. None of the listed math files are done for LSP. Work in all LSP-listed math files: internal/domain/math/market/dust_test.go (TestGetMarketVolumeWithDust, TestCalculateDustStack, TestGetMarketDust, TestCalculateDustForSell_Placeholder, TestCurrencyConservationInvariant); internal/domain/math/market/dust.go (ConstantSellDustCalculator.DustForSell, GetMarketVolumeWithDust, calculateDustStack, GetMarketDustWithCalculator, calculateDustStackWithCalculator, calculateDustForSell, GetMarketDust, sortBetsChronologically); internal/domain/math/market/marketvolume_test.go (TestGetMarketVolume); internal/domain/math/market/marketvolume.go (GetMarketVolume, GetEndMarketVolume); internal/domain/math/outcomes/dbpm/marketshares_test.go (generateCoursePayouts, TestDivideUpMarketPoolSharesDBPM, TestCalculateCoursePayoutsDBPM, TestCalculateNormalizationFactorsDBPM, TestCalculateScaledPayoutsDBPM, TestCalculateExcess, TestAdjustForPositiveExcess, TestAdjustForNegativeExcess, TestAdjustPayouts, TestAggregateUserPayoutsDBPM, TestNetAggregateMarketPositions, TestSingleCreditYesNoAllocator); internal/domain/math/outcomes/dbpm/marketshares.go (DivideUpMarketPoolSharesDBPM, CalculateCoursePayoutsDBPM, CalculateNormalizationFactorsDBPM, CalculateScaledPayoutsDBPM, calculateExcess, adjustForPositiveExcess, adjustForNegativeExcess, AdjustPayouts, AggregateUserPayoutsDBPM, NetAggregateMarketPositions, singleCreditYesNoAllocator); internal/domain/math/positions/adjust_valuation_test.go (TestAdjustUserValuationsToMarketVolume); internal/domain/math/positions/adjust_valuation.go (ByValBetTimeUsername.Len, ByValBetTimeUsername.Swap, ByValBetTimeUsername.Less, AdjustUserValuationsToMarketVolume, filterWinningValuations, buildUserHolders, adjustValuations); internal/domain/math/positions/positionsmath_test.go (TestCalculateMarketPositions_WPAM_DBPM, TestCalculateMarketPositions_IncludesZeroPositionUsers); internal/domain/math/positions/positionsmath.go (WithProbabilityProvider, WithPayoutModel, NewPositionCalculator, ensureDefaults, CalculateMarketPositions_WPAM_DBPM, PositionCalculator.CalculateMarketPositions, computeEarliestBets, sortBetsChronologically, calculateNetPositions helper, PositionCalculator.calculateNetPositions, calculateNetPositionsWith, mapUserPositions, aggregateUserBetTotals, assembleDisplayPositions, CalculateMarketPositionForUser_WPAM_DBPM); internal/domain/math/positions/profitability_test.go (TestCalculateUserSpend, TestGetEarliestBetTime, TestDeterminePositionType, TestCalculateMarketLeaderboard_EmptyBets); internal/domain/math/positions/profitability.go (CalculateMarketLeaderboard, CalculateUserSpend, GetEarliestBetTime, DeterminePositionType); internal/domain/math/positions/valuation_test.go (makeUserPositions, TestCalculateRoundedUserValuationsFromUserMarketPositions); internal/domain/math/positions/valuation.go (CalculateRoundedUserValuationsFromUserMarketPositions, getFinalProbabilityFromMarketModel); internal/domain/math/probabilities/wpam/wpam_current_test.go (TestGetCurrentProbability); internal/domain/math/probabilities/wpam/wpam_current.go (GetCurrentProbability); internal/domain/math/probabilities/wpam/wpam_marketprobabilities_test.go (TestCalculateMarketProbabilitiesWPAM); and internal/domain/math/probabilities/wpam/wpam_marketprobabilities.go (StaticSeedProvider.Seeds, NewProbabilityCalculator, ProbabilityCalculator.Seeds, CalculateMarketProbabilitiesWPAM function, ProbabilityCalculator.CalculateMarketProbabilitiesWPAM method, ProjectNewProbabilityWPAM function, ProbabilityCalculator.ProjectNewProbabilityWPAM method). Update every listed function and file-level definition to align with the Liskov Substitution Principle.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-016"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -440,18 +650,32 @@
       "notes": [
         "Source of truth for scope is the LSP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-05T01:34:18.514861+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d5b46-c844-7cd0-a0cf-4faaac950676",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-021_20260405T013418Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-021_20260405T013418Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-021_20260405T013418Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-021_20260405T013418Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-021_20260405T013418Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-05T01:42:14.234479+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-021`, status: `completed`.\n\nI spawned `dispatcher-agent` first as requested, let it inspect the report state, and completed the scoped LSP refactor in the backend math packages. The main change was to keep the existing public helpers stable while routing them through substitutable calculators/selectors across market volume/dust, DBPM share division, positions, leaderboard/valuation, and WPAM probability selection. I also added focused substitution tests so the new seams are exercised instead of only existing as wrappers.\n\nfiles_changed: `backend/internal/domain/math/market/dust.go`, `backend/internal/domain/math/market/marketvolume.go`, `backend/internal/domain/math/market/dust_test.go`, `backend/internal/domain/math/market/marketvolume_test.go`, `backend/internal/domain/math/outcomes/dbpm/marketshares.go`, `backend/internal/domain/math/outcomes/dbpm/marketshares_test.go`, `backend/internal/domain/math/positions/adjust_valuation.go`, `backend/internal/domain/math/positions/positionsmath.go`, `backend/internal/domain/math/positions/positionsmath_test.go`, `backend/internal/domain/math/positions/profitability.go`, `backend/internal/domain/math/positions/profitability_test.go`, `backend/internal/domain/math/positions/valuation.go`, `backend/internal/domain/math/positions/valuation_test.go`, `backend/internal/domain/math/probabilities/wpam/wpam_current.go`, `backend/internal/domain/math/probabilities/wpam/wpam_current_test.go`, `backend/internal/domain/math/probabilities/wpam/wpam_marketprobabilities.go`, `backend/internal/domain/math/probabilities/wpam/wpam_marketprobabilities_test.go`.\n\nchecks_run: `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go test ./internal/domain/math/... -count=1`, `gofmt -w` on the scoped math files.\n\nfollow_ups: none for code; the canonical report under `/workspace/socialpredict/.codex-reports/tasks/PR581-021` was updated."
     },
     {
       "id": "PR581-022",
       "title": "Align all users files with LSP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the LSP checklist only. None of the listed users files are done for LSP. Work in all LSP-listed users files: internal/domain/users/errors.go (all top-level user error vars); internal/domain/users/models.go (all top-level user model definitions); internal/domain/users/service_profile_test.go (newFakeRepository, fakeRepository.GetByUsername, UpdateBalance, Create, Update, Delete, List, ListUserBets, GetMarketQuestion, GetUserPositionInMarket, ComputeUserFinancials, ListUserMarkets, GetCredentials, UpdatePassword, newServiceWithUser, TestServiceUpdateDescription, TestServiceUpdateDisplayName, TestServiceUpdateEmoji, TestServiceUpdatePersonalLinks, TestServiceChangePassword, TestServiceGetPrivateProfile); internal/domain/users/service_transactions_test.go (fakeAnalyticsService.ComputeUserFinancials, TestServiceApplyTransaction, TestServiceGetUserCredit, TestServiceGetUserPortfolio, TestServiceGetUserFinancials); internal/domain/users/service.go (NewService, ValidateUserExists, ValidateUserBalance, DeductBalance, GetUser, GetPublicUser, CreateUser, UpdateUser, ListUsers, DeleteUser, ApplyTransaction, GetUserCredit, GetUserPortfolio, ListUserMarkets, GetUserFinancials, UpdateDescription, UpdateDisplayName, UpdateEmoji, UpdatePersonalLinks, sanitizePersonalLinks, financialSnapshotToMap, GetPrivateProfile, PasswordHashCost, validatePasswordChangeInputs, ChangePassword); and internal/domain/users/transactions.go (all transaction-type constants). Update every listed function and file-level definition to align with the Liskov Substitution Principle.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-017"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -459,18 +683,32 @@
       "notes": [
         "Source of truth for scope is the LSP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-05T01:42:14.297922+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d5b4e-0ac8-7822-8e85-beecc8bf9afa",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-022_20260405T014214Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-022_20260405T014214Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-022_20260405T014214Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-022_20260405T014214Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-022_20260405T014214Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-05T01:49:59.898204+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-022`  \nstatus: `completed`\n\nChanged the scoped users-domain files to make the package more substitutable without changing its external service API. The main changes were typed `UserError` sentinels in [errors.go](/workspace/socialpredict/backend/internal/domain/users/errors.go), shared projection/personal-link helpers in [models.go](/workspace/socialpredict/backend/internal/domain/users/models.go), narrower repository-facing contracts plus nil-safe normalization in [service.go](/workspace/socialpredict/backend/internal/domain/users/service.go), typed transaction constants in [transactions.go](/workspace/socialpredict/backend/internal/domain/users/transactions.go), and fake/test cleanup in [service_profile_test.go](/workspace/socialpredict/backend/internal/domain/users/service_profile_test.go) and [service_transactions_test.go](/workspace/socialpredict/backend/internal/domain/users/service_transactions_test.go).\n\nfiles_changed: `backend/internal/domain/users/errors.go`, `backend/internal/domain/users/models.go`, `backend/internal/domain/users/service.go`, `backend/internal/domain/users/transactions.go`, `backend/internal/domain/users/service_profile_test.go`, `backend/internal/domain/users/service_transactions_test.go`\n\nchecks_run: `GOCACHE=/workspace/socialpredict/.gocache GOMODCACHE=/workspace/socialpredict/.gomodcache go test ./internal/domain/users/...`  \nchecks_run: `GOCACHE=/workspace/socialpredict/.gocache GOMODCACHE=/workspace/socialpredict/.gomodcache go test ./handlers/users/...`\n\nfollow_ups: `./internal/domain/users/...` passed. `./handlers/users/...` still has unrelated failures already present in that package: `TestEmojiValidation/Text_with_HTML` and a `ListUserMarkets` path that hits a missing `bets` table in sqlite test setup.\n\nAssumption: I treated the LSP alignment request as preserving existing public method signatures while reducing concrete coupling inside the users domain and normalizing fake/service behavior around narrower contracts and empty collection semantics."
     },
     {
       "id": "PR581-023",
       "title": "Align all analytics files with ISP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the ISP checklist only. None of the listed analytics files are done for ISP. Work in all ISP-listed analytics files: internal/domain/analytics/financialsnapshot_test.go (newAnalyticsService, TestComputeUserFinancials_NewUser_NoPositions, TestComputeUserFinancials_NegativeBalance, TestComputeUserFinancials_WithActivePositions); internal/domain/analytics/leaderboard_test.go (TestAggregateLeaderboardUserStats, TestFindEarliestBetsPerUser, TestRankLeaderboardEntries_TieBreaksByEarliestBet, TestComputeGlobalLeaderboard_OrdersByProfit); internal/domain/analytics/models.go (all top-level analytics model definitions); internal/domain/analytics/repository.go (WithRepositoryPositionCalculator, NewGormRepository, WithContext, ListUsers, ListMarkets, ListBetsForMarket, ListBetsOrdered, UserMarketPositions, listUserBets, collectMarketIDs, listMarketsByIDs, buildMarketSnapshots, listBetsByMarketIDs, groupBetsByMarket, ensurePositionCalculator, calculateUserPositions); internal/domain/analytics/service.go (WithDebtCalculator, WithVolumeCalculator, WithFeeCalculator, WithMetricsAssembler, WithPositionCalculator, NewService, ensureStrategyDefaults); internal/domain/analytics/systemmetrics_integration_test.go (TestComputeSystemMetrics_BalancedAfterFinalLockedBet, TestResolveMarket_DistributesAllBetVolume); and internal/domain/analytics/systemmetrics_test.go (TestComputeSystemMetrics_EmptyDatabase, TestComputeSystemMetrics_WithData). Update every listed function and file-level definition to align with the Interface Segregation Principle.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-018"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -478,18 +716,33 @@
       "notes": [
         "Source of truth for scope is the ISP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-05T01:49:59.970267+00:00",
+      "runner_state": {
+        "segment": 2,
+        "session_id": "019d5b55-25d4-77b1-be60-d112fa56d6ed",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-023_20260405T140829Z_part02.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-023_20260405T140829Z_part02.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-023_20260405T140829Z_part02.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-023_20260405T140829Z_part02.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-023_20260405T140829Z_part02.ndjson",
+        "resume_pending": false
+      },
+      "last_resumed_at": "2026-04-05T14:08:29.082171+00:00",
+      "finished_at": "2026-04-05T14:18:25.366559+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-023`\n\nstatus: `completed`\n\nfiles_changed:\n- [models.go](/workspace/socialpredict/backend/internal/domain/analytics/models.go)\n- [service.go](/workspace/socialpredict/backend/internal/domain/analytics/service.go)\n- [repository.go](/workspace/socialpredict/backend/internal/domain/analytics/repository.go)\n- [financialsnapshot_test.go](/workspace/socialpredict/backend/internal/domain/analytics/financialsnapshot_test.go)\n- [leaderboard_test.go](/workspace/socialpredict/backend/internal/domain/analytics/leaderboard_test.go)\n- [systemmetrics_test.go](/workspace/socialpredict/backend/internal/domain/analytics/systemmetrics_test.go)\n- [systemmetrics_integration_test.go](/workspace/socialpredict/backend/internal/domain/analytics/systemmetrics_integration_test.go)\n\nchecks_run:\n- `bash /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict` => PASS\n- `gofmt -l backend/internal/domain/analytics/{models.go,service.go,repository.go,financialsnapshot_test.go,leaderboard_test.go,systemmetrics_test.go,systemmetrics_integration_test.go}` => PASS\n- `env GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go test ./internal/domain/analytics` => PASS\n- `env GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go vet ./...` => PASS\n\nfollow_ups:\n- none\n\nAssumption: the execution scope was limited to the explicit analytics file inventory in the task metadata, so the final diff was kept inside that set. The canonical report was updated in `/workspace/socialpredict/.codex-reports/tasks/PR581-023` and `summary.json` is current."
     },
     {
       "id": "PR581-024",
       "title": "Align all bets files with ISP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the ISP checklist only. None of the listed bets files are done for ISP. Work in all ISP-listed bets files: internal/domain/bets/errors.go (all top-level bet error vars, ErrDustCapExceeded, ErrDustCapExceeded.Error); internal/domain/bets/models.go (all top-level bet model definitions); internal/domain/bets/service_helpers_test.go (stubMarketService.GetMarket, stubMarketService.GetUserPositionInMarket, gateClock.Now, TestMarketGate_Open, TestFeeCalculator_Calculate, TestBalanceGuard_EnsureSufficient, ledgerRepo.Create, ledgerRepo.UserHasBet, ledgerUsers.GetUser, ledgerUsers.ApplyTransaction, TestBetLedger_ChargeAndRecord, TestBetLedger_ChargeAndRecord_RollsBackOnRepoError, TestBetLedger_CreditSale, TestSaleCalculator_Calculate); internal/domain/bets/service_test.go (fakeRepo.Create, fakeRepo.UserHasBet, fakeMarkets.GetMarket, fakeMarkets.GetUserPositionInMarket, fakeUsers.GetUser, fakeUsers.ApplyTransaction, fixedClock.Now, TestServicePlace_Succeeds, TestServicePlace_InsufficientBalance, TestServicePlace_InvalidOutcome, TestServicePlace_MarketClosed, TestServiceSell_Succeeds, TestServiceSell_NoPosition, TestServiceSell_DustCapExceeded, TestServiceSell_RequestTooSmall); and internal/domain/bets/service.go (serviceClock.Now, WithPlaceValidator, WithSellValidator, WithMarketGate, WithFeeCalculator, WithBalanceGuard, WithBetLedger, WithSaleCalculator, WithClock, NewService, ensureDefaults). Update every listed function and file-level definition to align with the Interface Segregation Principle.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-019"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -497,18 +750,32 @@
       "notes": [
         "Source of truth for scope is the ISP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-05T14:18:25.448717+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d5e02-59f1-7121-8ff2-259f2d4c27b2",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-024_20260405T141825Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-024_20260405T141825Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-024_20260405T141825Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-024_20260405T141825Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-024_20260405T141825Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-05T14:25:42.404127+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-024`  \nstatus: `completed`\n\nfiles_changed:\n- [errors.go](/workspace/socialpredict/backend/internal/domain/bets/errors.go)\n- [models.go](/workspace/socialpredict/backend/internal/domain/bets/models.go)\n- [service.go](/workspace/socialpredict/backend/internal/domain/bets/service.go)\n- [bet_support.go](/workspace/socialpredict/backend/internal/domain/bets/bet_support.go)\n- [service_helpers_test.go](/workspace/socialpredict/backend/internal/domain/bets/service_helpers_test.go)\n- [service_test.go](/workspace/socialpredict/backend/internal/domain/bets/service_test.go)\n\nI aligned the bets domain with ISP by splitting broad repo/market/user contracts into narrower capability interfaces, keeping `NewService` source-compatible, making default strategy wiring nil-safe for `econ` and `clock`, and refactoring the scoped test doubles so each fake owns only the behavior it actually serves. I also simplified the model/error helpers toward place-specific and sell-specific responsibilities.\n\nchecks_run:\n- `gofmt -w /workspace/socialpredict/backend/internal/domain/bets/errors.go /workspace/socialpredict/backend/internal/domain/bets/models.go /workspace/socialpredict/backend/internal/domain/bets/service.go /workspace/socialpredict/backend/internal/domain/bets/bet_support.go /workspace/socialpredict/backend/internal/domain/bets/service_helpers_test.go /workspace/socialpredict/backend/internal/domain/bets/service_test.go`\n- `GOMODCACHE=/workspace/socialpredict/.cache/gomod GOCACHE=/workspace/socialpredict/.cache/go-build go test ./internal/domain/bets/...`\n- `GOMODCACHE=/workspace/socialpredict/.cache/gomod GOCACHE=/workspace/socialpredict/.cache/go-build go test ./...`\n\nfollow_ups:\n- Assumption: ISP compliance here is satisfied by narrowing bets-domain interfaces and test doubles without changing external behavior or expanding cross-package APIs.\n- The scoped bets package is green.\n- The broader backend suite still has unrelated existing failures in `handlers/users`: `TestEmojiValidation/Text_with_HTML` and a `bets` table lookup error."
     },
     {
       "id": "PR581-025",
       "title": "Align all markets files with ISP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the ISP checklist only. None of the listed markets files are done for ISP. Work in all ISP-listed markets files: internal/domain/markets/errors.go (all top-level market error vars); internal/domain/markets/models.go (all top-level market model definitions); internal/domain/markets/service_details_test.go (TestServiceGetMarketDetailsCalculatesMetrics, TestServiceGetMarketDetails_InvalidAndMissing); internal/domain/markets/service_listbystatus_test.go (noopUserService.ValidateUserExists, noopUserService.ValidateUserBalance, noopUserService.DeductBalance, noopUserService.ApplyTransaction, noopUserService.GetPublicUser, fixedClock.Now, setupServiceWithDB, TestServiceListByStatusFiltersMarkets, TestServiceListByStatusInvalidStatus); internal/domain/markets/service_marketbets_test.go (betsRepo.Create, UpdateLabels, List, ListByStatus, Search, Delete, GetByID, ResolveMarket, GetUserPosition, ListMarketPositions, ListBetsForMarket, CalculatePayoutPositions, GetPublicMarket, nopUserService.ValidateUserExists, ValidateUserBalance, DeductBalance, ApplyTransaction, GetPublicUser, betsClock.Now, TestGetMarketBets_ReturnsProbabilities, TestGetMarketBets_EmptyWhenNoBets, TestGetMarketBets_ValidatesInputAndMarket, TestGetMarketPositions_ReturnsRepositoryData, TestGetMarketPositions_ValidatesInputAndMarket); internal/domain/markets/service_probability_test.go (projectionRepo.Create, UpdateLabels, List, ListByStatus, Search, Delete, ResolveMarket, GetUserPosition, ListMarketPositions, ListBetsForMarket, GetByID, CalculatePayoutPositions, GetPublicMarket, projectionClock.Now, TestProjectProbability_ComputesProjection, TestProjectProbability_InvalidOutcome, marketsToModel, modelsBet, absDiff); internal/domain/markets/service_resolve_test.go (resolveRepo.Create, UpdateLabels, List, ListByStatus, Search, Delete, GetByID, ResolveMarket, GetUserPosition, ListMarketPositions, ListBetsForMarket, CalculatePayoutPositions, GetPublicMarket, resolveUserService.ValidateUserExists, ValidateUserBalance, DeductBalance, ApplyTransaction, GetPublicUser, nopClock.Now, TestResolveMarketRefundsOnNA, TestResolveMarketPaysWinners, TestResolveMarketRejectsUnauthorized); internal/domain/markets/service_search_test.go (seedSearchMarkets, TestServiceSearchMarketsFiltersByStatus, TestServiceSearchMarketsInvalidInput); and internal/domain/markets/service.go (serviceClock.Now, WithCreationPolicy, WithResolutionPolicy, WithProbabilityEngine, WithProbabilityValidator, WithSearchPolicy, WithMetricsCalculator, WithLeaderboardCalculator, WithStatusPolicy, WithClock, NewService, ensureDefaults). Update every listed function and file-level definition to align with the Interface Segregation Principle.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-020"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -516,18 +783,32 @@
       "notes": [
         "Source of truth for scope is the ISP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-05T14:25:42.467257+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d5e09-04f1-7a80-af61-2a779f7d967c",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-025_20260405T142542Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-025_20260405T142542Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-025_20260405T142542Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-025_20260405T142542Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-025_20260405T142542Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-05T14:28:14.588724+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-025`  \nstatus: `completed`\n\nThe queued run started by spawning `dispatcher_agent` as requested. The scoped `internal/domain/markets` ISP changes were already present across the nine listed files, and I validated that every checklist item is covered by the current diff. The canonical report was updated at `/workspace/socialpredict/.codex-reports/tasks/PR581-025`, with `summary.json` marked completed.\n\nfiles_changed: `backend/internal/domain/markets/errors.go`, `backend/internal/domain/markets/models.go`, `backend/internal/domain/markets/service.go`, `backend/internal/domain/markets/service_details_test.go`, `backend/internal/domain/markets/service_listbystatus_test.go`, `backend/internal/domain/markets/service_marketbets_test.go`, `backend/internal/domain/markets/service_probability_test.go`, `backend/internal/domain/markets/service_resolve_test.go`, `backend/internal/domain/markets/service_search_test.go`, `.codex-reports/tasks/PR581-025/{summary.json,conversation.ndjson,decisions.ndjson}`\n\nchecks_run: `gofmt -l internal/domain/markets/errors.go internal/domain/markets/models.go internal/domain/markets/service.go internal/domain/markets/service_details_test.go internal/domain/markets/service_listbystatus_test.go internal/domain/markets/service_marketbets_test.go internal/domain/markets/service_probability_test.go internal/domain/markets/service_resolve_test.go internal/domain/markets/service_search_test.go`; `GOCACHE=/workspace/socialpredict/.gocache GOMODCACHE=/workspace/socialpredict/.gomodcache go test ./internal/domain/markets/...`\n\nfollow_ups: none. Assumption: the existing scoped markets diff in the dirty worktree was the intended PR581-025 ISP work, so this run completed by validating and reporting it rather than adding further code edits."
     },
     {
       "id": "PR581-026",
       "title": "Align all math files with ISP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the ISP checklist only. None of the listed math files are done for ISP. Work in all ISP-listed math files: internal/domain/math/market/dust_test.go (TestGetMarketVolumeWithDust, TestCalculateDustStack, TestGetMarketDust, TestCalculateDustForSell_Placeholder, TestCurrencyConservationInvariant); internal/domain/math/market/dust.go (ConstantSellDustCalculator.DustForSell, GetMarketVolumeWithDust, calculateDustStack, GetMarketDustWithCalculator, calculateDustStackWithCalculator, calculateDustForSell, GetMarketDust, sortBetsChronologically); internal/domain/math/market/marketvolume_test.go (TestGetMarketVolume); internal/domain/math/market/marketvolume.go (GetMarketVolume, GetEndMarketVolume); internal/domain/math/outcomes/dbpm/marketshares_test.go (generateCoursePayouts, TestDivideUpMarketPoolSharesDBPM, TestCalculateCoursePayoutsDBPM, TestCalculateNormalizationFactorsDBPM, TestCalculateScaledPayoutsDBPM, TestCalculateExcess, TestAdjustForPositiveExcess, TestAdjustForNegativeExcess, TestAdjustPayouts, TestAggregateUserPayoutsDBPM, TestNetAggregateMarketPositions, TestSingleCreditYesNoAllocator); internal/domain/math/outcomes/dbpm/marketshares.go (DivideUpMarketPoolSharesDBPM, CalculateCoursePayoutsDBPM, CalculateNormalizationFactorsDBPM, CalculateScaledPayoutsDBPM, calculateExcess, adjustForPositiveExcess, adjustForNegativeExcess, AdjustPayouts, AggregateUserPayoutsDBPM, NetAggregateMarketPositions, singleCreditYesNoAllocator); internal/domain/math/positions/adjust_valuation_test.go (TestAdjustUserValuationsToMarketVolume); internal/domain/math/positions/adjust_valuation.go (ByValBetTimeUsername.Len, ByValBetTimeUsername.Swap, ByValBetTimeUsername.Less, AdjustUserValuationsToMarketVolume, filterWinningValuations, buildUserHolders, adjustValuations); internal/domain/math/positions/positionsmath_test.go (TestCalculateMarketPositions_WPAM_DBPM, TestCalculateMarketPositions_IncludesZeroPositionUsers); internal/domain/math/positions/positionsmath.go (WithProbabilityProvider, WithPayoutModel, NewPositionCalculator, ensureDefaults, CalculateMarketPositions_WPAM_DBPM, PositionCalculator.CalculateMarketPositions, computeEarliestBets, sortBetsChronologically, calculateNetPositions helper, PositionCalculator.calculateNetPositions, calculateNetPositionsWith, mapUserPositions, aggregateUserBetTotals, assembleDisplayPositions, CalculateMarketPositionForUser_WPAM_DBPM); internal/domain/math/positions/profitability_test.go (TestCalculateUserSpend, TestGetEarliestBetTime, TestDeterminePositionType, TestCalculateMarketLeaderboard_EmptyBets); internal/domain/math/positions/profitability.go (CalculateMarketLeaderboard, CalculateUserSpend, GetEarliestBetTime, DeterminePositionType); internal/domain/math/positions/valuation_test.go (makeUserPositions, TestCalculateRoundedUserValuationsFromUserMarketPositions); internal/domain/math/positions/valuation.go (CalculateRoundedUserValuationsFromUserMarketPositions, getFinalProbabilityFromMarketModel); internal/domain/math/probabilities/wpam/wpam_current_test.go (TestGetCurrentProbability); internal/domain/math/probabilities/wpam/wpam_current.go (GetCurrentProbability); internal/domain/math/probabilities/wpam/wpam_marketprobabilities_test.go (TestCalculateMarketProbabilitiesWPAM); and internal/domain/math/probabilities/wpam/wpam_marketprobabilities.go (StaticSeedProvider.Seeds, NewProbabilityCalculator, ProbabilityCalculator.Seeds, CalculateMarketProbabilitiesWPAM function, ProbabilityCalculator.CalculateMarketProbabilitiesWPAM method, ProjectNewProbabilityWPAM function, ProbabilityCalculator.ProjectNewProbabilityWPAM method). Update every listed function and file-level definition to align with the Interface Segregation Principle.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-021"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -535,18 +816,32 @@
       "notes": [
         "Source of truth for scope is the ISP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-05T14:28:14.652305+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d5e0b-576e-71f0-8de4-178e3d8788b6",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-026_20260405T142814Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-026_20260405T142814Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-026_20260405T142814Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-026_20260405T142814Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-026_20260405T142814Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-05T14:34:08.300434+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-026`  \nstatus: `completed`\n\n`files_changed`: `backend/internal/domain/math/market/dust.go`, `backend/internal/domain/math/market/dust_test.go`, `backend/internal/domain/math/market/marketvolume.go`, `backend/internal/domain/math/market/marketvolume_test.go`, `backend/internal/domain/math/outcomes/dbpm/marketshares.go`, `backend/internal/domain/math/outcomes/dbpm/marketshares_test.go`, `backend/internal/domain/math/positions/adjust_valuation.go`, `backend/internal/domain/math/positions/positionsmath.go`, `backend/internal/domain/math/positions/positionsmath_defaults.go`, `backend/internal/domain/math/positions/positionsmath_test.go`, `backend/internal/domain/math/positions/profitability.go`, `backend/internal/domain/math/positions/profitability_test.go`, `backend/internal/domain/math/positions/valuation.go`, `backend/internal/domain/math/positions/valuation_test.go`, `backend/internal/domain/math/probabilities/wpam/wpam_current.go`, `backend/internal/domain/math/probabilities/wpam/wpam_current_test.go`, `backend/internal/domain/math/probabilities/wpam/wpam_marketprobabilities.go`, `backend/internal/domain/math/probabilities/wpam/wpam_marketprobabilities_test.go`\n\n`checks_run`: `/workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`; `gofmt -l` on the scoped math files; `env GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go vet ./internal/domain/math/...`; `env GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go test ./internal/domain/math/market ./internal/domain/math/outcomes/dbpm ./internal/domain/math/positions ./internal/domain/math/probabilities/wpam`; `env GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod RUNS=2 ENABLE_RACE=0 /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-testing-reliability/scripts/run_reliability_suite.sh /workspace/socialpredict ./internal/domain/math/...`\n\n`follow_ups`: non-blocking only. `ProbabilityProvider` and `ValuationModel` remain cohesive multi-method interfaces, but verifier review did not treat them as ISP checklist blockers.\n\nThe dispatcher and verifier agents both completed. The canonical report at `/workspace/socialpredict/.codex-reports/tasks/PR581-026` is updated, and this turn converged by validating the already-present scoped ISP refactor rather than adding further code edits."
     },
     {
       "id": "PR581-027",
       "title": "Align all users files with ISP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the ISP checklist only. None of the listed users files are done for ISP. Work in all ISP-listed users files: internal/domain/users/errors.go (all top-level user error vars); internal/domain/users/models.go (all top-level user model definitions); internal/domain/users/service_profile_test.go (newFakeRepository, fakeRepository.GetByUsername, UpdateBalance, Create, Update, Delete, List, ListUserBets, GetMarketQuestion, GetUserPositionInMarket, ComputeUserFinancials, ListUserMarkets, GetCredentials, UpdatePassword, newServiceWithUser, TestServiceUpdateDescription, TestServiceUpdateDisplayName, TestServiceUpdateEmoji, TestServiceUpdatePersonalLinks, TestServiceChangePassword, TestServiceGetPrivateProfile); internal/domain/users/service_transactions_test.go (fakeAnalyticsService.ComputeUserFinancials, TestServiceApplyTransaction, TestServiceGetUserCredit, TestServiceGetUserPortfolio, TestServiceGetUserFinancials); internal/domain/users/service.go (NewService, ValidateUserExists, ValidateUserBalance, DeductBalance, GetUser, GetPublicUser, CreateUser, UpdateUser, ListUsers, DeleteUser, ApplyTransaction, GetUserCredit, GetUserPortfolio, ListUserMarkets, GetUserFinancials, UpdateDescription, UpdateDisplayName, UpdateEmoji, UpdatePersonalLinks, sanitizePersonalLinks, financialSnapshotToMap, GetPrivateProfile, PasswordHashCost, validatePasswordChangeInputs, ChangePassword); and internal/domain/users/transactions.go (all transaction-type constants). Update every listed function and file-level definition to align with the Interface Segregation Principle.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-022"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -554,18 +849,32 @@
       "notes": [
         "Source of truth for scope is the ISP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-05T14:34:08.364176+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d5e10-bd1c-7030-8113-ffb249e67522",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-027_20260405T143408Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-027_20260405T143408Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-027_20260405T143408Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-027_20260405T143408Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-027_20260405T143408Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-05T14:47:34.172865+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-027`  \nstatus: `completed`\n\nWhat changed: the users service now stores segregated collaborator interfaces instead of a single broad repository field while keeping `NewService(...)` stable for existing callers, in [service.go](/workspace/socialpredict/backend/internal/domain/users/service.go#L108) and [service.go](/workspace/socialpredict/backend/internal/domain/users/service.go#L211). I also added compile-time assertions for the narrowed users interfaces in [service_profile_test.go](/workspace/socialpredict/backend/internal/domain/users/service_profile_test.go#L35). I preserved the preexisting ISP-oriented edits already present in the other scoped users files and did not overwrite them.\n\nfiles_changed:\n- `/workspace/socialpredict/backend/internal/domain/users/service.go`\n- `/workspace/socialpredict/backend/internal/domain/users/service_profile_test.go`\n\nchecks_run:\n- `bash /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`\n- `GOCACHE=/workspace/socialpredict/.cache/go-build GOPATH=/workspace/socialpredict/.cache/go go vet ./internal/domain/users`\n- `GOCACHE=/workspace/socialpredict/.cache/go-build GOPATH=/workspace/socialpredict/.cache/go go test ./internal/domain/users -count=1`\n- `GOCACHE=/workspace/socialpredict/.cache/go-build GOPATH=/workspace/socialpredict/.cache/go go test ./internal/domain/users -count=1`\n\nfollow_ups:\n- none\n\nAssumption: the existing uncommitted ISP refactor already present in the other four scoped users files was the intended in-progress state for this task, so I layered the remaining service and test tightening on top of it and updated the canonical report under `/workspace/socialpredict/.codex-reports/tasks/PR581-027`."
     },
     {
       "id": "PR581-028",
       "title": "Align all analytics files with DIP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the DIP checklist only. None of the listed analytics files are done for DIP. Work in all DIP-listed analytics files: internal/domain/analytics/financialsnapshot_test.go (newAnalyticsService, TestComputeUserFinancials_NewUser_NoPositions, TestComputeUserFinancials_NegativeBalance, TestComputeUserFinancials_WithActivePositions); internal/domain/analytics/leaderboard_test.go (TestAggregateLeaderboardUserStats, TestFindEarliestBetsPerUser, TestRankLeaderboardEntries_TieBreaksByEarliestBet, TestComputeGlobalLeaderboard_OrdersByProfit); internal/domain/analytics/models.go (all top-level analytics model definitions); internal/domain/analytics/repository.go (WithRepositoryPositionCalculator, NewGormRepository, WithContext, ListUsers, ListMarkets, ListBetsForMarket, ListBetsOrdered, UserMarketPositions, listUserBets, collectMarketIDs, listMarketsByIDs, buildMarketSnapshots, listBetsByMarketIDs, groupBetsByMarket, ensurePositionCalculator, calculateUserPositions); internal/domain/analytics/service.go (WithDebtCalculator, WithVolumeCalculator, WithFeeCalculator, WithMetricsAssembler, WithPositionCalculator, NewService, ensureStrategyDefaults); internal/domain/analytics/systemmetrics_integration_test.go (TestComputeSystemMetrics_BalancedAfterFinalLockedBet, TestResolveMarket_DistributesAllBetVolume); and internal/domain/analytics/systemmetrics_test.go (TestComputeSystemMetrics_EmptyDatabase, TestComputeSystemMetrics_WithData). Update every listed function and file-level definition to align with the Dependency Inversion Principle.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-023"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -573,18 +882,32 @@
       "notes": [
         "Source of truth for scope is the DIP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-05T14:47:34.246918+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d5e1d-098b-7470-95ae-85365136d022",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-028_20260405T144734Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-028_20260405T144734Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-028_20260405T144734Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-028_20260405T144734Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-028_20260405T144734Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-05T14:52:23.690651+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-028`  \nstatus: `completed`\n\nThe dispatcher completed the run and determined the scoped analytics DIP work was already present in the target worktree, so this run converged by validating the listed analytics files rather than expanding scope. The report summary was updated at [summary.json](/workspace/socialpredict/.codex-reports/tasks/PR581-028/summary.json). The validated scoped files were [financialsnapshot_test.go](/workspace/socialpredict/backend/internal/domain/analytics/financialsnapshot_test.go), [leaderboard_test.go](/workspace/socialpredict/backend/internal/domain/analytics/leaderboard_test.go), [models.go](/workspace/socialpredict/backend/internal/domain/analytics/models.go), [repository.go](/workspace/socialpredict/backend/internal/domain/analytics/repository.go), [service.go](/workspace/socialpredict/backend/internal/domain/analytics/service.go), [systemmetrics_integration_test.go](/workspace/socialpredict/backend/internal/domain/analytics/systemmetrics_integration_test.go), and [systemmetrics_test.go](/workspace/socialpredict/backend/internal/domain/analytics/systemmetrics_test.go).\n\nfiles_changed: `no additional analytics code changes were required in this run; canonical report files under /workspace/socialpredict/.codex-reports/tasks/PR581-028 were updated`\n\nchecks_run: `go test -run 'TestComputeUserFinancials|TestAggregateLeaderboardUserStats|TestFindEarliestBetsPerUser|TestRankLeaderboardEntries|TestComputeGlobalLeaderboard_OrdersByProfit|TestComputeSystemMetrics_EmptyDatabase|TestComputeSystemMetrics_WithData|TestComputeSystemMetrics_BalancedAfterFinalLockedBet|TestResolveMarket_DistributesAllBetVolume' ./internal/domain/analytics` passed; `bash /home/agent/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict` passed; `gofmt -l` on the scoped analytics files returned clean; `go vet ./internal/domain/analytics` could not complete because the environment hit `no space left on device``\n\nfollow_ups: `free disk/tmp space and rerun package-scoped go vet if a clean vet artifact is needed`"
     },
     {
       "id": "PR581-029",
       "title": "Align all bets files with DIP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the DIP checklist only. None of the listed bets files are done for DIP. Work in all DIP-listed bets files: internal/domain/bets/errors.go (all top-level bet error vars, ErrDustCapExceeded, ErrDustCapExceeded.Error); internal/domain/bets/models.go (all top-level bet model definitions); internal/domain/bets/service_helpers_test.go (stubMarketService.GetMarket, stubMarketService.GetUserPositionInMarket, gateClock.Now, TestMarketGate_Open, TestFeeCalculator_Calculate, TestBalanceGuard_EnsureSufficient, ledgerRepo.Create, ledgerRepo.UserHasBet, ledgerUsers.GetUser, ledgerUsers.ApplyTransaction, TestBetLedger_ChargeAndRecord, TestBetLedger_ChargeAndRecord_RollsBackOnRepoError, TestBetLedger_CreditSale, TestSaleCalculator_Calculate); internal/domain/bets/service_test.go (fakeRepo.Create, fakeRepo.UserHasBet, fakeMarkets.GetMarket, fakeMarkets.GetUserPositionInMarket, fakeUsers.GetUser, fakeUsers.ApplyTransaction, fixedClock.Now, TestServicePlace_Succeeds, TestServicePlace_InsufficientBalance, TestServicePlace_InvalidOutcome, TestServicePlace_MarketClosed, TestServiceSell_Succeeds, TestServiceSell_NoPosition, TestServiceSell_DustCapExceeded, TestServiceSell_RequestTooSmall); and internal/domain/bets/service.go (serviceClock.Now, WithPlaceValidator, WithSellValidator, WithMarketGate, WithFeeCalculator, WithBalanceGuard, WithBetLedger, WithSaleCalculator, WithClock, NewService, ensureDefaults). Update every listed function and file-level definition to align with the Dependency Inversion Principle.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-024"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -592,18 +915,32 @@
       "notes": [
         "Source of truth for scope is the DIP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-05T14:52:23.755418+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d5e21-7414-7fb2-a691-9d46c4be7491",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-029_20260405T145223Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-029_20260405T145223Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-029_20260405T145223Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-029_20260405T145223Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-029_20260405T145223Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-05T14:55:26.973646+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-029`  \nstatus: `completed`\n\nThe required dispatcher path was used. No additional code patch was needed because the scoped DIP refactor for bets was already present in the working tree, and the dispatcher updated the canonical report at [/workspace/socialpredict/.codex-reports/tasks/PR581-029/summary.json](/workspace/socialpredict/.codex-reports/tasks/PR581-029/summary.json).\n\nfiles_changed: [errors.go](/workspace/socialpredict/backend/internal/domain/bets/errors.go), [models.go](/workspace/socialpredict/backend/internal/domain/bets/models.go), [service.go](/workspace/socialpredict/backend/internal/domain/bets/service.go), [service_helpers_test.go](/workspace/socialpredict/backend/internal/domain/bets/service_helpers_test.go), [service_test.go](/workspace/socialpredict/backend/internal/domain/bets/service_test.go), [summary.json](/workspace/socialpredict/.codex-reports/tasks/PR581-029/summary.json), [conversation.ndjson](/workspace/socialpredict/.codex-reports/tasks/PR581-029/conversation.ndjson), [decisions.ndjson](/workspace/socialpredict/.codex-reports/tasks/PR581-029/decisions.ndjson)\n\nchecks_run: `run_boundary_checks.sh /workspace/socialpredict`, `go test -count=1 ./internal/domain/bets` twice with repo-local `GOCACHE`/`GOMODCACHE`, `gofmt -l` on the five scoped bets files\n\nfollow_ups: none\n\nAssumption: the existing in-progress edits in the scoped bets files were the intended implementation for this task, so they were preserved and validated rather than rewritten. My separate local reliability rerun later hit a runner disk-space issue (`no space left on device` under Go build temp files), but the dispatcher had already completed the task-level validation and reporting before that environment failure."
     },
     {
       "id": "PR581-030",
       "title": "Align all markets files with DIP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the DIP checklist only. None of the listed markets files are done for DIP. Work in all DIP-listed markets files: internal/domain/markets/errors.go (all top-level market error vars); internal/domain/markets/models.go (all top-level market model definitions); internal/domain/markets/service_details_test.go (TestServiceGetMarketDetailsCalculatesMetrics, TestServiceGetMarketDetails_InvalidAndMissing); internal/domain/markets/service_listbystatus_test.go (noopUserService.ValidateUserExists, noopUserService.ValidateUserBalance, noopUserService.DeductBalance, noopUserService.ApplyTransaction, noopUserService.GetPublicUser, fixedClock.Now, setupServiceWithDB, TestServiceListByStatusFiltersMarkets, TestServiceListByStatusInvalidStatus); internal/domain/markets/service_marketbets_test.go (betsRepo.Create, UpdateLabels, List, ListByStatus, Search, Delete, GetByID, ResolveMarket, GetUserPosition, ListMarketPositions, ListBetsForMarket, CalculatePayoutPositions, GetPublicMarket, nopUserService.ValidateUserExists, ValidateUserBalance, DeductBalance, ApplyTransaction, GetPublicUser, betsClock.Now, TestGetMarketBets_ReturnsProbabilities, TestGetMarketBets_EmptyWhenNoBets, TestGetMarketBets_ValidatesInputAndMarket, TestGetMarketPositions_ReturnsRepositoryData, TestGetMarketPositions_ValidatesInputAndMarket); internal/domain/markets/service_probability_test.go (projectionRepo.Create, UpdateLabels, List, ListByStatus, Search, Delete, ResolveMarket, GetUserPosition, ListMarketPositions, ListBetsForMarket, GetByID, CalculatePayoutPositions, GetPublicMarket, projectionClock.Now, TestProjectProbability_ComputesProjection, TestProjectProbability_InvalidOutcome, marketsToModel, modelsBet, absDiff); internal/domain/markets/service_resolve_test.go (resolveRepo.Create, UpdateLabels, List, ListByStatus, Search, Delete, GetByID, ResolveMarket, GetUserPosition, ListMarketPositions, ListBetsForMarket, CalculatePayoutPositions, GetPublicMarket, resolveUserService.ValidateUserExists, ValidateUserBalance, DeductBalance, ApplyTransaction, GetPublicUser, nopClock.Now, TestResolveMarketRefundsOnNA, TestResolveMarketPaysWinners, TestResolveMarketRejectsUnauthorized); internal/domain/markets/service_search_test.go (seedSearchMarkets, TestServiceSearchMarketsFiltersByStatus, TestServiceSearchMarketsInvalidInput); and internal/domain/markets/service.go (serviceClock.Now, WithCreationPolicy, WithResolutionPolicy, WithProbabilityEngine, WithProbabilityValidator, WithSearchPolicy, WithMetricsCalculator, WithLeaderboardCalculator, WithStatusPolicy, WithClock, NewService, ensureDefaults). Update every listed function and file-level definition to align with the Dependency Inversion Principle.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-025"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -611,18 +948,32 @@
       "notes": [
         "Source of truth for scope is the DIP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-05T14:55:27.037245+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d5e24-3fff-7ca3-9086-b0ca2b9575c6",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-030_20260405T145527Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-030_20260405T145527Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-030_20260405T145527Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-030_20260405T145527Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-030_20260405T145527Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-05T15:02:52.615644+00:00",
+      "last_exit_code": 0,
+      "last_summary": "The scoped files are `gofmt`-clean. `go test` and `go vet` are currently blocked by the Go toolchain trying to write `/home/agent/go`, so I\u2019m rerunning them with a repo-local cache instead of treating that as a code failure."
     },
     {
       "id": "PR581-031",
       "title": "Align all math files with DIP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the DIP checklist only. None of the listed math files are done for DIP. Work in all DIP-listed math files: internal/domain/math/market/dust_test.go (TestGetMarketVolumeWithDust, TestCalculateDustStack, TestGetMarketDust, TestCalculateDustForSell_Placeholder, TestCurrencyConservationInvariant); internal/domain/math/market/dust.go (ConstantSellDustCalculator.DustForSell, GetMarketVolumeWithDust, calculateDustStack, GetMarketDustWithCalculator, calculateDustStackWithCalculator, calculateDustForSell, GetMarketDust, sortBetsChronologically); internal/domain/math/market/marketvolume_test.go (TestGetMarketVolume); internal/domain/math/market/marketvolume.go (GetMarketVolume, GetEndMarketVolume); internal/domain/math/outcomes/dbpm/marketshares_test.go (generateCoursePayouts, TestDivideUpMarketPoolSharesDBPM, TestCalculateCoursePayoutsDBPM, TestCalculateNormalizationFactorsDBPM, TestCalculateScaledPayoutsDBPM, TestCalculateExcess, TestAdjustForPositiveExcess, TestAdjustForNegativeExcess, TestAdjustPayouts, TestAggregateUserPayoutsDBPM, TestNetAggregateMarketPositions, TestSingleCreditYesNoAllocator); internal/domain/math/outcomes/dbpm/marketshares.go (DivideUpMarketPoolSharesDBPM, CalculateCoursePayoutsDBPM, CalculateNormalizationFactorsDBPM, CalculateScaledPayoutsDBPM, calculateExcess, adjustForPositiveExcess, adjustForNegativeExcess, AdjustPayouts, AggregateUserPayoutsDBPM, NetAggregateMarketPositions, singleCreditYesNoAllocator); internal/domain/math/positions/adjust_valuation_test.go (TestAdjustUserValuationsToMarketVolume); internal/domain/math/positions/adjust_valuation.go (ByValBetTimeUsername.Len, ByValBetTimeUsername.Swap, ByValBetTimeUsername.Less, AdjustUserValuationsToMarketVolume, filterWinningValuations, buildUserHolders, adjustValuations); internal/domain/math/positions/positionsmath_test.go (TestCalculateMarketPositions_WPAM_DBPM, TestCalculateMarketPositions_IncludesZeroPositionUsers); internal/domain/math/positions/positionsmath.go (WithProbabilityProvider, WithPayoutModel, NewPositionCalculator, ensureDefaults, CalculateMarketPositions_WPAM_DBPM, PositionCalculator.CalculateMarketPositions, computeEarliestBets, sortBetsChronologically, calculateNetPositions helper, PositionCalculator.calculateNetPositions, calculateNetPositionsWith, mapUserPositions, aggregateUserBetTotals, assembleDisplayPositions, CalculateMarketPositionForUser_WPAM_DBPM); internal/domain/math/positions/profitability_test.go (TestCalculateUserSpend, TestGetEarliestBetTime, TestDeterminePositionType, TestCalculateMarketLeaderboard_EmptyBets); internal/domain/math/positions/profitability.go (CalculateMarketLeaderboard, CalculateUserSpend, GetEarliestBetTime, DeterminePositionType); internal/domain/math/positions/valuation_test.go (makeUserPositions, TestCalculateRoundedUserValuationsFromUserMarketPositions); internal/domain/math/positions/valuation.go (CalculateRoundedUserValuationsFromUserMarketPositions, getFinalProbabilityFromMarketModel); internal/domain/math/probabilities/wpam/wpam_current_test.go (TestGetCurrentProbability); internal/domain/math/probabilities/wpam/wpam_current.go (GetCurrentProbability); internal/domain/math/probabilities/wpam/wpam_marketprobabilities_test.go (TestCalculateMarketProbabilitiesWPAM); and internal/domain/math/probabilities/wpam/wpam_marketprobabilities.go (StaticSeedProvider.Seeds, NewProbabilityCalculator, ProbabilityCalculator.Seeds, CalculateMarketProbabilitiesWPAM function, ProbabilityCalculator.CalculateMarketProbabilitiesWPAM method, ProjectNewProbabilityWPAM function, ProbabilityCalculator.ProjectNewProbabilityWPAM method). Update every listed function and file-level definition to align with the Dependency Inversion Principle.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-026"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -630,18 +981,32 @@
       "notes": [
         "Source of truth for scope is the DIP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-05T15:02:52.680189+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d5e2b-0cd2-74a3-8c44-f0eec8e454fa",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-031_20260405T150252Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-031_20260405T150252Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-031_20260405T150252Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-031_20260405T150252Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-031_20260405T150252Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-05T15:10:07.313976+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id: `PR581-031`  \nstatus: `completed`\n\nFinished the remaining DIP gap in [marketshares.go](/workspace/socialpredict/backend/internal/domain/math/outcomes/dbpm/marketshares.go) and [marketshares_test.go](/workspace/socialpredict/backend/internal/domain/math/outcomes/dbpm/marketshares_test.go). The DBPM payout/share pipeline now routes through package-local strategy seams on `MarketShareCalculator`, so the remaining listed functions delegate through injectable collaborators while preserving existing wrappers and behavior. I also added seam-focused tests proving those injected collaborators are used.\n\nfiles_changed: [marketshares.go](/workspace/socialpredict/backend/internal/domain/math/outcomes/dbpm/marketshares.go), [marketshares_test.go](/workspace/socialpredict/backend/internal/domain/math/outcomes/dbpm/marketshares_test.go), report artifacts under [/workspace/socialpredict/.codex-reports/tasks/PR581-031](/workspace/socialpredict/.codex-reports/tasks/PR581-031)\n\nchecks_run:\n- `run_boundary_checks.sh /workspace/socialpredict` passed\n- `cd /workspace/socialpredict/backend && GOCACHE=/tmp/socialpredict-gocache GOMODCACHE=/tmp/socialpredict-gomodcache go test ./internal/domain/math/... -count=1` passed\n- Reliability helper test loop for `./internal/domain/math/...` passed twice\n- `cd /workspace/socialpredict/backend && GOCACHE=/tmp/socialpredict-gocache GOMODCACHE=/tmp/socialpredict-gomodcache go vet ./internal/domain/math/...` passed\n- Full reliability helper\u2019s broader OpenAPI/full-package phase did not complete because the environment ran out of cache disk space and also surfaced unrelated toolchain/cache issues outside the scoped math packages\n\nfollow_ups:\n- If broader repo validation is required, rerun the full reliability helper in an environment with more disk space and a healthy Go toolchain/module cache."
     },
     {
       "id": "PR581-032",
       "title": "Align all users files with DIP",
-      "status": "pending",
+      "status": "done",
       "prompt": "This task is sourced from the DIP checklist only. None of the listed users files are done for DIP. Work in all DIP-listed users files: internal/domain/users/errors.go (all top-level user error vars); internal/domain/users/models.go (all top-level user model definitions); internal/domain/users/service_profile_test.go (newFakeRepository, fakeRepository.GetByUsername, UpdateBalance, Create, Update, Delete, List, ListUserBets, GetMarketQuestion, GetUserPositionInMarket, ComputeUserFinancials, ListUserMarkets, GetCredentials, UpdatePassword, newServiceWithUser, TestServiceUpdateDescription, TestServiceUpdateDisplayName, TestServiceUpdateEmoji, TestServiceUpdatePersonalLinks, TestServiceChangePassword, TestServiceGetPrivateProfile); internal/domain/users/service_transactions_test.go (fakeAnalyticsService.ComputeUserFinancials, TestServiceApplyTransaction, TestServiceGetUserCredit, TestServiceGetUserPortfolio, TestServiceGetUserFinancials); internal/domain/users/service.go (NewService, ValidateUserExists, ValidateUserBalance, DeductBalance, GetUser, GetPublicUser, CreateUser, UpdateUser, ListUsers, DeleteUser, ApplyTransaction, GetUserCredit, GetUserPortfolio, ListUserMarkets, GetUserFinancials, UpdateDescription, UpdateDisplayName, UpdateEmoji, UpdatePersonalLinks, sanitizePersonalLinks, financialSnapshotToMap, GetPrivateProfile, PasswordHashCost, validatePasswordChangeInputs, ChangePassword); and internal/domain/users/transactions.go (all transaction-type constants). Update every listed function and file-level definition to align with the Dependency Inversion Principle.",
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "PR581-027"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -649,7 +1014,21 @@
       "notes": [
         "Source of truth for scope is the DIP checklist supplied by the user.",
         "The file and function inventory in the prompt is the execution scope."
-      ]
+      ],
+      "started_at": "2026-04-05T15:10:07.377963+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019d5e31-aed6-7a02-b670-ce490b3b6565",
+        "event_file": "/workspace/spec-socialpredict-tasks/.codex-runs/events/PR581-032_20260405T151007Z_part01.ndjson",
+        "stderr_file": "/workspace/spec-socialpredict-tasks/.codex-runs/stderr/PR581-032_20260405T151007Z_part01.stderr.log",
+        "message_file": "/workspace/spec-socialpredict-tasks/.codex-runs/messages/PR581-032_20260405T151007Z_part01.txt",
+        "prompt_file": "/workspace/spec-socialpredict-tasks/.codex-runs/prompts/PR581-032_20260405T151007Z_part01.txt",
+        "context_file": "/workspace/spec-socialpredict-tasks/.codex-runs/context/PR581-032_20260405T151007Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-05T15:24:03.958457+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_id `PR581-032`, status `completed`.\n\nChanged the users-domain DIP surface so the service depends on an explicit bundle of narrow ports while preserving the legacy constructor path for existing callers. `users.NewService` now adapts a `Repository` into explicit `ServiceDependencies`, and `users.NewServiceWithDependencies` is the direct constructor for DIP-aligned wiring in the scoped tests. I also decoupled the users-domain error, personal-links, and transaction helpers from concrete implementations and updated the targeted tests to build services from explicit dependencies.\n\nfiles_changed:\n- [service.go](/workspace/socialpredict/backend/internal/domain/users/service.go)\n- [errors.go](/workspace/socialpredict/backend/internal/domain/users/errors.go)\n- [models.go](/workspace/socialpredict/backend/internal/domain/users/models.go)\n- [transactions.go](/workspace/socialpredict/backend/internal/domain/users/transactions.go)\n- [service_profile_test.go](/workspace/socialpredict/backend/internal/domain/users/service_profile_test.go)\n- [service_transactions_test.go](/workspace/socialpredict/backend/internal/domain/users/service_transactions_test.go)\n\nchecks_run:\n- `gofmt -w /workspace/socialpredict/backend/internal/domain/users/service.go /workspace/socialpredict/backend/internal/domain/users/errors.go /workspace/socialpredict/backend/internal/domain/users/models.go /workspace/socialpredict/backend/internal/domain/users/transactions.go /workspace/socialpredict/backend/internal/domain/users/service_profile_test.go /workspace/socialpredict/backend/internal/domain/users/service_transactions_test.go`\n- `bash /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`\n- `cd /workspace/socialpredict/backend && GOTMPDIR=/workspace/socialpredict/.cache/gotmp GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/gomod go test ./internal/domain/users -count=1`\n- `cd /workspace/socialpredict/backend && GOTMPDIR=/workspace/socialpredict/.cache/gotmp GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/gomod go test ./internal/domain/users -count=1`\n- `cd /workspace/socialpredict/backend && GOMAXPROCS=1 GOTMPDIR=/workspace/socialpredict/.cache/gotmp GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/gomod go vet ./internal/domain/users`\n\nAssumption: the earlier ISP-oriented prep in this package was already present, so this pass focused on the remaining constructor/helper-level DIP gaps in the listed users files.\n\nfollow_ups:\n- none"
     }
   ]
 }

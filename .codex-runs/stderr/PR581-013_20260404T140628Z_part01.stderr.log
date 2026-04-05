@@ -1,0 +1,27 @@
+2026-04-04T14:08:43.567845Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /workspace/socialpredict/backend/internal/domain/analytics/systemmetrics_integration_test.go:
+	if surplus, err := metrics.Verification.SurplusValue(); err != nil || surplus != 0 {
+		t.Fatalf("expected zero surplus after resolution, got %d", surplus)
+	}
+}
+2026-04-04T14:11:01.722925Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /workspace/socialpredict/backend/internal/domain/analytics/financialsnapshot_test.go:
+	"gorm.io/gorm"
+)
+
+func newAnalyticsService(t *testing.T, db *gorm.DB, econ *setup.EconomicConfig) *Service {
+	t.Helper()
+	wpamCalculator := modelstesting.SeedWPAMFromConfig(econ)
+	positionCalculator := positionsmath.NewPositionCalculator(
+		positionsmath.WithProbabilityProvider(positionsmath.NewWPAMProbabilityProvider(wpamCalculator)),
+	)
+	repo := NewGormRepository(db, WithRepositoryPositionCalculator(NewMarketPositionCalculator(positionCalculator)))
+	loader := func() *setup.EconomicConfig { return econ }
+	return NewService(repo, loader, WithPositionCalculator(NewMarketPositionCalculator(positionCalculator)))
+}
+
+func TestComputeUserFinancials_NewUser_NoPositions(t *testing.T) {
+	db := modelstesting.NewFakeDB(t)
+	user := modelstesting.GenerateUser("testuser", 1000)
+2026-04-04T14:12:14.541597Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /workspace/socialpredict/backend/internal/domain/analytics/leaderboard_test.go:
+import (
+	"testing"
+	"time"

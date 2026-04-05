@@ -1,0 +1,10 @@
+task_id: `PR581-028`  
+status: `completed`
+
+The dispatcher completed the run and determined the scoped analytics DIP work was already present in the target worktree, so this run converged by validating the listed analytics files rather than expanding scope. The report summary was updated at [summary.json](/workspace/socialpredict/.codex-reports/tasks/PR581-028/summary.json). The validated scoped files were [financialsnapshot_test.go](/workspace/socialpredict/backend/internal/domain/analytics/financialsnapshot_test.go), [leaderboard_test.go](/workspace/socialpredict/backend/internal/domain/analytics/leaderboard_test.go), [models.go](/workspace/socialpredict/backend/internal/domain/analytics/models.go), [repository.go](/workspace/socialpredict/backend/internal/domain/analytics/repository.go), [service.go](/workspace/socialpredict/backend/internal/domain/analytics/service.go), [systemmetrics_integration_test.go](/workspace/socialpredict/backend/internal/domain/analytics/systemmetrics_integration_test.go), and [systemmetrics_test.go](/workspace/socialpredict/backend/internal/domain/analytics/systemmetrics_test.go).
+
+files_changed: `no additional analytics code changes were required in this run; canonical report files under /workspace/socialpredict/.codex-reports/tasks/PR581-028 were updated`
+
+checks_run: `go test -run 'TestComputeUserFinancials|TestAggregateLeaderboardUserStats|TestFindEarliestBetsPerUser|TestRankLeaderboardEntries|TestComputeGlobalLeaderboard_OrdersByProfit|TestComputeSystemMetrics_EmptyDatabase|TestComputeSystemMetrics_WithData|TestComputeSystemMetrics_BalancedAfterFinalLockedBet|TestResolveMarket_DistributesAllBetVolume' ./internal/domain/analytics` passed; `bash /home/agent/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict` passed; `gofmt -l` on the scoped analytics files returned clean; `go vet ./internal/domain/analytics` could not complete because the environment hit `no space left on device``
+
+follow_ups: `free disk/tmp space and rerun package-scoped go vet if a clean vet artifact is needed`

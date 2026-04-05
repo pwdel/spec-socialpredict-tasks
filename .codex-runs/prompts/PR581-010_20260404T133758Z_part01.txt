@@ -1,0 +1,49 @@
+You are executing a queued automation task for the SocialPredict repository at /workspace/spec-socialpredict-tasks.
+
+Start by explicitly spawning the custom agent named `dispatcher_agent` to coordinate the task. The dispatcher should decide whether to spawn any specialist agents and should wait for them before concluding.
+
+Reporting convention:
+- The canonical curated report location is `/workspace/socialpredict/.codex-reports/tasks/PR581-010`.
+- Report files are already bootstrapped:
+  - meta: `/workspace/socialpredict/.codex-reports/tasks/PR581-010/meta.json`
+  - summary: `/workspace/socialpredict/.codex-reports/tasks/PR581-010/summary.json`
+  - conversation log: `/workspace/socialpredict/.codex-reports/tasks/PR581-010/conversation.ndjson`
+  - decisions log: `/workspace/socialpredict/.codex-reports/tasks/PR581-010/decisions.ndjson`
+- Use helper script `/workspace/spec-socialpredict-tasks/scripts/codex-report.py` for deterministic report I/O when practical.
+- Specialists should append facts and decisions; the dispatcher owns `summary.json`.
+- Prefer incremental reads, for example `read-events --after-seq <last_event_seq>` instead of rereading the full conversation log.
+- `summary.json.context` is runner-maintained. If `handoff_requested` becomes true, stop branching out, update the summary, record a handoff event, and converge toward a clean checkpoint.
+
+Execution contract:
+- Do the task end-to-end.
+- Do not stop for clarifying questions unless blocked by a missing file, contradictory task instructions, or a safety issue.
+- Prefer the smallest defensible change.
+- Follow repository AGENTS.md guidance and nearby repo docs.
+- Use machine-readable task metadata below as the source of truth.
+- Finish with a concise summary that includes: task_id, status, files_changed, checks_run, and follow_ups.
+
+Task metadata:
+{
+  "approval": "never",
+  "attempts": 1,
+  "depends_on": [
+    "PR581-004"
+  ],
+  "id": "PR581-010",
+  "max_attempts": 3,
+  "notes": [
+    "Source of truth for scope is the SRP checklist supplied by the user: only unchecked math files belong in this task.",
+    "The file and symbol inventory in the prompt is the execution scope; the PR comments are provenance only.",
+    "Checked math implementation files such as dust.go, marketvolume.go, marketshares.go, positionsmath.go, valuation.go, and probabilities/wpam/*.go are excluded unless a listed unchecked symbol requires a narrow supporting change.",
+    "Every listed unchecked symbol should be reviewed and updated for SRP alignment before this task is considered done."
+  ],
+  "profile": "",
+  "prompt": "This task is sourced from the SRP checklist only. Work only in the unchecked math files and exact symbols defined here: internal/domain/math/market/dust_test.go (TestGetMarketVolumeWithDust, TestCalculateDustStack, TestGetMarketDust, TestCalculateDustForSell_Placeholder, TestCurrencyConservationInvariant); internal/domain/math/market/marketvolume_test.go (TestGetMarketVolume); internal/domain/math/outcomes/dbpm/marketshares_test.go (generateCoursePayouts, TestDivideUpMarketPoolSharesDBPM, TestCalculateCoursePayoutsDBPM, TestCalculateNormalizationFactorsDBPM, TestCalculateScaledPayoutsDBPM, TestCalculateExcess, TestAdjustForPositiveExcess, TestAdjustForNegativeExcess, TestAdjustPayouts, TestAggregateUserPayoutsDBPM, TestNetAggregateMarketPositions, TestSingleCreditYesNoAllocator); internal/domain/math/positions/adjust_valuation.go (UserHolder, ByValBetTimeUsername, ByValBetTimeUsername.Len, ByValBetTimeUsername.Swap, ByValBetTimeUsername.Less, AdjustUserValuationsToMarketVolume, filterWinningValuations, buildUserHolders, adjustValuations); internal/domain/math/positions/adjust_valuation_test.go (TestAdjustUserValuationsToMarketVolume); internal/domain/math/positions/profitability.go (UserProfitability, CalculateMarketLeaderboard, CalculateUserSpend, GetEarliestBetTime, DeterminePositionType); internal/domain/math/positions/profitability_test.go (TestCalculateUserSpend, TestGetEarliestBetTime, TestDeterminePositionType, TestCalculateMarketLeaderboard_EmptyBets); and internal/domain/math/positions/valuation_test.go (makeUserPositions, TestCalculateRoundedUserValuationsFromUserMarketPositions). Update every listed unchecked symbol to align with the Single Responsibility Principle without pushing math back into handlers.",
+  "runner_pid": 30481,
+  "sandbox": "workspace-write",
+  "started_at": "2026-04-04T13:37:58.560113+00:00",
+  "status": "running",
+  "title": "Align unchecked math files with SRP",
+  "working_dir": "../socialpredict/backend"
+}
+

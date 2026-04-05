@@ -1,0 +1,12 @@
+task_id: `PR581-029`  
+status: `completed`
+
+The required dispatcher path was used. No additional code patch was needed because the scoped DIP refactor for bets was already present in the working tree, and the dispatcher updated the canonical report at [/workspace/socialpredict/.codex-reports/tasks/PR581-029/summary.json](/workspace/socialpredict/.codex-reports/tasks/PR581-029/summary.json).
+
+files_changed: [errors.go](/workspace/socialpredict/backend/internal/domain/bets/errors.go), [models.go](/workspace/socialpredict/backend/internal/domain/bets/models.go), [service.go](/workspace/socialpredict/backend/internal/domain/bets/service.go), [service_helpers_test.go](/workspace/socialpredict/backend/internal/domain/bets/service_helpers_test.go), [service_test.go](/workspace/socialpredict/backend/internal/domain/bets/service_test.go), [summary.json](/workspace/socialpredict/.codex-reports/tasks/PR581-029/summary.json), [conversation.ndjson](/workspace/socialpredict/.codex-reports/tasks/PR581-029/conversation.ndjson), [decisions.ndjson](/workspace/socialpredict/.codex-reports/tasks/PR581-029/decisions.ndjson)
+
+checks_run: `run_boundary_checks.sh /workspace/socialpredict`, `go test -count=1 ./internal/domain/bets` twice with repo-local `GOCACHE`/`GOMODCACHE`, `gofmt -l` on the five scoped bets files
+
+follow_ups: none
+
+Assumption: the existing in-progress edits in the scoped bets files were the intended implementation for this task, so they were preserved and validated rather than rewritten. My separate local reliability rerun later hit a runner disk-space issue (`no space left on device` under Go build temp files), but the dispatcher had already completed the task-level validation and reporting before that environment failure.

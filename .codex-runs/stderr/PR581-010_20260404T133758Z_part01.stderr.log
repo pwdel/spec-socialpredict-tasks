@@ -1,0 +1,15 @@
+2026-04-04T13:44:31.408596Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /workspace/socialpredict/backend/internal/domain/math/outcomes/dbpm/marketshares_test.go:
+	for _, tc := range testcases {
+		t.Run(tc.Name, func(t *testing.T) {
+			actualResult := AdjustPayouts(tc.Bets, tc.ScaledPayouts)
+			for i, result := range actualResult {
+				if result != tc.ExpectedAdjustedPayouts[i] {
+					t.Errorf(
+						"Test %s failed at index %d: expected payout %d, got %d",
+						tc.Name, i, result, tc.ExpectedAdjustedPayouts[i],
+					)
+				}
+			}
+		})
+	}
+}

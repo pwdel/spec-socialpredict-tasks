@@ -1,0 +1,10 @@
+task_id: `PR581-019`
+status: `completed`
+
+I aligned the listed bets LSP surface by removing unnecessary abstraction layers from the bet error/model definitions, making `Service` option/default wiring resilient to nil and typed-nil collaborators, and hardening the listed test doubles so their zero values behave predictably under the interfaces they substitute. I also updated the canonical report at `/workspace/socialpredict/.codex-reports/tasks/PR581-019`, with `summary.json` finalized under `dispatcher_agent` ownership.
+
+files_changed: `backend/internal/domain/bets/errors.go`, `backend/internal/domain/bets/models.go`, `backend/internal/domain/bets/service.go`, `backend/internal/domain/bets/service_helpers_test.go`, `backend/internal/domain/bets/service_test.go`
+
+checks_run: `bash /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`; `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go test ./internal/domain/bets`; `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go vet ./internal/domain/bets`
+
+follow_ups: the repo quality guardrails script was not run as-is because it hardcodes the unwritable default Go module cache path `/home/agent/go` in this environment; equivalent local-cache `go test` and `go vet` checks passed instead.

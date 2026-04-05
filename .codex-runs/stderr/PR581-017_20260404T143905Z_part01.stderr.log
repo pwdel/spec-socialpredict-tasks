@@ -1,0 +1,45 @@
+2026-04-04T14:45:30.346269Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /workspace/socialpredict/backend/internal/domain/users/errors.go:
+package users
+
+import "errors"
+
+var (
+	ErrUserNotFound           = errors.New("user not found")
+	ErrUserAlreadyExists      = errors.New("user already exists")
+	ErrInvalidCredentials     = errors.New("invalid credentials")
+	ErrInsufficientBalance    = errors.New("insufficient balance")
+	ErrInvalidUserData        = errors.New("invalid user data")
+	ErrUnauthorized           = errors.New("unauthorized")
+	ErrInvalidTransactionType = errors.New("invalid transaction type")
+)
+2026-04-04T14:46:04.857194Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /workspace/socialpredict/backend/internal/domain/users/models.go:
+func (u *User) ToPublicUser() *PublicUser {
+	if u == nil {
+		return nil
+	}
+
+	return &PublicUser{
+		ID:                    u.ID,
+		Username:              u.Username,
+2026-04-04T14:47:08.451040Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /workspace/socialpredict/backend/internal/domain/users/service.go:
+// CreateUser creates a new user
+func (s *Service) CreateUser(ctx context.Context, req UserCreateRequest) (*User, error) {
+	// Check if user already exists
+	if _, err := s.repo.GetByUsername(ctx, req.Username); err == nil {
+		return nil, ErrUserAlreadyExists
+	} else if err != ErrUserNotFound {
+		return nil, err
+	}
+
+	user := &User{
+		Username:              req.Username,
+		DisplayName:           req.DisplayName,
+		Email:                 req.Email,
+		UserType:              req.UserType,
+		InitialAccountBalance: 0,
+		AccountBalance:        0,
+		MustChangePassword:    true,
+	}
+2026-04-04T14:47:31.710297Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /workspace/socialpredict/backend/internal/domain/users/service.go:
+	return personalLinksFromValues(sanitized), nil
+}

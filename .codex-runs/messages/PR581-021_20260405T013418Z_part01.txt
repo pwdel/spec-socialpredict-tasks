@@ -1,0 +1,9 @@
+task_id: `PR581-021`, status: `completed`.
+
+I spawned `dispatcher-agent` first as requested, let it inspect the report state, and completed the scoped LSP refactor in the backend math packages. The main change was to keep the existing public helpers stable while routing them through substitutable calculators/selectors across market volume/dust, DBPM share division, positions, leaderboard/valuation, and WPAM probability selection. I also added focused substitution tests so the new seams are exercised instead of only existing as wrappers.
+
+files_changed: `backend/internal/domain/math/market/dust.go`, `backend/internal/domain/math/market/marketvolume.go`, `backend/internal/domain/math/market/dust_test.go`, `backend/internal/domain/math/market/marketvolume_test.go`, `backend/internal/domain/math/outcomes/dbpm/marketshares.go`, `backend/internal/domain/math/outcomes/dbpm/marketshares_test.go`, `backend/internal/domain/math/positions/adjust_valuation.go`, `backend/internal/domain/math/positions/positionsmath.go`, `backend/internal/domain/math/positions/positionsmath_test.go`, `backend/internal/domain/math/positions/profitability.go`, `backend/internal/domain/math/positions/profitability_test.go`, `backend/internal/domain/math/positions/valuation.go`, `backend/internal/domain/math/positions/valuation_test.go`, `backend/internal/domain/math/probabilities/wpam/wpam_current.go`, `backend/internal/domain/math/probabilities/wpam/wpam_current_test.go`, `backend/internal/domain/math/probabilities/wpam/wpam_marketprobabilities.go`, `backend/internal/domain/math/probabilities/wpam/wpam_marketprobabilities_test.go`.
+
+checks_run: `GOCACHE=/workspace/socialpredict/.cache/go-build GOMODCACHE=/workspace/socialpredict/.cache/go-mod go test ./internal/domain/math/... -count=1`, `gofmt -w` on the scoped math files.
+
+follow_ups: none for code; the canonical report under `/workspace/socialpredict/.codex-reports/tasks/PR581-021` was updated.
