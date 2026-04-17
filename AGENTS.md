@@ -286,9 +286,14 @@ as the navigation point for the committed workspace contents.
 
 - `TASKS.json`
   Live machine-readable task backlog and runner state for the workspace.
+  Active tasks are `uid`-first: `uid` is canonical, and `id` is a human-facing
+  label.
 
 - `TASKS.example.json`
   Small example showing the expected task schema.
+
+- `lib/task-registry.json`
+  Persistent UID-first registry plus the historical display-ID lookup index.
 
 - `TASKS.json.backup`
   Backup snapshot of the task file.
@@ -341,6 +346,13 @@ as the navigation point for the committed workspace contents.
 - `scripts/codex-report.py`
   Deterministic helper for initializing and updating canonical task reports in
   the target repo.
+
+- `scripts/task-registry.py`
+  Archives completed task queues, rebuilds the UID-first registry, validates
+  active task UIDs, and mints new UID/display-ID pairs.
+
+- `scripts/render-runner-prompt.py`
+  Renders external `codex-runner.sh` prompt templates from task metadata.
 
 - `scripts/lib/agent_assets_manifest.sh`
   Manifest, hashing, and JSON helper functions for managed installs.
@@ -408,6 +420,14 @@ as the navigation point for the committed workspace contents.
 
 - `agent-reports/templates/`
   Currently an empty placeholder for future report templates.
+
+- `lib/task-archives/`
+  Historical task-queue archives that have been moved out of the active
+  `TASKS.json`.
+
+- `prompts/codex-runner/`
+  Human-readable initial-task and checkpoint-resume prompt templates consumed
+  by `codex-runner.sh`.
 
 ## Current Layout Notes
 

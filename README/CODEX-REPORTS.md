@@ -9,12 +9,12 @@ task journals into the target repo.
   - `TASKS.json`
   - `.codex-runs/` raw event streams, stderr, prompt captures, runner state
 - Target repo (`../socialpredict`):
-  - `.codex-reports/tasks/<task-id>/` curated task journal and summary
+  - `.codex-reports/tasks/<task-uid>/` curated task journal and summary
 
 ## Canonical Target-Repo Layout
 
 ```text
-../socialpredict/.codex-reports/tasks/<task-id>/
+../socialpredict/.codex-reports/tasks/<task-uid>/
 ├── meta.json
 ├── summary.json
 ├── conversation.ndjson
@@ -25,8 +25,8 @@ task journals into the target repo.
 
 - `meta.json`: stable metadata for the task, repos, dispatcher, and file paths
 - `summary.json`: dispatcher-owned rolled-up current state
-- `conversation.ndjson`: append-only event journal across dispatcher and specialists
-- `decisions.ndjson`: append-only architectural/process decisions
+- `conversation.ndjson`: append-only event journal across dispatcher and specialists; each row carries `task_uid` and `task_id`
+- `decisions.ndjson`: append-only architectural/process decisions; each row carries `task_uid` and `task_id`
 
 ## Why NDJSON
 
@@ -43,14 +43,14 @@ Examples:
 
 ```bash
 python3 scripts/codex-report.py read-summary \
-  --report-dir ../socialpredict/.codex-reports/tasks/PR581-008
+  --report-dir ../socialpredict/.codex-reports/tasks/019d9935-ace6-7305-bbc5-9e35238350cc
 
 python3 scripts/codex-report.py read-events \
-  --report-dir ../socialpredict/.codex-reports/tasks/PR581-008 \
+  --report-dir ../socialpredict/.codex-reports/tasks/019d9935-ace6-7305-bbc5-9e35238350cc \
   --after-seq 12
 
 python3 scripts/codex-report.py append-event \
-  --report-dir ../socialpredict/.codex-reports/tasks/PR581-008 \
+  --report-dir ../socialpredict/.codex-reports/tasks/019d9935-ace6-7305-bbc5-9e35238350cc \
   --agent-name dispatcher_agent \
   --agent-role dispatcher \
   --event-type plan_updated \

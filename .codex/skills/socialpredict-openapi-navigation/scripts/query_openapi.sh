@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILLS_LIB_DIR="$(cd "$SCRIPT_DIR/../../lib" && pwd)"
+# shellcheck source=../../lib/socialpredict_backend_common.sh
+source "$SKILLS_LIB_DIR/socialpredict_backend_common.sh"
+
 usage() {
   cat <<'EOF'
-Usage: query_openapi.sh <repo-dir> <command> [args]
+Usage: query_openapi.sh [repo-dir] <command> [args]
 
 Commands:
   summary
@@ -16,24 +21,31 @@ Commands:
 EOF
 }
 
-if [ "$#" -lt 2 ]; then
+if [ "$#" -lt 1 ]; then
   usage
   exit 1
 fi
 
-REPO_DIR="$1"
-shift
+case "$1" in
+  summary|tags|tag|path|operation|schema|refs)
+    REPO_DIR="$(resolve_target_repo_dir "")"
+    COMMAND="$1"
+    shift
+    ;;
+  *)
+    REPO_DIR="$(resolve_target_repo_dir "$1")"
+    shift
+    if [ "$#" -lt 1 ]; then
+      usage
+      exit 1
+    fi
+    COMMAND="$1"
+    shift
+    ;;
+esac
 
-COMMAND="$1"
-shift
-
-BACKEND_DIR="$REPO_DIR/backend"
+BACKEND_DIR="$(require_backend_dir "$REPO_DIR")"
 SPEC_PATH="$BACKEND_DIR/docs/openapi.yaml"
-
-if [ ! -d "$BACKEND_DIR" ]; then
-  echo "Expected backend directory at $BACKEND_DIR" >&2
-  exit 1
-fi
 
 if [ ! -f "$SPEC_PATH" ]; then
   echo "Expected OpenAPI spec at $SPEC_PATH" >&2

@@ -1,6 +1,6 @@
 # SocialPredict API Contract Policy
 
-## Contract Drift Controls (Current PR #581 Scope)
+## Contract Drift Controls (Current Execution Scope)
 
 1. Any route wiring change in `backend/server/server.go` must be reflected in `backend/docs/openapi.yaml`.
 2. Any handler response/request shape change must update the OpenAPI schema and examples.

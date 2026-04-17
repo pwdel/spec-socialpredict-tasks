@@ -1,8 +1,11 @@
 {
   "version": 1,
   "project": "socialpredict-backend",
+  "task_registry": "lib/task-registry.json",
+  "task_archives": [],
   "tasks": [
     {
+      "uid": "019d9935-ace6-7305-bbc5-9e35238350cc",
       "id": "SP-001",
       "title": "Refactor create-market validation into testable helpers",
       "status": "pending",
@@ -20,13 +23,14 @@
       ]
     },
     {
+      "uid": "019d9935-ace7-7bc0-9bc1-24a01dcf4cb1",
       "id": "SP-002",
       "title": "Check OpenAPI drift for market endpoints",
       "status": "pending",
       "prompt": "Verify that the OpenAPI specification matches the implemented market endpoints and response shapes. Update the spec or code as needed and run contract checks.",
       "working_dir": ".",
       "depends_on": [
-        "SP-001"
+        "019d9935-ace6-7305-bbc5-9e35238350cc"
       ],
       "attempts": 0,
       "max_attempts": 3,

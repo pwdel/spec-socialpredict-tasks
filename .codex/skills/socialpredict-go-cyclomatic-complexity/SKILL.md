@@ -7,7 +7,7 @@ description: Run `gocyclo` against SocialPredict Go code and summarize cyclomati
 
 ## Workflow
 
-1. Confirm the target repo and scope. Default to `../socialpredict/backend` when working from the PR #581 control workspace.
+1. Confirm the target repo and scope. Default to `../socialpredict/backend` when working from this control workspace.
 2. Read `references/gocyclo-guidance.md` for thresholds, output format, and reporting rules.
 3. Run `scripts/run_gocyclo.sh [repo-dir] [over-threshold] [targets...]`.
 4. Report the exact command, threshold, and highest-complexity functions with file references.
@@ -20,7 +20,7 @@ description: Run `gocyclo` against SocialPredict Go code and summarize cyclomati
 - Default `gocyclo -over` threshold: `4`
 - Default target list: `.`
 
-The default threshold matches the PR #581 comment that used `gocyclo --over 4 .` to report functions at complexity 5 or higher.
+The default threshold reports functions at complexity 5 or higher via `gocyclo --over 4 .`.
 
 Raise the threshold when the user wants a shorter actionable list:
 

@@ -23,7 +23,7 @@ gocyclo -over 4 .
 
 ## Thresholds
 
-- `4`: broad scan for functions at complexity 5 or higher. This matches the PR #581 thread.
+- `4`: broad scan for functions at complexity 5 or higher.
 - `8`: narrower list for likely maintenance hotspots.
 - `10`: only the most complex functions.
 
