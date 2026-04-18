@@ -10,7 +10,7 @@
       "uid": "019d99d7-3d71-70aa-9f0b-d0f4da7524f0",
       "id": "W01-001",
       "title": "WAVE01: Split backend/util into infrastructure/bootstrap and domain-owned helpers",
-      "status": "pending",
+      "status": "done",
       "prompt": "Break up `backend/util` so it stops acting as a mixed catch-all package. Separate DB/bootstrap concerns, env loading, and domain-specific helper logic into better-owned packages that fit the existing architecture. Keep the scope pragmatic: establish clear homes for the current `util` responsibilities, preserve behavior, and avoid introducing a new junk-drawer package under a different name. Add focused tests where behavior moves.",
       "acceptance_criteria": [
         "`backend/util` no longer remains the primary mixed ownership home for DB/bootstrap, env, and domain-specific helpers.",
@@ -40,7 +40,7 @@
       ],
       "working_dir": "../socialpredict/backend",
       "depends_on": [],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -48,13 +48,27 @@
       "notes": [
         "Treat DB bootstrap/runtime code as infrastructure, not a domain service.",
         "Push API key and user-specific uniqueness helpers toward users/account-owned code rather than leaving them generic."
-      ]
+      ],
+      "started_at": "2026-04-18T12:04:11.927485+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019da07a-2479-7422-9806-0d1cd9d715a0",
+        "event_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/events/019d99d7-3d71-70aa-9f0b-d0f4da7524f0_20260418T120412Z_part01.ndjson",
+        "stderr_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/stderr/019d99d7-3d71-70aa-9f0b-d0f4da7524f0_20260418T120412Z_part01.stderr.log",
+        "message_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/messages/019d99d7-3d71-70aa-9f0b-d0f4da7524f0_20260418T120412Z_part01.txt",
+        "prompt_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/prompts/019d99d7-3d71-70aa-9f0b-d0f4da7524f0_20260418T120412Z_part01.txt",
+        "context_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/context/019d99d7-3d71-70aa-9f0b-d0f4da7524f0_20260418T120412Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-18T12:14:08.521356+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_uid: `019d99d7-3d71-70aa-9f0b-d0f4da7524f0`  \ntask_id: `W01-001`  \nstatus: `completed`\n\n`backend/util` is no longer the active mixed-ownership package. I moved dotenv loading to `backend/internal/app/env`, moved DB config/init/shared-handle ownership to `backend/internal/app/runtime`, rewired startup and legacy shared-DB callers to those packages, and deleted the old `backend/util/*.go` files. The users-domain uniqueness/API-key helpers are now the retained home for that behavior under `backend/internal/domain/users`.\n\nfiles_changed: `backend/main.go`, `backend/server/server.go`, `backend/server/server_test.go`, `backend/internal/service/auth/loggin.go`, `backend/internal/service/auth/middleware_test.go`, `backend/handlers/admin/adduser.go`, `backend/handlers/stats/statshandler.go`, `backend/handlers/markets/marketdetailshandler_test.go`, `backend/handlers/markets/marketdetailshandler_volume_consistency_test.go`, `backend/handlers/markets/resolvemarket_test.go`, `backend/internal/app/env/devloader.go`, `backend/internal/app/env/devloader_test.go`, `backend/internal/app/runtime/db.go`, `backend/internal/app/runtime/db_test.go`, `backend/internal/domain/users/uniqueness.go`, `backend/internal/domain/users/uniqueness_test.go`, deleted `backend/util/getenv.go`, `backend/util/postgres.go`, `backend/util/modelchecks.go`, `backend/util/apikeys.go`, `backend/util/util_test.go`\n\nchecks_run: `gofmt -w` on touched files, `go test ./internal/app/... ./internal/domain/users ./internal/service/auth ./handlers/admin ./handlers/stats ./server ./handlers/markets -count=1` twice, `go vet ./internal/app/... ./internal/domain/users ./internal/service/auth ./handlers/admin ./handlers/stats ./server ./handlers/markets`, `/workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`, `go test ./... -run TestOpenAPISpecValidates -count=1`\n\nAssumption: the users-domain helper files under `backend/internal/domain/users/uniqueness.go` and `_test.go` are the intended retained ownership point for uniqueness/API-key behavior in this workspace, so I routed callers there instead of creating another replacement package.\n\nfollow_ups: `none`"
     },
     {
       "uid": "019d99d7-3d71-70aa-9f0b-d0f553db0d37",
       "id": "W01-002",
       "title": "WAVE01: Remove hidden util runtime boundaries from touched code paths",
-      "status": "pending",
+      "status": "done",
       "prompt": "Remove direct reliance on `util.GetDB()` and adjacent hidden runtime boundaries from the touched startup, server, handler, and auth paths. Treat this as prerequisite runtime-boundary cleanup for the later configuration-service extraction: prefer container-owned wiring, explicit dependencies, or clearly-scoped infrastructure seams over global accessors. Keep behavior stable and avoid pulling the configuration-service extraction into this task except where a shared boundary must be prepared first.",
       "acceptance_criteria": [
         "Touched startup, server, handler, and auth paths stop relying directly on `util.GetDB()` or equivalent hidden runtime accessors.",
@@ -86,7 +100,7 @@
       "depends_on": [
         "019d99d7-3d71-70aa-9f0b-d0f4da7524f0"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -95,13 +109,27 @@
         "This wave is about util breakup first, not the full config-service migration.",
         "Keep changes extraction-ready and consistent with the existing container patterns.",
         "The purpose is to remove hidden runtime dependency paths before WAVE02 introduces the owned configuration seam."
-      ]
+      ],
+      "started_at": "2026-04-18T12:14:08.608597+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019da083-3e2c-7852-8728-96f8a4504499",
+        "event_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/events/019d99d7-3d71-70aa-9f0b-d0f553db0d37_20260418T121408Z_part01.ndjson",
+        "stderr_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/stderr/019d99d7-3d71-70aa-9f0b-d0f553db0d37_20260418T121408Z_part01.stderr.log",
+        "message_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/messages/019d99d7-3d71-70aa-9f0b-d0f553db0d37_20260418T121408Z_part01.txt",
+        "prompt_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/prompts/019d99d7-3d71-70aa-9f0b-d0f553db0d37_20260418T121408Z_part01.txt",
+        "context_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/context/019d99d7-3d71-70aa-9f0b-d0f553db0d37_20260418T121408Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-18T12:19:23.945067+00:00",
+      "last_exit_code": 0,
+      "last_summary": "task_uid: `019d99d7-3d71-70aa-9f0b-d0f553db0d37`\ntask_id: `W01-002`\nstatus: `completed`\n\nRemoved hidden DB access from the touched runtime paths by threading the `*gorm.DB` created in [main.go](/workspace/socialpredict/backend/main.go) into [server.go](/workspace/socialpredict/backend/server/server.go), then into the remaining legacy entrypoints in [loggin.go](/workspace/socialpredict/backend/internal/service/auth/loggin.go), [statshandler.go](/workspace/socialpredict/backend/handlers/stats/statshandler.go), and [adduser.go](/workspace/socialpredict/backend/handlers/admin/adduser.go). The corresponding route/auth tests in [server_test.go](/workspace/socialpredict/backend/server/server_test.go) and [middleware_test.go](/workspace/socialpredict/backend/internal/service/auth/middleware_test.go) were updated to inject DB explicitly as well.\n\nfiles_changed: `backend/main.go`, `backend/server/server.go`, `backend/server/server_test.go`, `backend/handlers/stats/statshandler.go`, `backend/handlers/admin/adduser.go`, `backend/internal/service/auth/loggin.go`, `backend/internal/service/auth/middleware_test.go`\n\nchecks_run: `run_boundary_checks.sh /workspace/socialpredict`; `gofmt` wrapper on touched files; `go test ./internal/service/auth ./handlers/admin ./handlers/stats -count=1` twice; `go test ./server -count=1` twice; `go test ./... -run TestOpenAPISpecValidates -count=1`; `go vet ./server ./internal/service/auth ./handlers/admin ./handlers/stats`\n\nfollow_ups: `None`\n\nAssumption: untouched legacy callers outside this task may still rely on the shared runtime DB handle; this change only removes that hidden boundary from the startup, server, handler, and auth paths named in scope."
     },
     {
       "uid": "019d9996-f8a9-75b8-a4a3-7348db798872",
       "id": "W02-001",
       "title": "WAVE02: Extract a service-backed configuration slice from backend/setup",
-      "status": "pending",
+      "status": "done",
       "prompt": "Create a configuration slice that fits the existing internal application architecture instead of relying on `backend/setup` globals as the runtime integration boundary. Treat `backend/setup/setup.yaml` as the current source data, but introduce a service-backed config layer under the internal packages, define the typed interfaces/models needed for economics and frontend config access, and wire that slice through the application container. Make this slice look and behave as much like the other extraction-ready backend services as practical so it can later move toward its own container with minimal churn. Preserve existing config values and external route semantics. Add focused tests. This is a prerequisite wave, not API contract redesign.",
       "acceptance_criteria": [
         "A service-backed configuration slice exists under the internal application structure with typed interfaces or models for economics and frontend config access.",
@@ -132,7 +160,7 @@
       "depends_on": [
         "019d99d7-3d71-70aa-9f0b-d0f553db0d37"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -141,13 +169,27 @@
         "Keep `setup.yaml` as the configuration source asset unless a narrower compatibility shim is clearly better.",
         "Follow the existing service/container patterns instead of inventing a separate runtime path.",
         "Do not design `backend/setup` as a permanent special-case boundary."
-      ]
+      ],
+      "started_at": "2026-04-18T12:19:24.042888+00:00",
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019da088-0e76-76f2-97be-185054878d65",
+        "event_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/events/019d9996-f8a9-75b8-a4a3-7348db798872_20260418T121924Z_part01.ndjson",
+        "stderr_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/stderr/019d9996-f8a9-75b8-a4a3-7348db798872_20260418T121924Z_part01.stderr.log",
+        "message_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/messages/019d9996-f8a9-75b8-a4a3-7348db798872_20260418T121924Z_part01.txt",
+        "prompt_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/prompts/019d9996-f8a9-75b8-a4a3-7348db798872_20260418T121924Z_part01.txt",
+        "context_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/context/019d9996-f8a9-75b8-a4a3-7348db798872_20260418T121924Z_part01.ndjson",
+        "resume_pending": false
+      },
+      "finished_at": "2026-04-18T12:30:31.455969+00:00",
+      "last_exit_code": 0,
+      "last_summary": "Assumption: `backend/setup/setup.yaml` stays the source asset and `setup.LoadEconomicsConfig` remains the compatibility loader, while `internal/service/config` becomes the primary runtime boundary used by the container and server wiring.\n\n- `task_uid`: `019d9996-f8a9-75b8-a4a3-7348db798872`\n- `task_id`: `W02-001`\n- `status`: `completed`\n- `files_changed`: `backend/internal/service/config/service.go`, `backend/internal/service/config/service_test.go`, `backend/internal/app/container.go`, `backend/internal/app/container_test.go`, `backend/handlers/admin/adduser.go`, `backend/handlers/setup/setuphandler.go`, `backend/handlers/setup/setuphandler_test.go`, `backend/handlers/stats/statshandler.go`, `backend/handlers/stats/statshandler_test.go`, `backend/server/server.go`, `backend/server/server_test.go`\n- `checks_run`: `gofmt -w` on touched files; `gofmt -l` on touched files; `go test -count=1 ./internal/app ./internal/service/config ./handlers/setup ./handlers/stats ./server` run twice with workspace-local `GOMODCACHE`/`GOPATH`; `go vet ./internal/app ./internal/service/config ./handlers/setup ./handlers/stats ./server`; `bash /workspace/spec-socialpredict-tasks/.codex/skills/socialpredict-go-architecture-governance/scripts/run_boundary_checks.sh /workspace/socialpredict`\n- `follow_ups`: repo-wide `go test ./...` and `go vet ./...` were not run because verification stayed on the touched backend packages; the spawned dispatcher concluded without spawning specialist agents; the curated report was updated under `/workspace/socialpredict/.codex-reports/tasks/019d9996-f8a9-75b8-a4a3-7348db798872`\n\nWhat changed: the app container now owns a typed config service from `internal/service/config`; `server` builds and passes that service through the runtime path; setup/admin/stats handlers consume the service instead of using `backend/setup` globals as the primary integration boundary; focused tests were added for config service behavior, container compatibility, setup handlers, and stats wiring while preserving existing setup values and route response shapes."
     },
     {
       "uid": "019d9996-f8a9-75b8-a4a3-7349b2560d4f",
       "id": "W02-002",
       "title": "WAVE02: Migrate setup consumers and setup endpoints to the configuration service",
-      "status": "pending",
+      "status": "running",
       "prompt": "Update the direct configuration consumers to use the new configuration service rather than `setup.LoadEconomicsConfig`, `setup.EconomicsConfig`, or similar global accessors. Focus on `server.go`, `handlers/setup`, `handlers/stats`, `handlers/admin/adduser`, `seed`, and any touched container wiring/tests. Keep `/v0/setup` and `/v0/setup/frontend` path semantics stable, but make them service-backed in the same architectural style as the rest of the backend. Prefer moving touched callers directly to the new internal config slice rather than leaving them behind a long-lived compatibility wrapper. Add or update tests and narrow docs where needed.",
       "acceptance_criteria": [
         "Named setup consumers move to the new configuration service instead of direct `setup.*` global accessors.",
@@ -180,7 +222,7 @@
       "depends_on": [
         "019d9996-f8a9-75b8-a4a3-7348db798872"
       ],
-      "attempts": 0,
+      "attempts": 1,
       "max_attempts": 3,
       "sandbox": "workspace-write",
       "approval": "never",
@@ -188,7 +230,18 @@
       "notes": [
         "Do not introduce the `{ ok, result, reason }` API envelope in this wave unless a touched route already requires a compatibility-safe response cleanup.",
         "A thin temporary shim is acceptable only if it clearly reduces migration risk; it should not become the new steady-state boundary."
-      ]
+      ],
+      "started_at": "2026-04-18T12:30:31.537600+00:00",
+      "runner_pid": 158162,
+      "runner_state": {
+        "segment": 1,
+        "session_id": "019da092-3dd1-7de3-9ff0-40d866502502",
+        "event_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/events/019d9996-f8a9-75b8-a4a3-7349b2560d4f_20260418T123031Z_part01.ndjson",
+        "stderr_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/stderr/019d9996-f8a9-75b8-a4a3-7349b2560d4f_20260418T123031Z_part01.stderr.log",
+        "message_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/messages/019d9996-f8a9-75b8-a4a3-7349b2560d4f_20260418T123031Z_part01.txt",
+        "prompt_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/prompts/019d9996-f8a9-75b8-a4a3-7349b2560d4f_20260418T123031Z_part01.txt",
+        "context_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/context/019d9996-f8a9-75b8-a4a3-7349b2560d4f_20260418T123031Z_part01.ndjson"
+      }
     },
     {
       "uid": "019d9996-f8a9-736b-93d9-de583bb6112a",
