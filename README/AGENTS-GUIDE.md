@@ -18,6 +18,7 @@ committed `.toml` files:
 - `.codex/agents/software-action-go-style-agent.toml`
 - `.codex/agents/software-action-logging-agent.toml`
 - `.codex/agents/software-action-openapi-contract-agent.toml`
+- `.codex/agents/software-action-service-domain-architecture-agent.toml`
 - `.codex/agents/software-action-test-reliability-agent.toml`
 - `.codex/agents/software-action-verifier-agent.toml`
 - `.codex/agents/software-designer-01-evans-agent.toml`

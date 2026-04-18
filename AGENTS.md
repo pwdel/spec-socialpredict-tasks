@@ -384,6 +384,7 @@ as the navigation point for the committed workspace contents.
   - `software-action-go-style-agent.toml`
   - `software-action-logging-agent.toml`
   - `software-action-openapi-contract-agent.toml`
+  - `software-action-service-domain-architecture-agent.toml`
   - `software-action-test-reliability-agent.toml`
   - `software-action-verifier-agent.toml`
   - `software-designer-01-evans-agent.toml`

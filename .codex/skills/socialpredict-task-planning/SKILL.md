@@ -41,6 +41,10 @@ Each task should include:
 - `title`
 - `status`
 - `prompt`
+- `acceptance_criteria`
+- `verification`
+- `out_of_scope`
+- `touched_paths`
 - `working_dir`
 - `depends_on`
 - `attempts`

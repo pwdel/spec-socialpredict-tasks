@@ -12,6 +12,32 @@
       "title": "WAVE01: Split backend/util into infrastructure/bootstrap and domain-owned helpers",
       "status": "pending",
       "prompt": "Break up `backend/util` so it stops acting as a mixed catch-all package. Separate DB/bootstrap concerns, env loading, and domain-specific helper logic into better-owned packages that fit the existing architecture. Keep the scope pragmatic: establish clear homes for the current `util` responsibilities, preserve behavior, and avoid introducing a new junk-drawer package under a different name. Add focused tests where behavior moves.",
+      "acceptance_criteria": [
+        "`backend/util` no longer remains the primary mixed ownership home for DB/bootstrap, env, and domain-specific helpers.",
+        "Moved responsibilities land in clearly-owned packages that match the current backend architecture.",
+        "Behavior is preserved for touched callers and moved logic has focused test coverage where practical."
+      ],
+      "verification": {
+        "owner": "software-action-test-reliability-agent",
+        "sign_off": "required",
+        "focus": [
+          "deterministic test evidence for moved helper behavior",
+          "regression coverage for touched startup or caller paths",
+          "confirmation that the util breakup did not introduce hidden runtime failures"
+        ]
+      },
+      "out_of_scope": [
+        "full configuration-service extraction",
+        "public API contract redesign",
+        "introducing a replacement junk-drawer package"
+      ],
+      "touched_paths": [
+        "../socialpredict/backend/util",
+        "../socialpredict/backend/internal",
+        "../socialpredict/backend/server",
+        "../socialpredict/backend/handlers",
+        "../socialpredict/backend/main.go"
+      ],
       "working_dir": "../socialpredict/backend",
       "depends_on": [],
       "attempts": 0,
@@ -30,6 +56,32 @@
       "title": "WAVE01: Remove hidden util runtime boundaries from touched code paths",
       "status": "pending",
       "prompt": "Remove direct reliance on `util.GetDB()` and adjacent hidden runtime boundaries from the touched startup, server, handler, and auth paths. Treat this as prerequisite runtime-boundary cleanup for the later configuration-service extraction: prefer container-owned wiring, explicit dependencies, or clearly-scoped infrastructure seams over global accessors. Keep behavior stable and avoid pulling the configuration-service extraction into this task except where a shared boundary must be prepared first.",
+      "acceptance_criteria": [
+        "Touched startup, server, handler, and auth paths stop relying directly on `util.GetDB()` or equivalent hidden runtime accessors.",
+        "Replacement wiring uses explicit dependencies, container-owned seams, or clearly-owned infrastructure boundaries.",
+        "Behavior remains stable for the touched runtime paths."
+      ],
+      "verification": {
+        "owner": "software-action-test-reliability-agent",
+        "sign_off": "required",
+        "focus": [
+          "deterministic coverage for touched startup, server, handler, and auth paths",
+          "evidence that dependency wiring still boots and exercises the affected code paths correctly"
+        ]
+      },
+      "out_of_scope": [
+        "full configuration-service migration",
+        "unrelated handler rewrites",
+        "API envelope changes"
+      ],
+      "touched_paths": [
+        "../socialpredict/backend/util",
+        "../socialpredict/backend/internal/app",
+        "../socialpredict/backend/server",
+        "../socialpredict/backend/handlers",
+        "../socialpredict/backend/internal/service/auth",
+        "../socialpredict/backend/main.go"
+      ],
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "019d99d7-3d71-70aa-9f0b-d0f4da7524f0"
@@ -51,6 +103,31 @@
       "title": "WAVE02: Extract a service-backed configuration slice from backend/setup",
       "status": "pending",
       "prompt": "Create a configuration slice that fits the existing internal application architecture instead of relying on `backend/setup` globals as the runtime integration boundary. Treat `backend/setup/setup.yaml` as the current source data, but introduce a service-backed config layer under the internal packages, define the typed interfaces/models needed for economics and frontend config access, and wire that slice through the application container. Make this slice look and behave as much like the other extraction-ready backend services as practical so it can later move toward its own container with minimal churn. Preserve existing config values and external route semantics. Add focused tests. This is a prerequisite wave, not API contract redesign.",
+      "acceptance_criteria": [
+        "A service-backed configuration slice exists under the internal application structure with typed interfaces or models for economics and frontend config access.",
+        "Configuration access is wired through the application container rather than depending on `backend/setup` globals as the primary runtime boundary.",
+        "Current configuration values and external route semantics are preserved."
+      ],
+      "verification": {
+        "owner": "software-action-test-reliability-agent",
+        "sign_off": "required",
+        "focus": [
+          "deterministic tests for configuration loading and container wiring",
+          "evidence that existing config-driven behavior remains stable"
+        ]
+      },
+      "out_of_scope": [
+        "API contract redesign",
+        "moving config into a standalone process",
+        "changing the meaning of existing setup values"
+      ],
+      "touched_paths": [
+        "../socialpredict/backend/setup",
+        "../socialpredict/backend/internal/app",
+        "../socialpredict/backend/internal/service",
+        "../socialpredict/backend/internal/domain",
+        "../socialpredict/backend/internal/repository"
+      ],
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "019d99d7-3d71-70aa-9f0b-d0f553db0d37"
@@ -72,6 +149,33 @@
       "title": "WAVE02: Migrate setup consumers and setup endpoints to the configuration service",
       "status": "pending",
       "prompt": "Update the direct configuration consumers to use the new configuration service rather than `setup.LoadEconomicsConfig`, `setup.EconomicsConfig`, or similar global accessors. Focus on `server.go`, `handlers/setup`, `handlers/stats`, `handlers/admin/adduser`, `seed`, and any touched container wiring/tests. Keep `/v0/setup` and `/v0/setup/frontend` path semantics stable, but make them service-backed in the same architectural style as the rest of the backend. Prefer moving touched callers directly to the new internal config slice rather than leaving them behind a long-lived compatibility wrapper. Add or update tests and narrow docs where needed.",
+      "acceptance_criteria": [
+        "Named setup consumers move to the new configuration service instead of direct `setup.*` global accessors.",
+        "`/v0/setup` and `/v0/setup/frontend` remain semantically stable while becoming service-backed.",
+        "Touched wiring and tests are updated to reflect the configuration service as the runtime boundary."
+      ],
+      "verification": {
+        "owner": "software-action-test-reliability-agent",
+        "sign_off": "required",
+        "focus": [
+          "deterministic coverage for touched setup consumers and setup endpoints",
+          "evidence that service-backed setup routes preserve existing semantics"
+        ]
+      },
+      "out_of_scope": [
+        "broad API envelope migration",
+        "public route redesign",
+        "a long-lived compatibility wrapper as the final architecture"
+      ],
+      "touched_paths": [
+        "../socialpredict/backend/handlers/setup",
+        "../socialpredict/backend/handlers/stats",
+        "../socialpredict/backend/handlers/admin",
+        "../socialpredict/backend/server",
+        "../socialpredict/backend/seed",
+        "../socialpredict/backend/internal/app",
+        "../socialpredict/backend/setup"
+      ],
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "019d9996-f8a9-75b8-a4a3-7348db798872"
@@ -92,6 +196,33 @@
       "title": "WAVE03: Establish domain-model boundary types and legacy-model adapters",
       "status": "pending",
       "prompt": "Using the post-WAVE02 container-owned configuration seam as the baseline, introduce explicit boundary types, adapters, and conversion seams so repositories and explicit edge helpers own translation while internal domain/math code can stop treating `socialpredict/models` structs as native policy objects. Keep the first enabling pass concrete: establish at least one repository-owned translation path for each initial target area in markets, bets, math, analytics, and auth-adjacent flows, and make it possible for touched internal domain packages to depend on boundary types rather than `socialpredict/models`. Add focused tests. This is a prerequisite boundary wave, not an API contract wave.",
+      "acceptance_criteria": [
+        "Explicit boundary types or adapters exist so translation is owned by repositories or explicit edge helpers rather than leaking through internal domain code.",
+        "Each initial target area in markets, bets, math, analytics, and auth-adjacent flows has at least one concrete repository-owned translation path.",
+        "Touched internal domain packages can depend on boundary types rather than directly treating `socialpredict/models` as native policy objects."
+      ],
+      "verification": {
+        "owner": "software-action-test-reliability-agent",
+        "sign_off": "required",
+        "focus": [
+          "deterministic tests for new translation seams and boundary adapters",
+          "regression evidence for touched repository and internal domain flows"
+        ]
+      },
+      "out_of_scope": [
+        "full flag-day model rewrite",
+        "API contract changes",
+        "microservice extraction"
+      ],
+      "touched_paths": [
+        "../socialpredict/backend/internal/domain/markets",
+        "../socialpredict/backend/internal/domain/bets",
+        "../socialpredict/backend/internal/domain/math",
+        "../socialpredict/backend/internal/domain/analytics",
+        "../socialpredict/backend/internal/service/auth",
+        "../socialpredict/backend/internal/repository",
+        "../socialpredict/backend/models"
+      ],
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "019d9996-f8a9-75b8-a4a3-7349b2560d4f"
@@ -113,6 +244,32 @@
       "title": "WAVE03: Decouple markets, bets, and math from the legacy models package",
       "status": "pending",
       "prompt": "Using the WAVE03 boundary seams, remove direct `socialpredict/models` dependencies from the internal markets, bets, and math packages as far as practical. Push translation toward repositories or narrow boundary helpers, preserve existing behavior, and update tests. This wave should make the core business/domain layer less persistence-shaped before the API contract work lands.",
+      "acceptance_criteria": [
+        "Direct `socialpredict/models` dependencies are removed or materially reduced in the internal markets, bets, and math packages.",
+        "Any remaining translation is pushed toward repositories or narrow edge helpers rather than core domain policy packages.",
+        "Touched domain behavior remains stable."
+      ],
+      "verification": {
+        "owner": "software-action-test-reliability-agent",
+        "sign_off": "required",
+        "focus": [
+          "deterministic regression coverage for touched markets, bets, and math flows",
+          "evidence that decoupled packages still behave correctly after boundary changes"
+        ]
+      },
+      "out_of_scope": [
+        "analytics-wide cleanup beyond touched dependencies",
+        "API envelope migration",
+        "rewriting unaffected model consumers"
+      ],
+      "touched_paths": [
+        "../socialpredict/backend/internal/domain/markets",
+        "../socialpredict/backend/internal/domain/bets",
+        "../socialpredict/backend/internal/domain/math",
+        "../socialpredict/backend/internal/repository/markets",
+        "../socialpredict/backend/internal/repository/bets",
+        "../socialpredict/backend/models"
+      ],
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "019d9996-f8a9-736b-93d9-de583bb6112a"
@@ -132,6 +289,30 @@
       "title": "WAVE03: Decouple analytics and remaining internal boundary consumers from legacy models",
       "status": "pending",
       "prompt": "Finish the legacy-model decoupling wave by removing or tightly containing remaining `socialpredict/models` usage in analytics, auth login, and adjacent boundary consumers touched by the new seams. Any unavoidable legacy-model usage should be pushed to repositories or explicit edge adapters and documented. Update tests and application wiring as needed.",
+      "acceptance_criteria": [
+        "Remaining `socialpredict/models` usage in analytics, auth login, and adjacent touched boundary consumers is removed or tightly contained.",
+        "Any unavoidable legacy-model usage is pushed to repositories or explicit edge adapters and documented.",
+        "Touched application wiring reflects the new containment boundaries."
+      ],
+      "verification": {
+        "owner": "software-action-test-reliability-agent",
+        "sign_off": "required",
+        "focus": [
+          "deterministic regression coverage for analytics and auth-adjacent flows touched by the decoupling",
+          "evidence that remaining legacy-model usage is constrained to explicit edges"
+        ]
+      },
+      "out_of_scope": [
+        "WAVE04 API contract migration",
+        "rewriting untouched legacy-model consumers outside the scoped seams"
+      ],
+      "touched_paths": [
+        "../socialpredict/backend/internal/domain/analytics",
+        "../socialpredict/backend/internal/service/auth",
+        "../socialpredict/backend/internal/repository",
+        "../socialpredict/backend/internal/app",
+        "../socialpredict/backend/models"
+      ],
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "019d9996-f8a9-736b-93d9-de583bb6112a",
@@ -152,6 +333,31 @@
       "title": "WAVE04: Introduce sanitized envelope helpers and migrate a representative hotspot flow",
       "status": "pending",
       "prompt": "Implement shared backend helpers for the `{ ok, result, reason }` JSON contract described in `backend/docs/API-ISSUES.md`, then apply them to one representative hotspot flow first so the contract direction is proven before broad migration. Use a thin, reviewable slice such as the stats path and any directly-shared helper behavior it needs. Remove raw error leakage, use stable `reason` values for business-rule failures where the backend processed the request correctly, and reserve transport-level 4xx/5xx for malformed, unauthorized, or actual server failures where practical. Add focused tests.",
+      "acceptance_criteria": [
+        "Shared helpers exist for the `{ ok, result, reason }` response contract.",
+        "At least one representative hotspot flow is migrated using those helpers and demonstrates the intended contract direction.",
+        "Raw error leakage is removed from the touched flow and stable `reason` values are used for handled business-rule failures."
+      ],
+      "verification": {
+        "owner": "software-action-test-reliability-agent",
+        "sign_off": "required",
+        "focus": [
+          "deterministic response-shape and error-path coverage for the representative hotspot flow",
+          "evidence that shared envelope helpers behave consistently for touched handlers"
+        ]
+      },
+      "out_of_scope": [
+        "login-token redesign",
+        "full hotspot migration in one pass",
+        "public route reorganization"
+      ],
+      "touched_paths": [
+        "../socialpredict/backend/handlers/stats",
+        "../socialpredict/backend/errors",
+        "../socialpredict/backend/handlers",
+        "../socialpredict/backend/internal",
+        "../socialpredict/backend/docs/API-ISSUES.md"
+      ],
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "019d9996-f8a9-736b-93d9-de5a3e5e447f"
@@ -172,6 +378,30 @@
       "title": "WAVE04: Tighten mustChangePassword enforcement and normalize auth contract responses",
       "status": "pending",
       "prompt": "Enforce `mustChangePassword` consistently on authenticated user/profile actions other than login and change-password, and normalize `/v0/login` and `/v0/changepassword` around the WAVE04 JSON response contract. Keep the current full-JWT issuance model on login for now, but return stable JSON envelopes and make change-password success JSON. Add or update tests. The later limited-scope-token redesign stays out of scope.",
+      "acceptance_criteria": [
+        "`mustChangePassword` is enforced consistently on authenticated user or profile actions other than login and change-password.",
+        "`/v0/login` and `/v0/changepassword` return stable JSON responses aligned with the WAVE04 contract direction.",
+        "The current full-JWT issuance model remains in place."
+      ],
+      "verification": {
+        "owner": "software-action-test-reliability-agent",
+        "sign_off": "required",
+        "focus": [
+          "deterministic auth-flow coverage for login, change-password, and blocked authenticated actions",
+          "response-shape verification for touched auth endpoints"
+        ]
+      },
+      "out_of_scope": [
+        "limited-scope-token redesign",
+        "broader login workflow redesign",
+        "unrelated auth refactors"
+      ],
+      "touched_paths": [
+        "../socialpredict/backend/internal/service/auth",
+        "../socialpredict/backend/handlers/users",
+        "../socialpredict/backend/server",
+        "../socialpredict/backend/errors"
+      ],
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "019d9996-f8a9-71b8-a7c0-81a0fe4d4ffc"
@@ -191,6 +421,31 @@
       "title": "WAVE04: Migrate the remaining API hotspot handlers onto the sanitized envelope",
       "status": "pending",
       "prompt": "After the representative WAVE04 envelope slice is proven, migrate the remaining hotspot handlers called out in `backend/docs/API-ISSUES.md`: CMS homepage, bets buy/sell, positions, and user/profile helper paths as needed. Reuse the shared envelope helpers, preserve route organization, remove raw error leakage, and keep `reason` values stable and reviewable. Add focused tests so the broader migration remains reversible and evidence-driven.",
+      "acceptance_criteria": [
+        "The remaining named hotspot handlers are migrated onto the shared sanitized envelope helpers.",
+        "Touched handlers stop leaking raw errors and use stable, reviewable `reason` values where applicable.",
+        "Route organization remains stable while the broader hotspot migration stays reversible."
+      ],
+      "verification": {
+        "owner": "software-action-test-reliability-agent",
+        "sign_off": "required",
+        "focus": [
+          "deterministic response-shape and error-path coverage for the migrated hotspot handlers",
+          "evidence that the broader envelope migration remains behaviorally stable"
+        ]
+      },
+      "out_of_scope": [
+        "auth redesign",
+        "public route migration",
+        "rewriting handlers not called out in the scoped hotspot list unless touched as shared support"
+      ],
+      "touched_paths": [
+        "../socialpredict/backend/handlers/cms",
+        "../socialpredict/backend/handlers/bets",
+        "../socialpredict/backend/handlers/positions",
+        "../socialpredict/backend/handlers/users",
+        "../socialpredict/backend/errors"
+      ],
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "019d9996-f8a9-71b8-a7c0-81a0fe4d4ffc"
@@ -211,6 +466,30 @@
       "title": "WAVE04: Align OpenAPI and tag ownership with the implemented API behavior",
       "status": "pending",
       "prompt": "Update `backend/docs/openapi.yaml` so the touched endpoints match the implemented WAVE04 auth and `{ ok, result, reason }` response behavior. Align success/error payloads, auth requirements, and targeted tag ownership metadata such as ambiguous market-position tagging. Keep route organization stable; this is contract alignment, not public path redesign.",
+      "acceptance_criteria": [
+        "`backend/docs/openapi.yaml` matches the implemented WAVE04 endpoint behavior for touched auth and envelope-migrated routes.",
+        "Success and error payloads, auth requirements, and targeted tag ownership metadata are aligned with the code.",
+        "Route organization remains stable."
+      ],
+      "verification": {
+        "owner": "software-action-test-reliability-agent",
+        "sign_off": "required",
+        "focus": [
+          "OpenAPI validation evidence for the updated spec",
+          "deterministic confirmation that touched endpoint contracts match the implemented behavior"
+        ]
+      },
+      "out_of_scope": [
+        "public path redesign",
+        "speculative contract changes not implemented in code",
+        "Bets-to-Trades renaming"
+      ],
+      "touched_paths": [
+        "../socialpredict/backend/docs/openapi.yaml",
+        "../socialpredict/backend/docs/API-ISSUES.md",
+        "../socialpredict/backend/server",
+        "../socialpredict/backend/handlers"
+      ],
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "019d9b66-159d-7381-adbf-5829dff0e1fd",
@@ -232,6 +511,28 @@
       "title": "WAVE04: Refresh API-ISSUES.md after the prerequisite and API waves",
       "status": "pending",
       "prompt": "Rewrite `backend/docs/API-ISSUES.md` so it reflects the code after Waves 1-4. Remove stale claims, capture what was actually fixed, and clearly separate the deferred items: limited-scope-token login redesign, public route reorganization, and Bets-to-Trades rename. Keep the document decision-oriented and aligned with current implementation rather than historical uncertainty.",
+      "acceptance_criteria": [
+        "`backend/docs/API-ISSUES.md` reflects the code state after Waves 1-4 rather than historical uncertainty.",
+        "Stale claims are removed and completed versus deferred items are clearly separated.",
+        "Deferred items explicitly remain limited-scope-token login redesign, public route reorganization, and Bets-to-Trades rename unless the code state requires a narrower clarification."
+      ],
+      "verification": {
+        "owner": "software-action-verifier-agent",
+        "sign_off": "required",
+        "focus": [
+          "document-to-code consistency for the issues called out as fixed or deferred",
+          "confirmation that no implementation changes are bundled into this documentation cleanup task"
+        ]
+      },
+      "out_of_scope": [
+        "implementation changes",
+        "public path redesign",
+        "Bets-to-Trades renaming"
+      ],
+      "touched_paths": [
+        "../socialpredict/backend/docs/API-ISSUES.md",
+        "../socialpredict/backend/docs/openapi.yaml"
+      ],
       "working_dir": "../socialpredict/backend",
       "depends_on": [
         "019d9996-f8a9-71b8-a7c0-81a2945b5cb4"

@@ -12,12 +12,28 @@ Mission:
 - Use `lib/design/design-plan.json` as the primary source of architectural intent.
 - Verify that touched backend/API changes conform to the canonical design plan and call out drift, missing decisions, or contradictory boundaries.
 - Keep backend domains extractable and design decisions traceable to the shared plan instead of to embedded one-off rules.
+- Enforce the extraction-ready service architecture pattern for service-shaped backend slices and distinguish those slices from exempt support or infrastructure packages.
 
 Scope:
 - Design-plan conformance review for touched backend/API paths.
 - Dependency direction and boundary review using the current plan's declared boundaries, seams, ownership, and decision log.
 - Extraction-readiness notes and ownership clarification for touched packages when the plan defines or implies them.
 - Gap analysis when the code change reaches areas that the design plan does not yet cover clearly.
+- Code-derived per-service boundary review when a domain such as bets, markets, users, analytics, auth, or configuration needs a concrete handler/DTO/internal/repository ownership map.
+
+Service-shape classification policy:
+- First classify touched backend packages as either service-shaped or support/infrastructure.
+- Service-shaped slices are expected to be extraction-ready for future microservice decomposition.
+- `setup` is service-shaped and is not exempt.
+- Exempt support/infrastructure packages are: `logger`, `migration`, `seed`, `server`, `errors`, and `docs`.
+- Exempt support/infrastructure packages must not be forced into the service architecture pattern.
+
+Service architecture pattern:
+- `handlers/<service>/**`: HTTP/request-boundary behavior.
+- `handlers/<service>/dto/**`: transport-only request/response shapes when present.
+- `internal/domain/<service>/**`: business policy and orchestration, free of HTTP concerns.
+- `internal/repository/<service>/**`: persistence adapters for the service slice.
+- `internal/app/container.go`: composition root and dependency wiring evidence.
 
 Non-goals:
 - Non-essential rewrites.
@@ -28,12 +44,15 @@ Non-goals:
 Required checks:
 - Read `lib/design/design-plan.json` first and validate whether the touched area is covered by the plan.
 - If the plan is missing, stale, or contradictory, stop and report that as a design-governance issue.
+- Classify each touched backend area as either service-shaped or exempt support/infrastructure before judging conformance.
 - Validate dependency direction and ownership against the plan's declared boundaries.
 - Run boundary grep/static checks relevant to the touched paths, including checks for raw DB access from handlers/auth when applicable.
 - Verify that request-boundary concerns remain at declared boundary seams when the plan distinguishes them.
+- If a touched area is service-shaped and is ambiguous, leaky, partially migrated, or not clearly following the service architecture pattern, it is mandatory to derive or request a code-first boundary map from `software-action-service-domain-architecture-agent`.
 - If uncertainty is specifically about error taxonomy, sanitized public versus internal messages, panic recovery placement, or request-boundary error mapping, defer to `software-action-error-handling-agent`.
 - Verify that logging and observability helpers stay boundary-local and do not pull domain packages into transport or vendor-coupled concerns unnecessarily when the plan treats them as boundary-local concerns.
 - If uncertainty is specifically about preferred logger usage, deprecated logger migration, request logging middleware, correlation fields, health or metrics instrumentation, or observability boundary policy, defer to `software-action-logging-agent`.
+- Treat `logger` as the valid logging package and treat `logging` usage as architectural drift that should be flagged for migration to `logger`.
 
 Required artifacts:
 - Design-plan conformance summary.
@@ -56,6 +75,8 @@ Workflow:
 - Operate only on socialpredict/backend/** and API contract artifacts.
 - Do not broaden into frontend or infrastructure rollout.
 - Stop on blocker-grade design-plan drift or boundary violations.
+- When a touched service slice does not clearly follow the service architecture pattern, call `software-action-service-domain-architecture-agent` rather than inferring the boundary informally.
+- When a service boundary must be explained concretely, prefer code-derived evidence from `software-action-service-domain-architecture-agent` over older narrative docs.
 - Record unresolved decisions for verifier review.
 - If the plan leaves a boundary undefined, report the gap instead of silently inventing a policy.
 

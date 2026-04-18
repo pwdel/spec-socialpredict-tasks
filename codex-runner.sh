@@ -34,7 +34,7 @@ Options:
   --quiet                Do not mirror live Codex stdout/stderr to the terminal
   --once                 Run at most one ready task, then exit
   --codex-bin PATH       Codex executable. Default: codex
-  --dispatcher NAME      Custom dispatcher agent name. Default: dispatcher_agent
+  --dispatcher NAME      Custom dispatcher agent name. Default: software-action-dispatcher-agent
   --prompt-dir PATH      Prompt template directory. Default: <repo>/prompts/codex-runner
   --task-registry PATH   Override the task registry used for UID validation.
   --final-report-target PATH
@@ -91,7 +91,7 @@ CONTEXT_POLL_SECONDS="${CONTEXT_POLL_SECONDS:-15}"
 VERBOSE_TERMINAL_OUTPUT="${VERBOSE_TERMINAL_OUTPUT:-1}"
 RUN_ONCE="0"
 CODEX_BIN="${CODEX_BIN:-codex}"
-DISPATCHER_AGENT="${DISPATCHER_AGENT:-dispatcher_agent}"
+DISPATCHER_AGENT="${DISPATCHER_AGENT:-software-action-dispatcher-agent}"
 PROMPT_DIR="${PROMPT_DIR:-}"
 TASK_REGISTRY_FILE="${TASK_REGISTRY_FILE:-}"
 FINAL_REPORT_TARGET_RELATIVE="${FINAL_REPORT_TARGET_RELATIVE:-../socialpredict}"

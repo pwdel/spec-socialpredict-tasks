@@ -18,7 +18,7 @@ Execution-lane boundary:
 - Treat `TASKS.json`, `TASKS.example.json`, `lib/design/**`, `lib/task-registry.json`, and `lib/task-archives/**` as read-only execution inputs unless the user explicitly asks to edit planning/design artifacts.
 
 Use these specialists deliberately:
-- `software-action-architecture-agent` for package ownership, handler/core separation, DB acquisition and passing rules, transaction boundaries, raw DB access from handlers/auth, and extraction-readiness constraints.
+- `software-action-architecture-agent` for package ownership, handler/core separation, DB acquisition and passing rules, transaction boundaries, splitting up and creating new boundaries, raw DB access from handlers/auth, and extraction-readiness constraints.
 - `software-action-go-style-agent` for Google Go style authority, naming/commentary/clarity questions, local-consistency calls, and style-guide interpretation that should not be improvised from memory.
 - `software-action-coding-best-practices-agent` for backend quality gates and maintainability review, including gofmt, go vet, staticcheck, golangci-lint, gocyclo, hidden globals, hard-coded config, weak error handling, and tight coupling.
 - `software-action-error-handling-agent` for typed error taxonomy, sanitized public versus internal error behavior, raw `http.Error` cleanup, panic recovery placement, and extraction-safe error package design.
