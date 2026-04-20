@@ -648,16 +648,18 @@
         "Use the post-wave-4 code as the immediate contract source."
       ],
       "started_at": "2026-04-19T20:37:09.232084+00:00",
-      "runner_pid": 214795,
+      "runner_pid": 215908,
       "runner_state": {
-        "segment": 1,
+        "segment": 3,
         "session_id": "019da776-1f47-78b1-8f60-b0ffd8576e0a",
-        "event_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/events/019d9996-f8a9-71b8-a7c0-81a2945b5cb4_20260419T203709Z_part01.ndjson",
-        "stderr_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/stderr/019d9996-f8a9-71b8-a7c0-81a2945b5cb4_20260419T203709Z_part01.stderr.log",
-        "message_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/messages/019d9996-f8a9-71b8-a7c0-81a2945b5cb4_20260419T203709Z_part01.txt",
-        "prompt_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/prompts/019d9996-f8a9-71b8-a7c0-81a2945b5cb4_20260419T203709Z_part01.txt",
-        "context_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/context/019d9996-f8a9-71b8-a7c0-81a2945b5cb4_20260419T203709Z_part01.ndjson"
-      }
+        "event_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/events/019d9996-f8a9-71b8-a7c0-81a2945b5cb4_20260419T225131Z_part03.ndjson",
+        "stderr_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/stderr/019d9996-f8a9-71b8-a7c0-81a2945b5cb4_20260419T225131Z_part03.stderr.log",
+        "message_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/messages/019d9996-f8a9-71b8-a7c0-81a2945b5cb4_20260419T225131Z_part03.txt",
+        "prompt_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/prompts/019d9996-f8a9-71b8-a7c0-81a2945b5cb4_20260419T225131Z_part03.txt",
+        "context_file": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/context/019d9996-f8a9-71b8-a7c0-81a2945b5cb4_20260419T225131Z_part03.ndjson",
+        "resume_pending": true
+      },
+      "last_resumed_at": "2026-04-19T22:51:31.153593+00:00"
     },
     {
       "uid": "019d9996-f8a9-71b8-a7c0-81a3c332d436",
