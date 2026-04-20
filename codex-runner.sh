@@ -9,13 +9,13 @@ Usage:
 Run queued `TASKS.json` work by repeatedly launching Codex in the selected
 automation mode. The runner picks the next ready task, asks a dispatcher-led
 Codex session to execute it end-to-end, writes run artifacts under
-`.codex-runs/`, captures Codex output into per-task log files there, and can
+`../log-socialpredict-tasks/.codex-runs/` when that sibling repo exists, captures Codex output into per-task log files there, and can
 checkpoint/resume long sessions before the active context window gets too full.
 
 Options:
   --repo PATH            Repository root. Default: current directory
   --tasks PATH           Task file. Default: <repo>/TASKS.json
-  --runs-dir PATH        Run artifact directory. Default: <repo>/.codex-runs
+  --runs-dir PATH        Run artifact directory. Default: sibling log repo .codex-runs when available, else <repo>/.codex-runs
   --mode MODE            safe | full-access | yolo. Default: safe
   --sleep SECONDS        Poll interval when no task is ready. Default: 30
   --context-threshold PCT
@@ -55,7 +55,7 @@ Task file:
   configured.
 
 Logs:
-  The runner writes logs under --runs-dir (default: <repo>/.codex-runs)
+  The runner writes logs under --runs-dir (default: sibling log repo .codex-runs when available, else <repo>/.codex-runs)
   and, by default, also mirrors live Codex stdout/stderr to your terminal.
   Use --quiet to keep the previous fully silent terminal behavior.
   It also bootstraps canonical curated task reports under
@@ -182,7 +182,11 @@ done
 
 REPO_ROOT="$(cd "$REPO_ROOT" && pwd)"
 TASKS_FILE="${TASKS_FILE:-$REPO_ROOT/TASKS.json}"
-RUNS_DIR="${RUNS_DIR:-$REPO_ROOT/.codex-runs}"
+DEFAULT_RUNS_DIR="$REPO_ROOT/.codex-runs"
+if [[ -d "$REPO_ROOT/../log-socialpredict-tasks" ]]; then
+  DEFAULT_RUNS_DIR="$(cd "$REPO_ROOT/../log-socialpredict-tasks" && pwd)/.codex-runs"
+fi
+RUNS_DIR="${RUNS_DIR:-$DEFAULT_RUNS_DIR}"
 if [[ -z "$PROMPT_DIR" ]]; then
   PROMPT_DIR="$REPO_ROOT/prompts/codex-runner"
 elif [[ "$PROMPT_DIR" != /* ]]; then

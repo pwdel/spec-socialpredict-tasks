@@ -7,6 +7,7 @@ task journals into the target repo.
 
 - Control repo (`spec-socialpredict-tasks`):
   - `TASKS.json`
+- Log repo (`../log-socialpredict-tasks`):
   - `.codex-runs/` raw event streams, stderr, prompt captures, runner state
 - Target repo (`../socialpredict`):
   - `.codex-reports/tasks/<task-uid>/` curated task journal and summary
