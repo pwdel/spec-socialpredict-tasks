@@ -303,7 +303,7 @@ as the navigation point for the committed workspace contents.
 
 - `codex-runner.sh`
   Task runner that polls `TASKS.json`, launches Codex for ready tasks, and
-  writes run artifacts under `.codex-runs/`.
+  writes run artifacts under the sibling log repo `.codex-runs/`.
 
 - `agent-assets`
   Repo-root wrapper for installing or inspecting this repo's managed Codex
