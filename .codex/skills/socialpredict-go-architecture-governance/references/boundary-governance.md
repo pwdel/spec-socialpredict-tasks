@@ -1,6 +1,6 @@
 # SocialPredict Backend Boundary Governance
 
-## Enforceable Rules (Current PR #581 Scope)
+## Enforceable Rules (Current Execution Scope)
 
 1. Handlers and `internal/service/auth` must call domain services/facades, not concrete repositories.
 2. Domain packages (`backend/internal/domain/**`) must not import `backend/internal/repository/**` directly.

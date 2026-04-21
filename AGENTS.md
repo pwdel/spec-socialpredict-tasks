@@ -14,14 +14,17 @@ used in this workspace.
   `codex-runner.sh` reads `TASKS.json`, launches Codex from the TASK repo, and
   Codex uses TASK repo guidance while operating on the TARGET repo.
 - Current TARGET branch for structural reference
-  `fix/checkpoint20251020-80`
+  `main`
 
 ## Current TARGET Repo Context
 
 - Target repo root
   `../socialpredict`
 - Current target focus
-  `./backend/`
+  `./backend/` with the current task wave centered on platform prerequisites
+  first (`setup`/configuration service extraction and remaining domain-model
+  decoupling), followed by API/auth/docs alignment sourced from
+  `./backend/docs/API-ISSUES.md`
 - Path convention below
   TARGET paths are written relative to the TARGET repo root, so `./backend/...`
   means `../socialpredict/backend/...`.
@@ -286,16 +289,21 @@ as the navigation point for the committed workspace contents.
 
 - `TASKS.json`
   Live machine-readable task backlog and runner state for the workspace.
+  Active tasks are `uid`-first: `uid` is canonical, and `id` is a human-facing
+  label.
 
 - `TASKS.example.json`
   Small example showing the expected task schema.
+
+- `lib/task-registry.json`
+  Persistent UID-first registry plus the historical display-ID lookup index.
 
 - `TASKS.json.backup`
   Backup snapshot of the task file.
 
 - `codex-runner.sh`
   Task runner that polls `TASKS.json`, launches Codex for ready tasks, and
-  writes run artifacts under `.codex-runs/`.
+  writes run artifacts under the sibling log repo `.codex-runs/`.
 
 - `agent-assets`
   Repo-root wrapper for installing or inspecting this repo's managed Codex
@@ -342,6 +350,13 @@ as the navigation point for the committed workspace contents.
   Deterministic helper for initializing and updating canonical task reports in
   the target repo.
 
+- `scripts/task-registry.py`
+  Archives completed task queues, rebuilds the UID-first registry, validates
+  active task UIDs, and mints new UID/display-ID pairs.
+
+- `scripts/render-runner-prompt.py`
+  Renders external `codex-runner.sh` prompt templates from task metadata.
+
 - `scripts/lib/agent_assets_manifest.sh`
   Manifest, hashing, and JSON helper functions for managed installs.
 
@@ -361,19 +376,26 @@ as the navigation point for the committed workspace contents.
 
 - `.codex/agents/`
   Repo-local specialist agent definitions. Current files:
-  - `architecture-agent.toml`
-  - `coding-best-practices-agent.toml`
-  - `db-migration-agent.toml`
-  - `dispatcher-agent.toml`
-  - `error-handling-agent.toml`
-  - `go-style-agent.toml`
-  - `logging-agent.toml`
-  - `openapi-contract-agent.toml`
-  - `test-reliability-agent.toml`
-  - `verifier-agent.toml`
+  - `software-action-architecture-agent.toml`
+  - `software-action-coding-best-practices-agent.toml`
+  - `software-action-db-migration-agent.toml`
+  - `software-action-dispatcher-agent.toml`
+  - `software-action-error-handling-agent.toml`
+  - `software-action-go-style-agent.toml`
+  - `software-action-logging-agent.toml`
+  - `software-action-openapi-contract-agent.toml`
+  - `software-action-service-domain-architecture-agent.toml`
+  - `software-action-test-reliability-agent.toml`
+  - `software-action-verifier-agent.toml`
+  - `software-designer-01-evans-agent.toml`
+  - `software-designer-02-fowler-agent.toml`
+  - `software-designer-03-martin-agent.toml`
+  - `software-planner-agent.toml`
 
 - `.codex/skills/`
   Repo-local skills used by this workspace. Current skill directories:
+  - `socialpredict-design-plan`
+  - `socialpredict-task-planning`
   - `socialpredict-api-contract-drift-control`
   - `socialpredict-go-architecture-governance`
   - `socialpredict-go-code-quality-guardrails`
@@ -409,10 +431,33 @@ as the navigation point for the committed workspace contents.
 - `agent-reports/templates/`
   Currently an empty placeholder for future report templates.
 
+- `lib/design/`
+  Canonical repo-level design-plan artifacts and schema shared by the
+  software-designer agents and the architecture agent.
+
+- `lib/design/design-plan.json`
+  Active shared design-plan artifact for the current design effort.
+
+- `lib/design/design-plan.schema.json`
+  Canonical JSON Schema that all design-plan outputs must satisfy.
+
+- `lib/task-archives/`
+  Historical task-queue archives that have been moved out of the active
+  `TASKS.json`.
+
+- `prompts/codex-runner/`
+  Human-readable initial-task and checkpoint-resume prompt templates consumed
+  by `codex-runner.sh`.
+
 ## Current Layout Notes
 
 - `.codex/` is part of this committed workspace and should be treated as
   first-class repo content.
+- `lib/design/design-plan.json` is repo state, not skill state. Skills define
+  how agents produce or consume the plan; the plan itself is the reviewable
+  artifact.
+- `software-action-*` agents are the execution lane. They should treat task and
+  design artifacts as read-only unless the user explicitly asks to edit them.
 - Older docs may still mention prior agent path conventions. The current
   committed agent definitions are the `.toml` files under `.codex/agents/`.
 - Backend and API code changes belong in `../socialpredict`, not in this

@@ -72,6 +72,20 @@ def read_ndjson(path: Path) -> Iterable[dict]:
     return rows
 
 
+def load_task_identity(paths: dict[str, Path]) -> tuple[str, str]:
+    summary = read_json(paths["summary"], {})
+    task_uid = summary.get("task_uid", "")
+    task_id = summary.get("task_id", "")
+    if task_uid:
+        return task_uid, task_id
+
+    meta = read_json(paths["meta"], {})
+    task = meta.get("task", {}) if isinstance(meta.get("task"), dict) else {}
+    task_uid = task.get("uid", "") or ""
+    task_id = task.get("id", "") or ""
+    return task_uid, task_id
+
+
 def command_init(args: argparse.Namespace) -> int:
     report_dir = Path(args.report_dir).resolve()
     paths = ensure_report_dir(report_dir)
@@ -82,6 +96,7 @@ def command_init(args: argparse.Namespace) -> int:
         meta = {
             "schema_version": 1,
             "task": {
+                "uid": args.task_uid,
                 "id": args.task_id,
                 "title": args.title,
                 "working_dir": args.working_dir,
@@ -108,6 +123,7 @@ def command_init(args: argparse.Namespace) -> int:
     summary = read_json(paths["summary"], {})
     if not summary:
         summary = {
+            "task_uid": args.task_uid,
             "task_id": args.task_id,
             "status": "pending",
             "updated_at": created_at,
@@ -124,6 +140,7 @@ def command_init(args: argparse.Namespace) -> int:
             },
         }
     else:
+        summary.setdefault("task_uid", args.task_uid)
         summary.setdefault("task_id", args.task_id)
         summary.setdefault("owner", args.dispatcher_agent)
         summary.setdefault("files_changed", [])
@@ -141,6 +158,8 @@ def command_init(args: argparse.Namespace) -> int:
             {
                 "seq": 1,
                 "ts": created_at,
+                "task_uid": args.task_uid,
+                "task_id": args.task_id,
                 "agent": "codex_runner",
                 "role": "runner",
                 "type": "task_bootstrapped",
@@ -167,10 +186,13 @@ def command_init(args: argparse.Namespace) -> int:
 def command_append_event(args: argparse.Namespace) -> int:
     report_dir = Path(args.report_dir).resolve()
     paths = ensure_report_dir(report_dir)
+    task_uid, task_id = load_task_identity(paths)
     seq = read_last_seq(paths["conversation"]) + 1
     payload = {
         "seq": seq,
         "ts": utc_now(),
+        "task_uid": task_uid,
+        "task_id": task_id,
         "agent": args.agent_name,
         "role": args.agent_role,
         "type": args.event_type,
@@ -189,10 +211,13 @@ def command_append_event(args: argparse.Namespace) -> int:
 def command_append_decision(args: argparse.Namespace) -> int:
     report_dir = Path(args.report_dir).resolve()
     paths = ensure_report_dir(report_dir)
+    task_uid, task_id = load_task_identity(paths)
     seq = read_last_seq(paths["decisions"]) + 1
     payload = {
         "seq": seq,
         "ts": utc_now(),
+        "task_uid": task_uid,
+        "task_id": task_id,
         "agent": args.agent_name,
         "decision": args.decision,
         "reason": args.reason,
@@ -210,6 +235,7 @@ def command_update_summary(args: argparse.Namespace) -> int:
     summary.update(
         {
             "updated_at": utc_now(),
+            "task_uid": summary.get("task_uid") or args.task_uid or "",
             "task_id": summary.get("task_id") or args.task_id or "",
             "owner": args.owner or summary.get("owner", ""),
             "status": args.status or summary.get("status", "pending"),
@@ -293,7 +319,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     init_parser = subparsers.add_parser("init")
     init_parser.add_argument("--report-dir", required=True)
-    init_parser.add_argument("--task-id", required=True)
+    init_parser.add_argument("--task-uid", required=True)
+    init_parser.add_argument("--task-id", default="")
     init_parser.add_argument("--title", required=True)
     init_parser.add_argument("--working-dir", required=True)
     init_parser.add_argument("--dispatcher-agent", required=True)
@@ -324,6 +351,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     summary_parser = subparsers.add_parser("update-summary")
     summary_parser.add_argument("--report-dir", required=True)
+    summary_parser.add_argument("--task-uid")
     summary_parser.add_argument("--task-id")
     summary_parser.add_argument("--owner")
     summary_parser.add_argument("--status")

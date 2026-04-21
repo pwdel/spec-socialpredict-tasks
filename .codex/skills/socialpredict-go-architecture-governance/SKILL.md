@@ -13,9 +13,9 @@ description: Enforce SocialPredict Go service-boundary governance for backend/AP
 4. Treat any new boundary violation as a blocker and stop implementation until fixed.
 5. Report command output and violating file paths in the task note or review.
 
-## Current PR Execution Scope
+## Current Execution Scope
 
-- Keep execution on PR #581 lineage and backend/API-only paths.
+- Keep execution on backend/API-only paths for the current task wave.
 - Block new direct DB access in handlers/auth outside the approved exception list.
 - Avoid frontend work and infrastructure rollout in this execution wave.
 

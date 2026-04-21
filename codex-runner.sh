@@ -9,13 +9,13 @@ Usage:
 Run queued `TASKS.json` work by repeatedly launching Codex in the selected
 automation mode. The runner picks the next ready task, asks a dispatcher-led
 Codex session to execute it end-to-end, writes run artifacts under
-`.codex-runs/`, captures Codex output into per-task log files there, and can
+`../log-socialpredict-tasks/.codex-runs/` when that sibling repo exists, captures Codex output into per-task log files there, and can
 checkpoint/resume long sessions before the active context window gets too full.
 
 Options:
   --repo PATH            Repository root. Default: current directory
   --tasks PATH           Task file. Default: <repo>/TASKS.json
-  --runs-dir PATH        Run artifact directory. Default: <repo>/.codex-runs
+  --runs-dir PATH        Run artifact directory. Default: sibling log repo .codex-runs when available, else <repo>/.codex-runs
   --mode MODE            safe | full-access | yolo. Default: safe
   --sleep SECONDS        Poll interval when no task is ready. Default: 30
   --context-threshold PCT
@@ -34,7 +34,9 @@ Options:
   --quiet                Do not mirror live Codex stdout/stderr to the terminal
   --once                 Run at most one ready task, then exit
   --codex-bin PATH       Codex executable. Default: codex
-  --dispatcher NAME      Custom dispatcher agent name. Default: dispatcher_agent
+  --dispatcher NAME      Custom dispatcher agent name. Default: software-action-dispatcher-agent
+  --prompt-dir PATH      Prompt template directory. Default: <repo>/prompts/codex-runner
+  --task-registry PATH   Override the task registry used for UID validation.
   --final-report-target PATH
                          Path (relative or absolute) to the target repo used for the final status report. Default: ../socialpredict
   --final-report-path PATH
@@ -48,24 +50,26 @@ Task file:
   update, and consume from automation. A companion TASKS.md can still exist
   for humans, but TASKS.json should be the machine-readable source of truth.
   During execution the runner updates task status, attempts, summaries, and
-  runner checkpoint metadata in TASKS.json.
+  runner checkpoint metadata in TASKS.json. Before starting, the runner also
+  validates active task UIDs against the persistent task registry when one is
+  configured.
 
 Logs:
-  The runner writes logs under --runs-dir (default: <repo>/.codex-runs)
+  The runner writes logs under --runs-dir (default: sibling log repo .codex-runs when available, else <repo>/.codex-runs)
   and, by default, also mirrors live Codex stdout/stderr to your terminal.
   Use --quiet to keep the previous fully silent terminal behavior.
   It also bootstraps canonical curated task reports under
-  <target-repo>/.codex-reports/tasks/<task-id>/ for dispatcher/agent use.
+  <target-repo>/.codex-reports/tasks/<task-uid>/ for dispatcher/agent use.
   Per task segment it creates:
-    events/<task>_<timestamp>_partNN.ndjson
+    events/<task-uid>_<timestamp>_partNN.ndjson
       Raw `codex exec --json` event stream for that run segment.
-    stderr/<task>_<timestamp>_partNN.stderr.log
+    stderr/<task-uid>_<timestamp>_partNN.stderr.log
       Codex stderr for that run segment.
-    messages/<task>_<timestamp>_partNN.txt
+    messages/<task-uid>_<timestamp>_partNN.txt
       Final assistant message captured with `--output-last-message`.
-    prompts/<task>_<timestamp>_partNN.txt
+    prompts/<task-uid>_<timestamp>_partNN.txt
       Prompt sent to Codex for that run segment.
-    context/<task>_<timestamp>_partNN.ndjson
+    context/<task-uid>_<timestamp>_partNN.ndjson
       Context telemetry plus checkpoint/restart events.
 
   The runner also appends one summary record per completed task to
@@ -87,7 +91,9 @@ CONTEXT_POLL_SECONDS="${CONTEXT_POLL_SECONDS:-15}"
 VERBOSE_TERMINAL_OUTPUT="${VERBOSE_TERMINAL_OUTPUT:-1}"
 RUN_ONCE="0"
 CODEX_BIN="${CODEX_BIN:-codex}"
-DISPATCHER_AGENT="${DISPATCHER_AGENT:-dispatcher_agent}"
+DISPATCHER_AGENT="${DISPATCHER_AGENT:-software-action-dispatcher-agent}"
+PROMPT_DIR="${PROMPT_DIR:-}"
+TASK_REGISTRY_FILE="${TASK_REGISTRY_FILE:-}"
 FINAL_REPORT_TARGET_RELATIVE="${FINAL_REPORT_TARGET_RELATIVE:-../socialpredict}"
 FINAL_REPORT_PATH="${FINAL_REPORT_PATH:-.codex-reports/runner-final-status.json}"
 FINAL_REPORT_MESSAGE="${FINAL_REPORT_MESSAGE:-All queued tasks completed.}"
@@ -142,6 +148,14 @@ while [[ $# -gt 0 ]]; do
       DISPATCHER_AGENT="$2"
       shift 2
       ;;
+    --prompt-dir)
+      PROMPT_DIR="$2"
+      shift 2
+      ;;
+    --task-registry|--task-id-registry)
+      TASK_REGISTRY_FILE="$2"
+      shift 2
+      ;;
     --final-report-target)
       FINAL_REPORT_TARGET_RELATIVE="$2"
       shift 2
@@ -168,11 +182,28 @@ done
 
 REPO_ROOT="$(cd "$REPO_ROOT" && pwd)"
 TASKS_FILE="${TASKS_FILE:-$REPO_ROOT/TASKS.json}"
-RUNS_DIR="${RUNS_DIR:-$REPO_ROOT/.codex-runs}"
+DEFAULT_RUNS_DIR="$REPO_ROOT/.codex-runs"
+if [[ -d "$REPO_ROOT/../log-socialpredict-tasks" ]]; then
+  DEFAULT_RUNS_DIR="$(cd "$REPO_ROOT/../log-socialpredict-tasks" && pwd)/.codex-runs"
+fi
+RUNS_DIR="${RUNS_DIR:-$DEFAULT_RUNS_DIR}"
+if [[ -z "$PROMPT_DIR" ]]; then
+  PROMPT_DIR="$REPO_ROOT/prompts/codex-runner"
+elif [[ "$PROMPT_DIR" != /* ]]; then
+  PROMPT_DIR="$REPO_ROOT/$PROMPT_DIR"
+fi
+RUNNER_PROMPT_RENDERER="$REPO_ROOT/scripts/render-runner-prompt.py"
+TASK_PROMPT_TEMPLATE="$PROMPT_DIR/task-execution.md"
+RESUME_PROMPT_TEMPLATE="$PROMPT_DIR/task-resume.md"
+TASK_REGISTRY_TOOL="$REPO_ROOT/scripts/task-registry.py"
 
 command -v python3 >/dev/null 2>&1 || { echo "python3 is required" >&2; exit 1; }
 command -v "$CODEX_BIN" >/dev/null 2>&1 || { echo "codex executable not found: $CODEX_BIN" >&2; exit 1; }
 [[ -f "$TASKS_FILE" ]] || { echo "Task file not found: $TASKS_FILE" >&2; exit 1; }
+[[ -f "$RUNNER_PROMPT_RENDERER" ]] || { echo "Prompt renderer not found: $RUNNER_PROMPT_RENDERER" >&2; exit 1; }
+[[ -f "$TASK_PROMPT_TEMPLATE" ]] || { echo "Task prompt template not found: $TASK_PROMPT_TEMPLATE" >&2; exit 1; }
+[[ -f "$RESUME_PROMPT_TEMPLATE" ]] || { echo "Resume prompt template not found: $RESUME_PROMPT_TEMPLATE" >&2; exit 1; }
+[[ -f "$TASK_REGISTRY_TOOL" ]] || { echo "Task registry tool not found: $TASK_REGISTRY_TOOL" >&2; exit 1; }
 python3 - "$CONTEXT_THRESHOLD_PCT" "$CONTEXT_SOFT_THRESHOLD_PCT" "$CONTEXT_POLL_SECONDS" <<'PY'
 import sys
 
@@ -219,16 +250,18 @@ resolve_target_repo_root() {
 }
 
 initialize_task_reports() {
-  local task_id="$1"
-  local task_title="$2"
-  local task_workdir_rel="$3"
-  local task_workdir_abs="$4"
-  local target_repo_root="$5"
-  local report_dir="$6"
+  local task_uid="$1"
+  local task_display_id="$2"
+  local task_title="$3"
+  local task_workdir_rel="$4"
+  local task_workdir_abs="$5"
+  local target_repo_root="$6"
+  local report_dir="$7"
 
   python3 "$REPO_ROOT/scripts/codex-report.py" init \
     --report-dir "$report_dir" \
-    --task-id "$task_id" \
+    --task-uid "$task_uid" \
+    --task-id "$task_display_id" \
     --title "$task_title" \
     --working-dir "$task_workdir_rel" \
     --dispatcher-agent "$DISPATCHER_AGENT" \
@@ -259,7 +292,11 @@ with open(path, 'r', encoding='utf-8') as f:
     data = json.load(f)
 
 tasks = data.get('tasks', [])
-completed = {t['id'] for t in tasks if t.get('status') == 'done'}
+completed = {
+    (t.get('uid') or '')
+    for t in tasks
+    if t.get('status') == 'done' and (t.get('uid') or '')
+}
 now = datetime.now(timezone.utc).isoformat()
 
 selected = None
@@ -311,16 +348,16 @@ PY
 }
 
 finalize_task() {
-  local task_id="$1"
+  local task_uid="$1"
   local final_status="$2"
   local summary_file="$3"
   local exit_code="$4"
-  python3 - "$TASKS_FILE" "$task_id" "$final_status" "$summary_file" "$exit_code" <<'PY'
+  python3 - "$TASKS_FILE" "$task_uid" "$final_status" "$summary_file" "$exit_code" <<'PY'
 import json
 import sys
 from datetime import datetime, timezone
 
-path, task_id, final_status, summary_file, exit_code = sys.argv[1:]
+path, task_uid, final_status, summary_file, exit_code = sys.argv[1:]
 
 with open(path, 'r', encoding='utf-8') as f:
     data = json.load(f)
@@ -334,7 +371,7 @@ except FileNotFoundError:
 
 now = datetime.now(timezone.utc).isoformat()
 for task in data.get('tasks', []):
-    if task.get('id') != task_id:
+    if task.get('uid') != task_uid:
         continue
     task['status'] = final_status
     task['finished_at'] = now
@@ -353,17 +390,17 @@ PY
 }
 
 pause_task_for_usage_limit() {
-  local task_id="$1"
+  local task_uid="$1"
   local event_file="$2"
   local stderr_file="$3"
   local exit_code="$4"
 
-  python3 - "$TASKS_FILE" "$task_id" "$event_file" "$stderr_file" "$exit_code" <<'PY'
+  python3 - "$TASKS_FILE" "$task_uid" "$event_file" "$stderr_file" "$exit_code" <<'PY'
 import json
 import sys
 from datetime import datetime, timezone
 
-path, task_id, event_file, stderr_file, exit_code = sys.argv[1:]
+path, task_uid, event_file, stderr_file, exit_code = sys.argv[1:]
 
 usage_message = ""
 
@@ -400,7 +437,7 @@ with open(path, 'r', encoding='utf-8') as f:
     data = json.load(f)
 
 for task in data.get('tasks', []):
-    if task.get('id') != task_id:
+    if task.get('uid') != task_uid:
         continue
     attempts = int(task.get('attempts', 0))
     task['status'] = 'pending'
@@ -431,7 +468,7 @@ path = sys.argv[1]
 with open(path, encoding='utf-8') as handle:
     data = json.load(handle)
 tasks = data.get('tasks', [])
-print("1" if all(task.get("status") == "done" for task in tasks) else "0")
+print("1" if tasks and all(task.get("status") == "done" for task in tasks) else "0")
 PY
 }
 
@@ -469,6 +506,7 @@ summary = {
     "task_count": len(tasks),
     "tasks": [
         {
+            "uid": task.get("uid"),
             "id": task.get("id"),
             "status": task.get("status"),
             "attempts": task.get("attempts"),
@@ -496,30 +534,32 @@ write_state() {
 }
 
 write_running_state() {
-  local task_id="$1"
-  local task_title="$2"
-  local event_file="$3"
-  local stderr_file="$4"
-  local message_file="$5"
-  local prompt_file="$6"
-  local context_file="$7"
-  local segment_index="$8"
-  local session_id="$9"
-  local snapshot_json="${10:-null}"
+  local task_uid="$1"
+  local task_display_id="$2"
+  local task_title="$3"
+  local event_file="$4"
+  local stderr_file="$5"
+  local message_file="$6"
+  local prompt_file="$7"
+  local context_file="$8"
+  local segment_index="$9"
+  local session_id="${10}"
+  local snapshot_json="${11:-null}"
   local state_json
 
-  state_json=$(python3 - "$task_id" "$task_title" "$event_file" "$stderr_file" "$message_file" "$prompt_file" "$context_file" "$segment_index" "$session_id" "$CONTEXT_THRESHOLD_PCT" "$snapshot_json" <<'PY'
+  state_json=$(python3 - "$task_uid" "$task_display_id" "$task_title" "$event_file" "$stderr_file" "$message_file" "$prompt_file" "$context_file" "$segment_index" "$session_id" "$CONTEXT_THRESHOLD_PCT" "$snapshot_json" <<'PY'
 import json
 import sys
 from datetime import datetime, timezone
 
-(task_id, task_title, event_file, stderr_file, message_file, prompt_file,
+(task_uid, task_display_id, task_title, event_file, stderr_file, message_file, prompt_file,
  context_file, segment_index, session_id, context_threshold_pct, snapshot_json) = sys.argv[1:]
 
 state = {
     "status": "running",
     "timestamp": datetime.now(timezone.utc).isoformat(),
-    "task_id": task_id,
+    "task_uid": task_uid,
+    "task_id": task_display_id,
     "title": task_title,
     "segment": int(segment_index),
     "event_file": event_file,
@@ -544,14 +584,14 @@ PY
 }
 
 update_task_runner_state() {
-  local task_id="$1"
+  local task_uid="$1"
   local patch_json="$2"
 
-  python3 - "$TASKS_FILE" "$task_id" "$patch_json" <<'PY'
+  python3 - "$TASKS_FILE" "$task_uid" "$patch_json" <<'PY'
 import json
 import sys
 
-path, task_id, patch_json = sys.argv[1:]
+path, task_uid, patch_json = sys.argv[1:]
 patch = json.loads(patch_json)
 
 
@@ -567,7 +607,7 @@ with open(path, 'r', encoding='utf-8') as f:
     data = json.load(f)
 
 for task in data.get('tasks', []):
-    if task.get('id') != task_id:
+    if task.get('uid') != task_uid:
         continue
     merge(task.setdefault('runner_state', {}), patch)
     break
@@ -578,20 +618,29 @@ with open(path, 'w', encoding='utf-8') as f:
 PY
 }
 
-read_task_json() {
-  local task_id="$1"
+validate_task_uids() {
+  local -a args
+  args=(validate --tasks "$TASKS_FILE")
+  if [[ -n "$TASK_REGISTRY_FILE" ]]; then
+    args+=(--registry "$TASK_REGISTRY_FILE")
+  fi
+  python3 "$TASK_REGISTRY_TOOL" "${args[@]}" >/dev/null
+}
 
-  python3 - "$TASKS_FILE" "$task_id" <<'PY'
+read_task_json() {
+  local task_uid="$1"
+
+  python3 - "$TASKS_FILE" "$task_uid" <<'PY'
 import json
 import sys
 
-path, task_id = sys.argv[1:]
+path, task_uid = sys.argv[1:]
 
 with open(path, 'r', encoding='utf-8') as f:
     data = json.load(f)
 
 for task in data.get('tasks', []):
-    if task.get('id') == task_id:
+    if task.get('uid') == task_uid:
         print(json.dumps(task))
         break
 else:
@@ -607,48 +656,16 @@ build_prompt() {
   local conversation_file="$5"
   local decisions_file="$6"
   local helper_script="$7"
-  python3 - "$REPO_ROOT" "$DISPATCHER_AGENT" "$report_dir" "$meta_file" "$summary_file" "$conversation_file" "$decisions_file" "$helper_script" "$task_json" <<'PY'
-import json
-import sys
-
-repo_root = sys.argv[1]
-dispatcher = sys.argv[2]
-report_dir = sys.argv[3]
-meta_file = sys.argv[4]
-summary_file = sys.argv[5]
-conversation_file = sys.argv[6]
-decisions_file = sys.argv[7]
-helper_script = sys.argv[8]
-task = json.loads(sys.argv[9])
-
-print(f"""You are executing a queued automation task for the SocialPredict repository at {repo_root}.
-
-Start by explicitly spawning the custom agent named `{dispatcher}` to coordinate the task. The dispatcher should decide whether to spawn any specialist agents and should wait for them before concluding.
-
-Reporting convention:
-- The canonical curated report location is `{report_dir}`.
-- Report files are already bootstrapped:
-  - meta: `{meta_file}`
-  - summary: `{summary_file}`
-  - conversation log: `{conversation_file}`
-  - decisions log: `{decisions_file}`
-- Use helper script `{helper_script}` for deterministic report I/O when practical.
-- Specialists should append facts and decisions; the dispatcher owns `summary.json`.
-- Prefer incremental reads, for example `read-events --after-seq <last_event_seq>` instead of rereading the full conversation log.
-- `summary.json.context` is runner-maintained. If `handoff_requested` becomes true, stop branching out, update the summary, record a handoff event, and converge toward a clean checkpoint.
-
-Execution contract:
-- Do the task end-to-end.
-- Do not stop for clarifying questions unless blocked by a missing file, contradictory task instructions, or a safety issue.
-- Prefer the smallest defensible change.
-- Follow repository AGENTS.md guidance and nearby repo docs.
-- Use machine-readable task metadata below as the source of truth.
-- Finish with a concise summary that includes: task_id, status, files_changed, checks_run, and follow_ups.
-
-Task metadata:
-{json.dumps(task, indent=2, sort_keys=True)}
-""")
-PY
+  printf '%s' "$task_json" | python3 "$RUNNER_PROMPT_RENDERER" initial \
+    --template "$TASK_PROMPT_TEMPLATE" \
+    --repo-root "$REPO_ROOT" \
+    --dispatcher "$DISPATCHER_AGENT" \
+    --report-dir "$report_dir" \
+    --meta-file "$meta_file" \
+    --summary-file "$summary_file" \
+    --conversation-file "$conversation_file" \
+    --decisions-file "$decisions_file" \
+    --helper-script "$helper_script"
 }
 
 build_resume_prompt() {
@@ -658,39 +675,13 @@ build_resume_prompt() {
   local conversation_file="$4"
   local decisions_file="$5"
   local helper_script="$6"
-  python3 - "$report_dir" "$summary_file" "$conversation_file" "$decisions_file" "$helper_script" "$task_json" <<'PY'
-import json
-import sys
-
-report_dir = sys.argv[1]
-summary_file = sys.argv[2]
-conversation_file = sys.argv[3]
-decisions_file = sys.argv[4]
-helper_script = sys.argv[5]
-task = json.loads(sys.argv[6])
-runner_state = task.get("runner_state") or {}
-checkpoint = runner_state.get("last_context_checkpoint") or {}
-
-print(f"""You are resuming queued automation task {task.get("id", "")} after codex-runner checkpointed the session because the active context window was getting full.
-
-Continue from the existing session state and current repository contents.
-- Reuse the canonical report directory `{report_dir}`.
-- Continue appending to `{conversation_file}` and `{decisions_file}` rather than creating new report files.
-- Keep `{summary_file}` current as the dispatcher-owned rollup.
-- Use helper script `{helper_script}` for incremental reads and summary updates when practical.
-- Check `summary.json.context` first. If `handoff_requested` is true, consolidate state before branching into more work.
-- Do not restart the task from scratch.
-- Avoid repeating work that is already complete.
-- Re-read files or rerun checks only when needed to safely continue.
-- Finish with the same concise summary contract as before.
-
-Latest checkpoint:
-{json.dumps(checkpoint, indent=2, sort_keys=True)}
-
-Task metadata:
-{json.dumps(task, indent=2, sort_keys=True)}
-""")
-PY
+  printf '%s' "$task_json" | python3 "$RUNNER_PROMPT_RENDERER" resume \
+    --template "$RESUME_PROMPT_TEMPLATE" \
+    --report-dir "$report_dir" \
+    --summary-file "$summary_file" \
+    --conversation-file "$conversation_file" \
+    --decisions-file "$decisions_file" \
+    --helper-script "$helper_script"
 }
 
 append_runlog() {
@@ -754,17 +745,23 @@ append_report_event() {
 }
 
 print_context_terminal_line() {
-  local task_id="$1"
-  local segment_index="$2"
-  local level="$3"
-  local used_pct="$4"
-  local used_tokens="$5"
-  local remaining_tokens="$6"
-  local context_window="$7"
-  local message="$8"
+  local task_uid="$1"
+  local task_display_id="$2"
+  local segment_index="$3"
+  local level="$4"
+  local used_pct="$5"
+  local used_tokens="$6"
+  local remaining_tokens="$7"
+  local context_window="$8"
+  local message="$9"
+
+  local task_ref="$task_uid"
+  if [[ -n "$task_display_id" ]]; then
+    task_ref="${task_display_id}|${task_uid}"
+  fi
 
   printf '[codex-runner][%s][task=%s][segment=%s][context=%s%% used][used=%s][remaining=%s/%s] %s\n' \
-    "$level" "$task_id" "$segment_index" "$used_pct" "$used_tokens" "$remaining_tokens" "$context_window" "$message" >&2
+    "$level" "$task_ref" "$segment_index" "$used_pct" "$used_tokens" "$remaining_tokens" "$context_window" "$message" >&2
 }
 
 build_codex_exec_args() {
@@ -943,18 +940,19 @@ PY
 }
 
 monitor_context_window() {
-  local task_id="$1"
-  local task_title="$2"
-  local event_file="$3"
-  local stderr_file="$4"
-  local message_file="$5"
-  local prompt_file="$6"
-  local context_file="$7"
-  local report_dir="$8"
-  local codex_pid="$9"
-  local segment_index="${10}"
-  local restart_request_file="${11}"
-  local next_restart_count="${12}"
+  local task_uid="$1"
+  local task_display_id="$2"
+  local task_title="$3"
+  local event_file="$4"
+  local stderr_file="$5"
+  local message_file="$6"
+  local prompt_file="$7"
+  local context_file="$8"
+  local report_dir="$9"
+  local codex_pid="${10}"
+  local segment_index="${11}"
+  local restart_request_file="${12}"
+  local next_restart_count="${13}"
 
   local known_session_id=""
   local last_logged_tokens=""
@@ -987,16 +985,17 @@ PY
       known_session_id="$session_id"
 
       local session_started_json task_patch_json
-      session_started_json=$(python3 - "$task_id" "$segment_index" "$session_id" <<'PY'
+      session_started_json=$(python3 - "$task_uid" "$task_display_id" "$segment_index" "$session_id" <<'PY'
 import json
 import sys
 from datetime import datetime, timezone
 
-task_id, segment_index, session_id = sys.argv[1:]
+task_uid, task_display_id, segment_index, session_id = sys.argv[1:]
 print(json.dumps({
     "record_type": "context_session_started",
     "timestamp": datetime.now(timezone.utc).isoformat(),
-    "task_id": task_id,
+    "task_uid": task_uid,
+    "task_id": task_display_id,
     "segment": int(segment_index),
     "session_id": session_id,
 }))
@@ -1021,8 +1020,8 @@ print(json.dumps({
 }))
 PY
 )
-      update_task_runner_state "$task_id" "$task_patch_json"
-      write_running_state "$task_id" "$task_title" "$event_file" "$stderr_file" "$message_file" "$prompt_file" "$context_file" "$segment_index" "$session_id" "null"
+      update_task_runner_state "$task_uid" "$task_patch_json"
+      write_running_state "$task_uid" "$task_display_id" "$task_title" "$event_file" "$stderr_file" "$message_file" "$prompt_file" "$context_file" "$segment_index" "$session_id" "null"
     fi
 
     if [[ "$has_snapshot" != "1" || -z "$used_tokens" ]]; then
@@ -1033,17 +1032,18 @@ PY
       last_logged_tokens="$used_tokens"
 
       local progress_json
-      progress_json=$(python3 - "$task_id" "$segment_index" "$session_id" "$used_tokens" "$context_window" "$remaining_tokens" "$used_pct" "$CONTEXT_THRESHOLD_PCT" <<'PY'
+      progress_json=$(python3 - "$task_uid" "$task_display_id" "$segment_index" "$session_id" "$used_tokens" "$context_window" "$remaining_tokens" "$used_pct" "$CONTEXT_THRESHOLD_PCT" <<'PY'
 import json
 import sys
 from datetime import datetime, timezone
 
-(task_id, segment_index, session_id, used_tokens, context_window,
+(task_uid, task_display_id, segment_index, session_id, used_tokens, context_window,
  remaining_tokens, used_pct, threshold_pct) = sys.argv[1:]
 print(json.dumps({
     "record_type": "context_progress",
     "timestamp": datetime.now(timezone.utc).isoformat(),
-    "task_id": task_id,
+    "task_uid": task_uid,
+    "task_id": task_display_id,
     "segment": int(segment_index),
     "session_id": session_id,
     "used_tokens": int(used_tokens),
@@ -1056,8 +1056,8 @@ PY
 )
       append_context_log "$context_file" "$progress_json"
       update_report_context "$report_dir" "$session_id" "$used_tokens" "$context_window" "$remaining_tokens" "$used_pct" "context_progress" "$soft_handoff_requested"
-      print_context_terminal_line "$task_id" "$segment_index" "progress" "$used_pct" "$used_tokens" "$remaining_tokens" "$context_window" "Context usage updated."
-      write_running_state "$task_id" "$task_title" "$event_file" "$stderr_file" "$message_file" "$prompt_file" "$context_file" "$segment_index" "$session_id" "$snapshot_json"
+      print_context_terminal_line "$task_uid" "$task_display_id" "$segment_index" "progress" "$used_pct" "$used_tokens" "$remaining_tokens" "$context_window" "Context usage updated."
+      write_running_state "$task_uid" "$task_display_id" "$task_title" "$event_file" "$stderr_file" "$message_file" "$prompt_file" "$context_file" "$segment_index" "$session_id" "$snapshot_json"
     fi
 
     if [[ "$soft_handoff_requested" != "1" && "$(python3 - "$used_pct" "$CONTEXT_SOFT_THRESHOLD_PCT" <<'PY'
@@ -1069,17 +1069,18 @@ PY
       soft_handoff_requested="1"
 
       local soft_warning_json
-      soft_warning_json=$(python3 - "$task_id" "$segment_index" "$session_id" "$used_tokens" "$context_window" "$remaining_tokens" "$used_pct" "$CONTEXT_SOFT_THRESHOLD_PCT" "$CONTEXT_THRESHOLD_PCT" <<'PY'
+      soft_warning_json=$(python3 - "$task_uid" "$task_display_id" "$segment_index" "$session_id" "$used_tokens" "$context_window" "$remaining_tokens" "$used_pct" "$CONTEXT_SOFT_THRESHOLD_PCT" "$CONTEXT_THRESHOLD_PCT" <<'PY'
 import json
 import sys
 from datetime import datetime, timezone
 
-(task_id, segment_index, session_id, used_tokens, context_window,
+(task_uid, task_display_id, segment_index, session_id, used_tokens, context_window,
  remaining_tokens, used_pct, soft_threshold_pct, threshold_pct) = sys.argv[1:]
 print(json.dumps({
     "record_type": "context_soft_limit_reached",
     "timestamp": datetime.now(timezone.utc).isoformat(),
-    "task_id": task_id,
+    "task_uid": task_uid,
+    "task_id": task_display_id,
     "segment": int(segment_index),
     "session_id": session_id,
     "used_tokens": int(used_tokens),
@@ -1094,7 +1095,7 @@ PY
       append_context_log "$context_file" "$soft_warning_json"
       append_report_event "$report_dir" "codex_runner" "runner" "context_soft_limit_reached" "Soft context threshold reached. Dispatcher should stop branching and write a clean handoff into summary.json and conversation.ndjson."
       update_report_context "$report_dir" "$session_id" "$used_tokens" "$context_window" "$remaining_tokens" "$used_pct" "soft_threshold_reached" "1"
-      print_context_terminal_line "$task_id" "$segment_index" "soft-threshold" "$used_pct" "$used_tokens" "$remaining_tokens" "$context_window" "Soft threshold reached. Dispatcher should wrap up toward checkpoint."
+      print_context_terminal_line "$task_uid" "$task_display_id" "$segment_index" "soft-threshold" "$used_pct" "$used_tokens" "$remaining_tokens" "$context_window" "Soft threshold reached. Dispatcher should wrap up toward checkpoint."
     fi
 
     if [[ "$(python3 - "$used_pct" "$CONTEXT_THRESHOLD_PCT" <<'PY'
@@ -1142,17 +1143,18 @@ print(json.dumps({
 }))
 PY
 )
-    checkpoint_log_json=$(python3 - "$task_id" "$segment_index" "$session_id" "$used_tokens" "$context_window" "$remaining_tokens" "$used_pct" "$CONTEXT_THRESHOLD_PCT" "$next_restart_count" <<'PY'
+    checkpoint_log_json=$(python3 - "$task_uid" "$task_display_id" "$segment_index" "$session_id" "$used_tokens" "$context_window" "$remaining_tokens" "$used_pct" "$CONTEXT_THRESHOLD_PCT" "$next_restart_count" <<'PY'
 import json
 import sys
 from datetime import datetime, timezone
 
-(task_id, segment_index, session_id, used_tokens, context_window,
+(task_uid, task_display_id, segment_index, session_id, used_tokens, context_window,
  remaining_tokens, used_pct, threshold_pct, restart_count) = sys.argv[1:]
 print(json.dumps({
     "record_type": "context_checkpoint_requested",
     "timestamp": datetime.now(timezone.utc).isoformat(),
-    "task_id": task_id,
+    "task_uid": task_uid,
+    "task_id": task_display_id,
     "segment": int(segment_index),
     "session_id": session_id,
     "used_tokens": int(used_tokens),
@@ -1165,12 +1167,12 @@ print(json.dumps({
 PY
 )
 
-    update_task_runner_state "$task_id" "$checkpoint_patch_json"
+    update_task_runner_state "$task_uid" "$checkpoint_patch_json"
     append_context_log "$context_file" "$checkpoint_log_json"
     append_report_event "$report_dir" "codex_runner" "runner" "context_checkpoint_requested" "Hard context threshold reached. Runner is checkpointing and will resume the same task session."
     update_report_context "$report_dir" "$session_id" "$used_tokens" "$context_window" "$remaining_tokens" "$used_pct" "hard_threshold_reached" "1"
-    print_context_terminal_line "$task_id" "$segment_index" "hard-threshold" "$used_pct" "$used_tokens" "$remaining_tokens" "$context_window" "Hard threshold reached. Runner is checkpointing and resuming the session."
-    write_running_state "$task_id" "$task_title" "$event_file" "$stderr_file" "$message_file" "$prompt_file" "$context_file" "$segment_index" "$session_id" "$snapshot_json"
+    print_context_terminal_line "$task_uid" "$task_display_id" "$segment_index" "hard-threshold" "$used_pct" "$used_tokens" "$remaining_tokens" "$context_window" "Hard threshold reached. Runner is checkpointing and resuming the session."
+    write_running_state "$task_uid" "$task_display_id" "$task_title" "$event_file" "$stderr_file" "$message_file" "$prompt_file" "$context_file" "$segment_index" "$session_id" "$snapshot_json"
     printf '%s\n' "$checkpoint_patch_json" > "$restart_request_file"
     kill -TERM "$codex_pid" >/dev/null 2>&1 || true
     return 0
@@ -1178,6 +1180,7 @@ PY
 }
 
 while true; do
+  validate_task_uids
   task_json="$(pick_next_task)"
 
   if [[ -z "$task_json" ]]; then
@@ -1229,7 +1232,8 @@ PY
     continue
   fi
 
-  task_id="$(python3 -c 'import json,sys; print(json.loads(sys.stdin.read())["id"])' <<< "$task_json")"
+  task_uid="$(python3 -c 'import json,sys; print(json.loads(sys.stdin.read())["uid"])' <<< "$task_json")"
+  task_id="$(python3 -c 'import json,sys; print(json.loads(sys.stdin.read()).get("id", ""))' <<< "$task_json")"
   task_title="$(python3 -c 'import json,sys; print(json.loads(sys.stdin.read()).get("title", ""))' <<< "$task_json")"
   task_workdir_rel="$(python3 -c 'import json,sys; print(json.loads(sys.stdin.read()).get("working_dir", "."))' <<< "$task_json")"
   task_workdir_abs="$(cd "$REPO_ROOT/$task_workdir_rel" && pwd)"
@@ -1237,7 +1241,7 @@ PY
   task_approval="$(python3 -c 'import json,sys; print(json.loads(sys.stdin.read()).get("approval", "never"))' <<< "$task_json")"
   task_profile="$(python3 -c 'import json,sys; print(json.loads(sys.stdin.read()).get("profile", ""))' <<< "$task_json")"
   target_repo_root="$(resolve_target_repo_root "$task_workdir_abs")"
-  report_dir="$target_repo_root/.codex-reports/tasks/$task_id"
+  report_dir="$target_repo_root/.codex-reports/tasks/$task_uid"
   meta_file="$report_dir/meta.json"
   summary_json_file="$report_dir/summary.json"
   conversation_file="$report_dir/conversation.ndjson"
@@ -1249,7 +1253,7 @@ PY
   stored_segment="$(python3 -c 'import json,sys; print(int((json.loads(sys.stdin.read()).get("runner_state") or {}).get("segment", 0)))' <<< "$task_json")"
   context_restart_count="$(python3 -c 'import json,sys; print(int((json.loads(sys.stdin.read()).get("runner_state") or {}).get("restart_count", 0)))' <<< "$task_json")"
 
-  initialize_task_reports "$task_id" "$task_title" "$task_workdir_rel" "$task_workdir_abs" "$target_repo_root" "$report_dir"
+  initialize_task_reports "$task_uid" "$task_id" "$task_title" "$task_workdir_rel" "$task_workdir_abs" "$target_repo_root" "$report_dir"
 
   if [[ "$resume_pending" == "1" && -n "$resume_session_id" ]]; then
     segment_index=$((stored_segment + 1))
@@ -1273,11 +1277,11 @@ PY
   while true; do
     task_timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
     segment_label="$(printf '%02d' "$segment_index")"
-    event_file="$RUNS_DIR/events/${task_id}_${task_timestamp}_part${segment_label}.ndjson"
-    stderr_file="$RUNS_DIR/stderr/${task_id}_${task_timestamp}_part${segment_label}.stderr.log"
-    message_file="$RUNS_DIR/messages/${task_id}_${task_timestamp}_part${segment_label}.txt"
-    prompt_file="$RUNS_DIR/prompts/${task_id}_${task_timestamp}_part${segment_label}.txt"
-    context_file="$RUNS_DIR/context/${task_id}_${task_timestamp}_part${segment_label}.ndjson"
+    event_file="$RUNS_DIR/events/${task_uid}_${task_timestamp}_part${segment_label}.ndjson"
+    stderr_file="$RUNS_DIR/stderr/${task_uid}_${task_timestamp}_part${segment_label}.stderr.log"
+    message_file="$RUNS_DIR/messages/${task_uid}_${task_timestamp}_part${segment_label}.txt"
+    prompt_file="$RUNS_DIR/prompts/${task_uid}_${task_timestamp}_part${segment_label}.txt"
+    context_file="$RUNS_DIR/context/${task_uid}_${task_timestamp}_part${segment_label}.ndjson"
     restart_request_file="${context_file%.ndjson}.restart.json"
     rm -f "$restart_request_file"
 
@@ -1297,7 +1301,7 @@ PY
     prompt_files+=("$prompt_file")
     context_files+=("$context_file")
 
-    write_running_state "$task_id" "$task_title" "$event_file" "$stderr_file" "$message_file" "$prompt_file" "$context_file" "$segment_index" "$resume_session_id" "null"
+    write_running_state "$task_uid" "$task_id" "$task_title" "$event_file" "$stderr_file" "$message_file" "$prompt_file" "$context_file" "$segment_index" "$resume_session_id" "null"
 
     set +e
     run_codex_segment "$event_file" "$stderr_file" "${codex_args[@]}" < "$prompt_file" &
@@ -1310,7 +1314,7 @@ print("1" if float(sys.argv[1]) > 0 else "0")
 PY
 )" == "1" ]]; then
       next_restart_count=$((context_restart_count + 1))
-      monitor_context_window "$task_id" "$task_title" "$event_file" "$stderr_file" "$message_file" "$prompt_file" "$context_file" "$report_dir" "$codex_pid" "$segment_index" "$restart_request_file" "$next_restart_count" &
+      monitor_context_window "$task_uid" "$task_id" "$task_title" "$event_file" "$stderr_file" "$message_file" "$prompt_file" "$context_file" "$report_dir" "$codex_pid" "$segment_index" "$restart_request_file" "$next_restart_count" &
       monitor_pid=$!
     fi
 
@@ -1341,7 +1345,7 @@ PY
       last_session_id="$resume_session_id"
       context_restart_count=$((context_restart_count + 1))
       segment_index=$((segment_index + 1))
-      task_json="$(read_task_json "$task_id")"
+      task_json="$(read_task_json "$task_uid")"
       continue
     fi
 
@@ -1367,17 +1371,18 @@ PY
   fi
 
   if [[ "$task_status" == "paused_usage_limit" ]]; then
-    pause_task_for_usage_limit "$task_id" "$last_event_file" "$last_stderr_file" "$exit_code"
+    pause_task_for_usage_limit "$task_uid" "$last_event_file" "$last_stderr_file" "$exit_code"
     append_report_event "$report_dir" "codex_runner" "runner" "usage_limit_paused" "Codex usage limit reached. Runner paused the queue, restored this task to pending, and exited for deterministic recovery."
-    state_json=$(python3 - "$task_id" "$task_title" "$last_event_file" "$last_stderr_file" "$failure_message" <<'PY'
+    state_json=$(python3 - "$task_uid" "$task_id" "$task_title" "$last_event_file" "$last_stderr_file" "$failure_message" <<'PY'
 import json
 import sys
 from datetime import datetime, timezone
 
-task_id, task_title, event_file, stderr_file, message = sys.argv[1:]
+task_uid, task_id, task_title, event_file, stderr_file, message = sys.argv[1:]
 print(json.dumps({
   "status": "paused",
   "timestamp": datetime.now(timezone.utc).isoformat(),
+  "task_uid": task_uid,
   "task_id": task_id,
   "title": task_title,
   "reason": "usage_limit",
@@ -1386,10 +1391,10 @@ print(json.dumps({
   "stderr_file": stderr_file,
 }))
 PY
-)
+  )
     write_state "$state_json"
   else
-    finalize_task "$task_id" "$task_status" "$message_file" "$exit_code"
+    finalize_task "$task_uid" "$task_status" "$message_file" "$exit_code"
   fi
 
   files_changed_json="[]"
@@ -1403,10 +1408,10 @@ PY
   prompt_files_json="$(printf '%s\n' "${prompt_files[@]}" | python3 -c 'import json,sys; print(json.dumps([line.strip() for line in sys.stdin if line.strip()]))')"
   context_files_json="$(printf '%s\n' "${context_files[@]}" | python3 -c 'import json,sys; print(json.dumps([line.strip() for line in sys.stdin if line.strip()]))')"
 
-  runlog_json=$(python3 - "$task_id" "$task_title" "$start_ts" "$end_ts" "$task_status" "$exit_code" "$MODE" "$REPO_ROOT" "$task_workdir_rel" "$DISPATCHER_AGENT" "$last_event_file" "$last_stderr_file" "$last_message_file" "$last_prompt_file" "$last_context_file" "$last_session_id" "$segment_index" "$context_restart_count" "$CONTEXT_THRESHOLD_PCT" "$event_files_json" "$stderr_files_json" "$message_files_json" "$prompt_files_json" "$context_files_json" "$files_changed_json" <<'PY'
+  runlog_json=$(python3 - "$task_uid" "$task_id" "$task_title" "$start_ts" "$end_ts" "$task_status" "$exit_code" "$MODE" "$REPO_ROOT" "$task_workdir_rel" "$DISPATCHER_AGENT" "$last_event_file" "$last_stderr_file" "$last_message_file" "$last_prompt_file" "$last_context_file" "$last_session_id" "$segment_index" "$context_restart_count" "$CONTEXT_THRESHOLD_PCT" "$event_files_json" "$stderr_files_json" "$message_files_json" "$prompt_files_json" "$context_files_json" "$files_changed_json" <<'PY'
 import json
 import sys
-(task_id, task_title, start_ts, end_ts, task_status, exit_code, mode, repo_root,
+(task_uid, task_id, task_title, start_ts, end_ts, task_status, exit_code, mode, repo_root,
  task_workdir_rel, dispatcher_agent, event_file, stderr_file, message_file,
  prompt_file, context_file, session_id, segments, context_restarts,
  context_threshold_pct, event_files_json, stderr_files_json, message_files_json,
@@ -1422,6 +1427,7 @@ def load_json_arg(raw, default):
 
 record = {
   "record_type": "run_summary",
+  "task_uid": task_uid,
   "task_id": task_id,
   "title": task_title,
   "started_at": start_ts,

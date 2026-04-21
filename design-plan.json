@@ -1,0 +1,605 @@
+{
+  "schema_version": "1.0",
+  "plan_uid": "9f8c16f4-a20e-4ba0-a98a-1f7ffc377292",
+  "title": "Active Backend Modernization Slice: Runtime Boundary Cleanup, Configuration Service Extraction, Legacy Model Decoupling, and API Contract Alignment",
+  "status": "draft",
+  "created_at": "2026-04-17T11:56:27Z",
+  "updated_at": "2026-04-17T11:56:27Z",
+  "source_context": {
+    "task_repo": ".",
+    "target_repo": "../socialpredict",
+    "scope": [
+      "../socialpredict/backend/util/**",
+      "../socialpredict/backend/setup/**",
+      "../socialpredict/backend/internal/app/**",
+      "../socialpredict/backend/internal/domain/**",
+      "../socialpredict/backend/internal/repository/**",
+      "../socialpredict/backend/internal/service/auth/**",
+      "../socialpredict/backend/server/**",
+      "../socialpredict/backend/handlers/setup/**",
+      "../socialpredict/backend/handlers/stats/**",
+      "../socialpredict/backend/handlers/admin/adduser.go",
+      "../socialpredict/backend/docs/API-ISSUES.md",
+      "../socialpredict/backend/docs/openapi.yaml"
+    ],
+    "source_documents": [
+      "TASKS.json",
+      "../socialpredict/backend/docs/API-ISSUES.md",
+      "../socialpredict/backend/docs/README.md",
+      "../socialpredict/backend/README/BACKEND/API/API-DESIGN-REPORT.md",
+      "../socialpredict/backend/README/BACKEND/API/API-DOCS.md",
+      "../socialpredict/backend/internal/app/container.go",
+      "../socialpredict/backend/main.go",
+      "../socialpredict/backend/server/server.go",
+      "../socialpredict/backend/setup/setup.go",
+      "../socialpredict/backend/handlers/setup/setuphandler.go",
+      "../socialpredict/backend/util/postgres.go",
+      "../socialpredict/backend/util/getenv.go"
+    ],
+    "related_task_uids": [
+      "019d99d7-3d71-70aa-9f0b-d0f4da7524f0",
+      "019d99d7-3d71-70aa-9f0b-d0f553db0d37",
+      "019d9996-f8a9-75b8-a4a3-7348db798872",
+      "019d9996-f8a9-75b8-a4a3-7349b2560d4f",
+      "019d9996-f8a9-736b-93d9-de583bb6112a",
+      "019d9996-f8a9-736b-93d9-de592fcac393",
+      "019d9996-f8a9-736b-93d9-de5a3e5e447f",
+      "019d9996-f8a9-71b8-a7c0-81a0fe4d4ffc",
+      "019d9996-f8a9-71b8-a7c0-81a1c4b0374c",
+      "019d9996-f8a9-71b8-a7c0-81a2945b5cb4",
+      "019d9996-f8a9-71b8-a7c0-81a3c332d436"
+    ]
+  },
+  "authors": [
+    {
+      "agent": "software-designer-01-evans-agent",
+      "design_posture": "evans",
+      "notes": "Established problem framing, language cleanup, and bounded-context candidates for the active modernization slice."
+    },
+    {
+      "agent": "software-designer-02-fowler-agent",
+      "design_posture": "fowler",
+      "notes": "Converted the slice into an evolutionary architecture path with explicit sequencing, migration seams, and reversibility concerns."
+    },
+    {
+      "agent": "software-designer-03-martin-agent",
+      "design_posture": "martin",
+      "notes": "Tightened dependency direction, policy-vs-detail boundaries, and framework/runtime isolation expectations for implementation."
+    }
+  ],
+  "summary": {
+    "one_sentence": "Modernize the active SocialPredict backend slice by removing hidden runtime globals, extracting configuration into a service-backed boundary, decoupling domain logic from legacy persistence models, and then aligning auth/API behavior with a cleaner contract.",
+    "business_outcomes": [
+      "Reduce architectural fragility in a prediction market backend that is moving from hobby-grade operation toward professional reliability.",
+      "Improve extraction readiness so high-availability and fault-tolerant deployment patterns remain achievable later without rewriting the active slice.",
+      "Make backend behavior more predictable for operators and clients by clarifying ownership boundaries, auth behavior, and API contracts."
+    ],
+    "proposed_direction": "Treat the current work as a prerequisite-architecture program in four waves: util breakup, configuration-service extraction, legacy-model decoupling, and finally scoped API/auth/OpenAPI alignment."
+  },
+  "problem": {
+    "statement": "The backend has already moved toward layered internal services and repositories, but core runtime boundaries still live in globally accessible packages such as `util` and `setup`, while internal domain code remains too persistence-shaped through direct dependence on `socialpredict/models`. Those seams make the system harder to reason about, harder to test safely, and more likely to resist later high-availability extraction or service isolation.",
+    "why_now": "The active queue already assumes these prerequisites. Attempting to normalize auth contracts and API semantics before runtime/config/model boundaries are cleaned up would freeze unstable internals into the public contract and create avoidable rework.",
+    "out_of_scope": [
+      "Full microservice decomposition or container rollout in this pass.",
+      "Broad frontend or infrastructure redesign.",
+      "Public route reorganization.",
+      "Limited-scope login token redesign beyond current enforcement and response-shape cleanup.",
+      "Bets-to-Trades rename."
+    ]
+  },
+  "design_drivers": {
+    "business_constraints": [
+      "Preserve existing behavior while modernizing architecture in small steps.",
+      "Keep current external setup endpoints and current public route organization stable during prerequisite waves.",
+      "Avoid a flag-day rewrite because the platform is already live and operational assumptions must remain intact."
+    ],
+    "architecture_drivers": [
+      "Extraction readiness for future service/container boundaries.",
+      "Dependency direction from handlers to policy to repositories rather than hidden globals.",
+      "Configuration as an owned runtime boundary instead of a singleton package.",
+      "Repository-owned translation between persistence models and internal domain types.",
+      "Explicit, testable contract shaping at the HTTP boundary."
+    ],
+    "quality_attributes": [
+      "Changeability",
+      "Testability",
+      "Fault isolation",
+      "Operational predictability",
+      "Security consistency",
+      "Contract clarity"
+    ]
+  },
+  "current_state": {
+    "shape": "The backend is a monolith with a partially modernized internal architecture: `internal/app/container.go` wires repositories and services, but startup and route wiring still depend on global `util` and `setup` packages, and several internal packages still import `socialpredict/models` directly.",
+    "pain_points": [
+      "`backend/util` mixes DB bootstrap, env loading, API key logic, and model/domain-adjacent helpers in one catch-all package.",
+      "`util.GetDB()` remains a hidden runtime dependency in startup, server, auth, admin, stats, and tests.",
+      "`backend/setup` is a global singleton with embedded YAML and package-level accessors rather than a service-backed slice.",
+      "`server.go` and setup handlers still wire configuration and DB access through globals instead of container-owned seams.",
+      "Internal domain and math packages still depend directly on `socialpredict/models`, which keeps policy code persistence-shaped.",
+      "The API document and API-issues notes still describe a contract direction that depends on unresolved internal cleanup.",
+      "Auth and error-handling behavior are inconsistent with the intended `{ ok, result, reason }` envelope direction."
+    ],
+    "constraints": [
+      "The existing container and internal service pattern is real and should be extended rather than replaced.",
+      "`backend/setup/setup.yaml` is the current source asset and should remain the source of truth during this slice.",
+      "The current backend still uses Gorilla Mux, GORM, and embedded assets; this slice should isolate those details better but not replace them.",
+      "Historical docs under `backend/README/BACKEND/API` are informative but not fully current."
+    ]
+  },
+  "target_state": {
+    "overview": "The active slice should leave the backend with explicit runtime seams: bootstrap/infrastructure code owns env and DB setup, a service-backed configuration slice owns economics/frontend configuration access, repositories and adapters own translation from legacy persistence models into internal domain types, and API/auth contract changes happen only after those seams are stable.",
+    "boundaries": [
+      {
+        "name": "Runtime Bootstrap and Infrastructure",
+        "kind": "module",
+        "purpose": "Own process startup concerns such as env loading, DB initialization, migration invocation, readiness checks, and seed bootstrapping.",
+        "owns": [
+          "Environment loading",
+          "DB configuration normalization",
+          "DB connection creation",
+          "Startup sequencing"
+        ],
+        "does_not_own": [
+          "Business logic",
+          "HTTP contract shaping",
+          "Long-lived domain helpers under a generic util namespace"
+        ],
+        "upstream_dependencies": [],
+        "downstream_dependencies": [
+          "Application Container",
+          "Migration Runner",
+          "Seed Bootstrap"
+        ],
+        "reason": "This separates process/runtime details from domain policy and removes hidden global access paths."
+      },
+      {
+        "name": "Configuration Service Slice",
+        "kind": "service",
+        "purpose": "Provide typed access to economics and frontend configuration through the same internal architecture style used by other service-backed slices.",
+        "owns": [
+          "Typed configuration models",
+          "Configuration loading from setup assets",
+          "Configuration access interfaces",
+          "Configuration-related handler/service seams"
+        ],
+        "does_not_own": [
+          "Global singleton access",
+          "Direct package-level runtime state spread across unrelated consumers"
+        ],
+        "upstream_dependencies": [
+          "Runtime Bootstrap and Infrastructure"
+        ],
+        "downstream_dependencies": [
+          "Application Container",
+          "Stats Handlers",
+          "Setup Handlers",
+          "Admin AddUser Flow",
+          "Seed Bootstrap"
+        ],
+        "reason": "Configuration is a shared policy input and should behave like an owned service boundary rather than a magic package."
+      },
+      {
+        "name": "Domain Core",
+        "kind": "bounded_context",
+        "purpose": "Hold market, bet, math, analytics, user, and auth-adjacent policy without direct dependence on transport or persistence structs.",
+        "owns": [
+          "Business rules",
+          "Workflow policy",
+          "Calculation policy",
+          "Authorization policy checks tied to business state"
+        ],
+        "does_not_own": [
+          "HTTP request/response details",
+          "GORM models as native policy objects",
+          "Package-level runtime globals"
+        ],
+        "upstream_dependencies": [
+          "Configuration Service Slice"
+        ],
+        "downstream_dependencies": [
+          "Repository and Legacy Model Adapter Boundary",
+          "API/Auth Boundary"
+        ],
+        "reason": "The platform cannot become professionally reliable if domain policy stays coupled to framework and persistence details."
+      },
+      {
+        "name": "Repository and Legacy Model Adapter Boundary",
+        "kind": "module",
+        "purpose": "Translate between legacy `socialpredict/models` persistence structs and internal domain-facing types or adapters.",
+        "owns": [
+          "GORM-backed repositories",
+          "Persistence translation",
+          "Legacy-model containment",
+          "Adapter seams"
+        ],
+        "does_not_own": [
+          "HTTP behavior",
+          "Pure business policy"
+        ],
+        "upstream_dependencies": [
+          "Domain Core"
+        ],
+        "downstream_dependencies": [
+          "Legacy models",
+          "Database runtime"
+        ],
+        "reason": "Translation should be pushed to the edges so internal policy code stops treating persistence models as its domain language."
+      },
+      {
+        "name": "API and Auth Contract Boundary",
+        "kind": "integration_boundary",
+        "purpose": "Own route-visible JSON envelopes, auth workflow semantics, sanitized reasons, and OpenAPI synchronization once the prerequisite seams are stable.",
+        "owns": [
+          "HTTP response envelopes",
+          "Stable `reason` values",
+          "Auth-visible endpoint behavior",
+          "OpenAPI parity"
+        ],
+        "does_not_own": [
+          "Runtime bootstrap",
+          "Persistence translation",
+          "Configuration singleton behavior"
+        ],
+        "upstream_dependencies": [
+          "Domain Core",
+          "Configuration Service Slice"
+        ],
+        "downstream_dependencies": [
+          "OpenAPI Contract",
+          "Client integrations"
+        ],
+        "reason": "Contract cleanup should codify stable behavior, not compensate for unresolved internal architecture."
+      }
+    ],
+    "integration_seams": [
+      {
+        "name": "Bootstrap to Container Wiring",
+        "participants": [
+          "Runtime Bootstrap and Infrastructure",
+          "Application Container"
+        ],
+        "contract": "Startup code constructs DB/config dependencies once and passes them into a composition root instead of exposing package-level globals.",
+        "notes": "This seam is the main replacement for `util.GetDB()` and package-level config access in runtime flows."
+      },
+      {
+        "name": "Configuration Access Seam",
+        "participants": [
+          "Configuration Service Slice",
+          "Domain Core"
+        ],
+        "contract": "Consumers obtain typed config through explicit interfaces or container-provided services, not `setup.EconomicsConfig()` or `LoadEconomicsConfig()` globals.",
+        "notes": "Stats, setup handlers, admin, server startup, seed, and test helpers are the main current consumers."
+      },
+      {
+        "name": "Domain to Legacy Model Translation Seam",
+        "participants": [
+          "Domain Core",
+          "Repository and Legacy Model Adapter Boundary"
+        ],
+        "contract": "Repositories and narrow adapters own conversion between legacy persistence models and internal domain-facing types.",
+        "notes": "This seam must be introduced before deep API/auth contract cleanup to avoid baking persistence-shaped behavior into public flows."
+      },
+      {
+        "name": "HTTP Envelope and Auth Semantics Seam",
+        "participants": [
+          "API and Auth Contract Boundary",
+          "Domain Core"
+        ],
+        "contract": "Handlers map policy outcomes to `{ ok, result, reason }` or transport failures at the HTTP boundary with sanitized, stable semantics.",
+        "notes": "This seam should tighten must-change-password enforcement while deferring the broader login token redesign."
+      }
+    ],
+    "ubiquitous_language": [
+      {
+        "term": "Runtime Boundary",
+        "definition": "A seam where process startup, DB/config initialization, or environmental details are introduced into the system.",
+        "synonyms_to_avoid": [
+          "util helper",
+          "global convenience"
+        ],
+        "confused_with": [
+          "Domain boundary",
+          "Service boundary"
+        ]
+      },
+      {
+        "term": "Configuration Service",
+        "definition": "The owned internal slice that loads and serves typed economics/frontend configuration to the rest of the backend.",
+        "synonyms_to_avoid": [
+          "setup singleton",
+          "global config package"
+        ],
+        "confused_with": [
+          "YAML asset",
+          "environment variables"
+        ]
+      },
+      {
+        "term": "Legacy Model",
+        "definition": "A persistence-oriented struct from `socialpredict/models` that should not be treated as the internal domain language.",
+        "synonyms_to_avoid": [
+          "domain model"
+        ],
+        "confused_with": [
+          "boundary type",
+          "DTO"
+        ]
+      },
+      {
+        "term": "Boundary Type",
+        "definition": "A typed representation owned by a seam or layer to keep policy code decoupled from transport or persistence structs.",
+        "synonyms_to_avoid": [
+          "duplicate model"
+        ],
+        "confused_with": [
+          "legacy model",
+          "OpenAPI schema"
+        ]
+      },
+      {
+        "term": "Envelope",
+        "definition": "The route-visible JSON wrapper that communicates processed-success or processed-failure outcomes through `ok`, `result`, and `reason`.",
+        "synonyms_to_avoid": [
+          "HTTP error code",
+          "raw handler error"
+        ],
+        "confused_with": [
+          "transport failure",
+          "server crash"
+        ]
+      }
+    ],
+    "use_cases": [
+      {
+        "name": "Boot the backend with explicit runtime dependencies",
+        "actors": [
+          "Backend process"
+        ],
+        "goal": "Start the system without hidden DB/config globals leaking across handlers and services.",
+        "notes": "This is the main W01/W02 operational use case."
+      },
+      {
+        "name": "Serve setup and stats data through owned configuration seams",
+        "actors": [
+          "Authenticated client",
+          "Operator"
+        ],
+        "goal": "Expose setup/config-derived data through stable endpoints backed by explicit services rather than singleton packages."
+      },
+      {
+        "name": "Execute market, bet, analytics, and auth-related policy without direct legacy-model coupling",
+        "actors": [
+          "Authenticated user",
+          "System workflow"
+        ],
+        "goal": "Run core business logic against owned policy shapes while repositories contain persistence translation."
+      },
+      {
+        "name": "Return consistent auth and business-rule outcomes at the HTTP boundary",
+        "actors": [
+          "Client application"
+        ],
+        "goal": "Receive stable JSON semantics for processed business outcomes and clearer transport-failure distinctions."
+      }
+    ],
+    "domain_rules": [
+      {
+        "rule": "Startup acquires process-level dependencies once and passes them through explicit seams instead of exposing package-level global accessors.",
+        "owner_boundary": "Runtime Bootstrap and Infrastructure",
+        "reason": "Hidden runtime globals undermine testability and boundary ownership."
+      },
+      {
+        "rule": "Configuration values remain sourced from `backend/setup/setup.yaml` during this slice, but runtime access to those values moves behind an owned service boundary.",
+        "owner_boundary": "Configuration Service Slice",
+        "reason": "The source asset is stable, but the access pattern is not."
+      },
+      {
+        "rule": "Internal domain and math code should not treat `socialpredict/models` as its native policy language once adapter seams exist.",
+        "owner_boundary": "Repository and Legacy Model Adapter Boundary",
+        "reason": "Persistence coupling is the main structural blocker to cleaner domain behavior."
+      },
+      {
+        "rule": "When the backend processes a request correctly but the business outcome is negative, the API should communicate that through the envelope rather than by leaking raw internal error strings.",
+        "owner_boundary": "API and Auth Contract Boundary",
+        "reason": "This aligns the current slice with the intended contract cleanup without overextending into a broader redesign."
+      },
+      {
+        "rule": "Users flagged with `mustChangePassword` may use login and change-password flows but should be blocked from other authenticated actions until the state is cleared.",
+        "owner_boundary": "API and Auth Contract Boundary",
+        "reason": "This is the locked auth decision for the active slice."
+      }
+    ],
+    "patterns": [
+      {
+        "name": "Composition Root",
+        "why": "The existing container pattern is already present and should become the explicit owner of runtime dependency assembly.",
+        "risks": [
+          "A half-migrated container can become a thin wrapper around globals instead of replacing them."
+        ]
+      },
+      {
+        "name": "Adapter / Anti-Corruption Seam",
+        "why": "Legacy `models` usage should be contained at repository or boundary edges rather than spread through policy code.",
+        "risks": [
+          "Too many ad hoc adapters could recreate duplication without clarifying ownership."
+        ]
+      },
+      {
+        "name": "Strangler-style Evolution",
+        "why": "The active queue correctly sequences incremental extraction-ready cleanup instead of a rewrite.",
+        "risks": [
+          "Compatibility shims can become permanent if ownership is not tightened after each wave."
+        ]
+      },
+      {
+        "name": "Thin HTTP Boundary",
+        "why": "Contract cleanup in W04 depends on handlers becoming explicit mappers of policy outcomes instead of hidden policy owners.",
+        "risks": [
+          "If handlers continue to mix config loading, DB access, and response shaping, the envelope change will remain superficial."
+        ]
+      }
+    ]
+  },
+  "decision_log": [
+    {
+      "id": "DP-001",
+      "title": "Treat the active slice as a prerequisite architecture program before contract cleanup",
+      "status": "accepted",
+      "context": "The API-issues backlog points at auth and envelope cleanup, but the code still contains global runtime boundaries and persistence leakage.",
+      "decision": "Sequence the work as util breakup, configuration-service extraction, legacy-model decoupling, and only then targeted API/auth/OpenAPI alignment.",
+      "consequences": [
+        "The public contract is not stabilized around unstable internal seams.",
+        "The active work stays reversible and structurally coherent."
+      ]
+    },
+    {
+      "id": "DP-002",
+      "title": "Keep setup.yaml as the source asset while replacing setup as a singleton runtime boundary",
+      "status": "accepted",
+      "context": "The current configuration data is embedded and already used by multiple flows.",
+      "decision": "Retain `backend/setup/setup.yaml` as the source data for this slice, but introduce a service-backed config access boundary under the internal architecture.",
+      "consequences": [
+        "Migration risk stays lower because source data does not churn.",
+        "Runtime ownership becomes clearer because access patterns move out of the singleton package."
+      ]
+    },
+    {
+      "id": "DP-003",
+      "title": "Treat util as a temporary mixed package to be decomposed by responsibility",
+      "status": "accepted",
+      "context": "`backend/util` currently mixes infrastructure and domain-adjacent concerns.",
+      "decision": "Break util apart by owned concern rather than renaming or rebranding it as another generic helper package.",
+      "consequences": [
+        "Infrastructure bootstrap code will get a real home.",
+        "User/domain-owned helpers can move toward more meaningful boundaries."
+      ]
+    },
+    {
+      "id": "DP-004",
+      "title": "Push legacy-model translation to repositories and explicit adapters",
+      "status": "accepted",
+      "context": "Internal domain packages still depend directly on `socialpredict/models`.",
+      "decision": "Introduce boundary types and adapters so repositories and explicit seams own translation rather than policy packages.",
+      "consequences": [
+        "Domain code becomes less persistence-shaped.",
+        "Tests can target policy behavior with less incidental GORM/model coupling."
+      ]
+    },
+    {
+      "id": "DP-005",
+      "title": "Use the envelope direction only in the scoped W04 contract pass",
+      "status": "accepted",
+      "context": "The desired `{ ok, result, reason }` shape is valuable but should not be spread before prerequisite cleanup.",
+      "decision": "Apply the envelope in the hotspot API/auth scope after W01-W03 prerequisites are in place.",
+      "consequences": [
+        "W04 can align contract behavior with more stable internals.",
+        "Earlier waves avoid accidental contract churn."
+      ]
+    },
+    {
+      "id": "DP-006",
+      "title": "Enforce mustChangePassword by restricting authenticated actions rather than redesigning login tokens in this slice",
+      "status": "accepted",
+      "context": "The current login flow is structurally weak, but the active scope defers the broader token redesign.",
+      "decision": "For now, preserve login and change-password access while blocking other authenticated actions when `mustChangePassword` is set.",
+      "consequences": [
+        "Security consistency improves without broad auth redesign.",
+        "The limited-scope-token problem remains a deferred follow-up."
+      ]
+    }
+  ],
+  "workstreams": [
+    {
+      "name": "W01 Util Breakup and Runtime Boundary Cleanup",
+      "objective": "Remove `backend/util` as a mixed catch-all and eliminate direct hidden runtime access from touched startup/server/handler/auth paths.",
+      "depends_on": [],
+      "notes": "This creates the first explicit infrastructure seam and reduces hidden dependency injection-by-global."
+    },
+    {
+      "name": "W02 Configuration Service Extraction",
+      "objective": "Convert `backend/setup` from a global singleton access pattern into a service-backed slice wired through the application container.",
+      "depends_on": [
+        "W01 Util Breakup and Runtime Boundary Cleanup"
+      ],
+      "notes": "This should preserve current endpoint semantics while making config access explicit."
+    },
+    {
+      "name": "W03 Legacy Model Decoupling",
+      "objective": "Introduce boundary types and adapters so internal domain/math code no longer depends directly on legacy persistence models where cleanly avoidable.",
+      "depends_on": [
+        "W02 Configuration Service Extraction"
+      ],
+      "notes": "This is the main structural gate before API/auth cleanup."
+    },
+    {
+      "name": "W04 Scoped API and Auth Alignment",
+      "objective": "Apply sanitized envelope helpers, tighten must-change-password behavior, and align OpenAPI/docs with the implemented post-prerequisite backend behavior.",
+      "depends_on": [
+        "W03 Legacy Model Decoupling"
+      ],
+      "notes": "This is a contract-alignment wave, not a public route redesign wave."
+    }
+  ],
+  "risks": [
+    {
+      "severity": "high",
+      "statement": "A thin compatibility shim around `setup` or `util` could survive and become the new long-lived hidden boundary instead of a transition seam.",
+      "mitigation": "Make ownership explicit in W01/W02 and move touched consumers directly onto the new seams wherever practical."
+    },
+    {
+      "severity": "high",
+      "statement": "Legacy-model decoupling can sprawl into a flag-day rewrite if boundary types are introduced without containment discipline.",
+      "mitigation": "Limit translation ownership to repositories and explicit adapters, and sequence the work through narrow domain slices."
+    },
+    {
+      "severity": "medium",
+      "statement": "W04 could become a superficial response-shape pass if handlers still own too much config loading, DB access, or policy behavior.",
+      "mitigation": "Treat W01-W03 as real prerequisites and stop contract cleanup from outrunning boundary cleanup."
+    },
+    {
+      "severity": "medium",
+      "statement": "The current login/token model still has deeper security weaknesses that are only partially mitigated by must-change-password enforcement.",
+      "mitigation": "Document the limited-scope-token redesign as deferred and avoid implying that W04 fully resolves auth architecture."
+    },
+    {
+      "severity": "medium",
+      "statement": "Historical backend/API documents are partially stale and can distort design decisions if treated as current truth.",
+      "mitigation": "Use current code plus active task scope as the main source of truth and treat older docs as contextual only."
+    }
+  ],
+  "open_questions": [
+    {
+      "question": "What is the narrowest owned home for the non-bootstrap helpers currently in `backend/util`, especially API key generation and model/user-specific checks?",
+      "why_it_matters": "W01 can remove one junk drawer only to create another if those helpers are not assigned to real owners.",
+      "blocking": true
+    },
+    {
+      "question": "Should the new configuration service expose one consolidated interface or separate economics/frontend interfaces to reduce accidental coupling?",
+      "why_it_matters": "That choice affects how much of the system takes a large shared dependency versus smaller focused seams.",
+      "blocking": false
+    },
+    {
+      "question": "Which internal packages genuinely need dedicated boundary types, and which can be decoupled with narrower repository-return types or adapters?",
+      "why_it_matters": "This determines whether W03 stays surgical or turns into type proliferation.",
+      "blocking": true
+    },
+    {
+      "question": "What stable `reason` vocabulary should W04 treat as public contract, especially for validation, authorization, and business-rule failures?",
+      "why_it_matters": "The envelope only helps if clients can depend on stable semantics rather than ad hoc strings.",
+      "blocking": false
+    },
+    {
+      "question": "Which currently authenticated endpoints must enforce `mustChangePassword` immediately once W04 starts, and are there any intentionally exempt flows besides login and change-password?",
+      "why_it_matters": "The auth cleanup is scoped, but server-side enforcement must still be unambiguous.",
+      "blocking": false
+    }
+  ],
+  "next_steps": [
+    "Use the software-planner pass to translate this design into smaller queue slices without changing the architectural decisions above.",
+    "Decide and document the owned destinations for the current `backend/util` responsibilities before implementation starts.",
+    "Define the configuration service interface shape before migrating setup consumers.",
+    "Inventory the highest-value legacy-model dependencies in `internal/domain/markets`, `internal/domain/bets`, `internal/domain/math`, and analytics before W03 task breakdown.",
+    "Draft the initial public `reason` vocabulary for W04 so the API/auth cleanup does not improvise string contracts during implementation."
+  ]
+}

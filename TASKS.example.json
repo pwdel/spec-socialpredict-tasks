@@ -1,12 +1,36 @@
 {
   "version": 1,
   "project": "socialpredict-backend",
+  "task_registry": "lib/task-registry.json",
+  "task_archives": [],
   "tasks": [
     {
+      "uid": "019d9935-ace6-7305-bbc5-9e35238350cc",
       "id": "SP-001",
       "title": "Refactor create-market validation into testable helpers",
       "status": "pending",
       "prompt": "Move the validation logic in market creation into focused, testable helpers while preserving existing behavior. Keep HTTP concerns thin and add or update tests.",
+      "acceptance_criteria": [
+        "Validation logic is moved into focused helpers that can be tested directly.",
+        "HTTP concerns remain thin in the market handler path.",
+        "Existing behavior is preserved for the touched flow."
+      ],
+      "verification": {
+        "owner": "software-action-test-reliability-agent",
+        "sign_off": "required",
+        "focus": [
+          "deterministic test evidence for the extracted helpers",
+          "regression coverage for the touched handler flow"
+        ]
+      },
+      "out_of_scope": [
+        "OpenAPI changes",
+        "unrelated market handler refactors"
+      ],
+      "touched_paths": [
+        "./handlers/markets",
+        "./internal/domain/markets"
+      ],
       "working_dir": ".",
       "depends_on": [],
       "attempts": 0,
@@ -20,13 +44,36 @@
       ]
     },
     {
+      "uid": "019d9935-ace7-7bc0-9bc1-24a01dcf4cb1",
       "id": "SP-002",
       "title": "Check OpenAPI drift for market endpoints",
       "status": "pending",
       "prompt": "Verify that the OpenAPI specification matches the implemented market endpoints and response shapes. Update the spec or code as needed and run contract checks.",
+      "acceptance_criteria": [
+        "The OpenAPI spec matches the implemented market endpoint behavior for the touched paths.",
+        "Spec drift is resolved either in code or in the spec.",
+        "Contract checks pass for the touched area."
+      ],
+      "verification": {
+        "owner": "software-action-test-reliability-agent",
+        "sign_off": "required",
+        "focus": [
+          "OpenAPI validation evidence",
+          "deterministic contract checks for touched market endpoints"
+        ]
+      },
+      "out_of_scope": [
+        "public path redesign",
+        "unrelated market behavior changes"
+      ],
+      "touched_paths": [
+        "./docs/openapi.yaml",
+        "./handlers/markets",
+        "./server"
+      ],
       "working_dir": ".",
       "depends_on": [
-        "SP-001"
+        "019d9935-ace6-7305-bbc5-9e35238350cc"
       ],
       "attempts": 0,
       "max_attempts": 3,

@@ -18,13 +18,13 @@ Topology reminder:
   - `socialpredict-api-contract-drift-control`
   - `socialpredict-openapi-navigation`
 - Agent examples:
-  - `architecture-agent`
-  - `error-handling-agent`
-  - `logging-agent`
-  - `openapi-contract-agent`
-  - `test-reliability-agent`
-  - `coding-best-practices-agent`
-  - `verifier-agent`
+  - `software-action-architecture-agent`
+  - `software-action-error-handling-agent`
+  - `software-action-logging-agent`
+  - `software-action-openapi-contract-agent`
+  - `software-action-test-reliability-agent`
+  - `software-action-coding-best-practices-agent`
+  - `software-action-verifier-agent`
 - Hook scripts:
   - `../socialpredict/backend/scripts/guardrails.sh`
   - `../socialpredict/backend/scripts/install-guardrail-hooks.sh`

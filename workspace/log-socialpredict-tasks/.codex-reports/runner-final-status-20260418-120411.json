@@ -1,0 +1,107 @@
+{
+  "status": "completed",
+  "generated_at": "2026-04-20T03:40:45.361396+00:00",
+  "task_count": 12,
+  "tasks": [
+    {
+      "uid": "019d99d7-3d71-70aa-9f0b-d0f4da7524f0",
+      "id": "W01-001",
+      "status": "done",
+      "attempts": 1,
+      "started_at": "2026-04-18T12:04:11.927485+00:00",
+      "finished_at": "2026-04-18T12:14:08.521356+00:00"
+    },
+    {
+      "uid": "019d99d7-3d71-70aa-9f0b-d0f553db0d37",
+      "id": "W01-002",
+      "status": "done",
+      "attempts": 1,
+      "started_at": "2026-04-18T12:14:08.608597+00:00",
+      "finished_at": "2026-04-18T12:19:23.945067+00:00"
+    },
+    {
+      "uid": "019d9996-f8a9-75b8-a4a3-7348db798872",
+      "id": "W02-001",
+      "status": "done",
+      "attempts": 1,
+      "started_at": "2026-04-18T12:19:24.042888+00:00",
+      "finished_at": "2026-04-18T12:30:31.455969+00:00"
+    },
+    {
+      "uid": "019d9996-f8a9-75b8-a4a3-7349b2560d4f",
+      "id": "W02-002",
+      "status": "done",
+      "attempts": 1,
+      "started_at": "2026-04-18T12:30:31.537600+00:00",
+      "finished_at": "2026-04-19T03:45:12.171899+00:00"
+    },
+    {
+      "uid": "019d9996-f8a9-736b-93d9-de583bb6112a",
+      "id": "W03-001",
+      "status": "done",
+      "attempts": 1,
+      "started_at": "2026-04-19T03:45:12.283415+00:00",
+      "finished_at": "2026-04-19T12:06:02.962807+00:00"
+    },
+    {
+      "uid": "019d9996-f8a9-736b-93d9-de592fcac393",
+      "id": "W03-002",
+      "status": "done",
+      "attempts": 1,
+      "started_at": "2026-04-19T12:06:03.116867+00:00",
+      "finished_at": "2026-04-19T12:14:32.329977+00:00"
+    },
+    {
+      "uid": "019d9996-f8a9-736b-93d9-de5a3e5e447f",
+      "id": "W03-003",
+      "status": "done",
+      "attempts": 1,
+      "started_at": "2026-04-19T12:14:32.419651+00:00",
+      "finished_at": "2026-04-19T19:50:31.452479+00:00"
+    },
+    {
+      "uid": "019d9996-f8a9-71b8-a7c0-81a0fe4d4ffc",
+      "id": "W04-001",
+      "status": "done",
+      "attempts": 1,
+      "started_at": "2026-04-19T19:50:31.533736+00:00",
+      "finished_at": "2026-04-19T20:08:50.300996+00:00"
+    },
+    {
+      "uid": "019d9996-f8a9-71b8-a7c0-81a1c4b0374c",
+      "id": "W04-002",
+      "status": "done",
+      "attempts": 1,
+      "started_at": "2026-04-19T20:08:50.386973+00:00",
+      "finished_at": "2026-04-19T20:19:10.657855+00:00"
+    },
+    {
+      "uid": "019d9b66-159d-7381-adbf-5829dff0e1fd",
+      "id": "W04-005",
+      "status": "done",
+      "attempts": 1,
+      "started_at": "2026-04-19T20:19:10.765907+00:00",
+      "finished_at": "2026-04-19T20:37:09.127466+00:00"
+    },
+    {
+      "uid": "019d9996-f8a9-71b8-a7c0-81a2945b5cb4",
+      "id": "W04-003",
+      "status": "done",
+      "attempts": 1,
+      "started_at": "2026-04-19T20:37:09.232084+00:00",
+      "finished_at": "2026-04-20T03:33:53.048134+00:00"
+    },
+    {
+      "uid": "019d9996-f8a9-71b8-a7c0-81a3c332d436",
+      "id": "W04-004",
+      "status": "done",
+      "attempts": 1,
+      "started_at": "2026-04-20T03:33:53.142565+00:00",
+      "finished_at": "2026-04-20T03:40:45.250094+00:00"
+    }
+  ],
+  "target_repo": "/workspace/spec-socialpredict-tasks//workspace/log-socialpredict-tasks",
+  "control_repo": "/workspace/spec-socialpredict-tasks",
+  "message": "All queued tasks completed.",
+  "runlog": "/workspace/log-socialpredict-tasks/.codex-runs/20260418-120411/RUNLOG.ndjson"
+}

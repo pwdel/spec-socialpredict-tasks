@@ -10,16 +10,21 @@ Topology reminder:
 Concrete repo-local team definitions now live under `.codex/agents/` as
 committed `.toml` files:
 
-- `.codex/agents/architecture-agent.toml`
-- `.codex/agents/coding-best-practices-agent.toml`
-- `.codex/agents/db-migration-agent.toml`
-- `.codex/agents/dispatcher-agent.toml`
-- `.codex/agents/error-handling-agent.toml`
-- `.codex/agents/go-style-agent.toml`
-- `.codex/agents/logging-agent.toml`
-- `.codex/agents/openapi-contract-agent.toml`
-- `.codex/agents/test-reliability-agent.toml`
-- `.codex/agents/verifier-agent.toml`
+- `.codex/agents/software-action-architecture-agent.toml`
+- `.codex/agents/software-action-coding-best-practices-agent.toml`
+- `.codex/agents/software-action-db-migration-agent.toml`
+- `.codex/agents/software-action-dispatcher-agent.toml`
+- `.codex/agents/software-action-error-handling-agent.toml`
+- `.codex/agents/software-action-go-style-agent.toml`
+- `.codex/agents/software-action-logging-agent.toml`
+- `.codex/agents/software-action-openapi-contract-agent.toml`
+- `.codex/agents/software-action-service-domain-architecture-agent.toml`
+- `.codex/agents/software-action-test-reliability-agent.toml`
+- `.codex/agents/software-action-verifier-agent.toml`
+- `.codex/agents/software-designer-01-evans-agent.toml`
+- `.codex/agents/software-designer-02-fowler-agent.toml`
+- `.codex/agents/software-designer-03-martin-agent.toml`
+- `.codex/agents/software-planner-agent.toml`
 
 Skill-local helper prompts still live under each skill directory at
 `.codex/skills/*/agents/openai.yaml`.

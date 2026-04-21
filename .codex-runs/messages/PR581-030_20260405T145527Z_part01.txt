@@ -1,1 +1,0 @@
-The scoped files are `gofmt`-clean. `go test` and `go vet` are currently blocked by the Go toolchain trying to write `/home/agent/go`, so I’m rerunning them with a repo-local cache instead of treating that as a code failure.

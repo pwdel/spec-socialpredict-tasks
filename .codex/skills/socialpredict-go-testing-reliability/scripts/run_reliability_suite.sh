@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_DIR="${1:-socialpredict}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILLS_LIB_DIR="$(cd "$SCRIPT_DIR/../../lib" && pwd)"
+# shellcheck source=../../lib/socialpredict_backend_common.sh
+source "$SKILLS_LIB_DIR/socialpredict_backend_common.sh"
+
+REPO_DIR="$(resolve_target_repo_dir "${1:-}")"
 PKG_PATTERN="${2:-${PKG_PATTERN:-./...}}"
 RUNS="${RUNS:-2}"
 ENABLE_RACE="${ENABLE_RACE:-0}"
 
-if [ ! -d "$REPO_DIR/backend" ]; then
-  echo "Expected backend directory at $REPO_DIR/backend"
-  exit 1
-fi
+BACKEND_DIR="$(require_backend_dir "$REPO_DIR")"
 
-cd "$REPO_DIR/backend"
+cd "$BACKEND_DIR"
 
 echo "[1/3] Deterministic go test loop for $PKG_PATTERN (runs=$RUNS, race=$ENABLE_RACE)"
 for run in $(seq 1 "$RUNS"); do

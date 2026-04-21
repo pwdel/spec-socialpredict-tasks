@@ -1,23 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_DIR="${1:-socialpredict}"
-BASE_REF="${2:-${BASE_REF:-origin/fix/checkpoint20251020-80}}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILLS_LIB_DIR="$(cd "$SCRIPT_DIR/../../lib" && pwd)"
+# shellcheck source=../../lib/socialpredict_backend_common.sh
+source "$SKILLS_LIB_DIR/socialpredict_backend_common.sh"
+
+REPO_DIR="$(resolve_target_repo_dir "${1:-}")"
 
 if ! command -v rg >/dev/null 2>&1; then
   echo "rg is required but not installed."
   exit 1
 fi
 
-if [ ! -d "$REPO_DIR/backend" ]; then
-  echo "Expected backend directory at $REPO_DIR/backend"
-  exit 1
-fi
-
-if ! git -C "$REPO_DIR" rev-parse --verify "$BASE_REF" >/dev/null 2>&1; then
-  BASE_REF="$(git -C "$REPO_DIR" rev-parse HEAD~1)"
-  echo "BASE_REF not found locally; falling back to $BASE_REF"
-fi
+BACKEND_DIR="$(require_backend_dir "$REPO_DIR")"
+BASE_REF="$(resolve_base_ref "$REPO_DIR" "${2:-${BASE_REF:-}}")"
 
 changed=$(git -C "$REPO_DIR" diff --name-only "$BASE_REF"...HEAD || true)
 
@@ -41,7 +38,7 @@ fi
 
 echo "[3/3] Run OpenAPI validation test"
 (
-  cd "$REPO_DIR/backend"
+  cd "$BACKEND_DIR"
   go test ./... -run TestOpenAPISpecValidates -count=1
 )
 

@@ -13,9 +13,9 @@ description: Apply Go quality guardrails for SocialPredict backend/API work. Use
 4. Resolve all blocking findings before handoff.
 5. Include command output and touched-file list in the verification notes.
 
-## Current PR Execution Scope
+## Current Execution Scope
 
-- Apply quality checks to backend/API files changed in the PR #581 wave.
+- Apply quality checks to backend/API files changed in the current task wave.
 - Enforce `gofmt` and `go vet` as non-optional gates.
 - Avoid broad stylistic refactors unrelated to the current change set.
 

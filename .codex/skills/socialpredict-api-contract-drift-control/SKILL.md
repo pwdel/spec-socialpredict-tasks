@@ -1,20 +1,20 @@
 ---
 name: socialpredict-api-contract-drift-control
-description: Keep SocialPredict backend route behavior and OpenAPI artifacts synchronized during PR #581 backend/API work. Use when modifying handlers, route wiring, middleware behavior, request or response shapes, or `backend/docs/openapi.yaml`.
+description: Keep SocialPredict backend route behavior and OpenAPI artifacts synchronized during backend/API work. Use when modifying handlers, route wiring, middleware behavior, request or response shapes, or `backend/docs/openapi.yaml`.
 ---
 
 # SocialPredict API Contract Drift Control
 
 ## Workflow
 
-1. Confirm the task is backend/API scoped for PR #581 execution.
+1. Confirm the task is backend/API scoped for the current execution wave.
 2. Read `references/api-contract-policy.md` to frame expected contract behavior.
 3. If the spec is large, use `socialpredict-openapi-navigation` to inspect only the touched tags, paths, operations, and schemas.
 4. Run `scripts/check_api_contract_sync.sh [repo-dir] [base-ref]`.
 5. If route or handler behavior changes, require matching OpenAPI updates before merge.
 6. Record endpoint and schema deltas in the task note or review output.
 
-## Current PR Execution Scope
+## Current Execution Scope
 
 - Keep work in `socialpredict/backend/**` plus API contract artifacts.
 - Focus on parity between implemented routes and `backend/docs/openapi.yaml`.

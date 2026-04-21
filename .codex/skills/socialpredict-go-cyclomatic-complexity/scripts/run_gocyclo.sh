@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_DIR="${1:-../socialpredict}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILLS_LIB_DIR="$(cd "$SCRIPT_DIR/../../lib" && pwd)"
+# shellcheck source=../../lib/socialpredict_backend_common.sh
+source "$SKILLS_LIB_DIR/socialpredict_backend_common.sh"
+
+REPO_DIR="$(resolve_target_repo_dir "${1:-}")"
 OVER_THRESHOLD="${2:-4}"
 if [[ $# -ge 3 ]]; then
   TARGETS=("${@:3}")
@@ -20,11 +25,7 @@ if ! command -v gocyclo >/dev/null 2>&1; then
   exit 1
 fi
 
-BACKEND_DIR="$REPO_DIR/backend"
-if [[ ! -d "$BACKEND_DIR" ]]; then
-  echo "Expected backend directory at: $BACKEND_DIR" >&2
-  exit 1
-fi
+BACKEND_DIR="$(require_backend_dir "$REPO_DIR")"
 
 echo "Running: (cd $BACKEND_DIR && gocyclo -over $OVER_THRESHOLD ${TARGETS[*]})"
 OUTPUT="$(cd "$BACKEND_DIR" && gocyclo -over "$OVER_THRESHOLD" "${TARGETS[@]}")"

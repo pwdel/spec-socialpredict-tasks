@@ -1,0 +1,710 @@
+{
+  "version": 2,
+  "updated_at": "2026-04-17T02:19:45.236783+00:00",
+  "archives": [
+    {
+      "key": "pr581-service-boundary-refactor",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "task_count": 33,
+      "archived_at": "2026-04-17T01:58:00.016476+00:00"
+    }
+  ],
+  "uids": {
+    "019d993c-b2d3-723a-8c33-b45fa407f84c": {
+      "id": "PR581-000",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Establish extraction-ready service boundaries without rolling out standalone services yet",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": null
+    },
+    "019d993c-b2d3-723a-8c33-b4601f0a3193": {
+      "id": "PR581-001",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Preserve extraction-ready handler -> domain -> repository boundaries",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": null
+    },
+    "019d993c-b2d3-723a-8c33-b46187c481b6": {
+      "id": "PR581-002",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Complete the markets handler migration to thin service-backed endpoints",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": null
+    },
+    "019d993c-b2d3-723a-8c33-b462060413bf": {
+      "id": "PR581-003",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Complete the users handler migration to service-backed flows",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": null
+    },
+    "019d993c-b2d3-723a-8c33-b46392fb8c61": {
+      "id": "PR581-004",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Complete the bets, math, and auth-facade migration baseline",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": null
+    },
+    "019d993c-b2d3-723a-8c33-b46423d68b09": {
+      "id": "PR581-005",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Keep server routes and OpenAPI inventory aligned",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": null
+    },
+    "019d993c-b2d3-723a-8c33-b46528d1b6d7": {
+      "id": "PR581-006",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align unchecked analytics files with SRP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-04T13:01:45.960919+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b46616836a5d": {
+      "id": "PR581-007",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align unchecked markets domain files with SRP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-04T13:21:03.461701+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b467f3ef6626": {
+      "id": "PR581-008",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Reduce remaining complexity in markets HTTP handlers",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-04T13:28:12.340922+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b468849f02f0": {
+      "id": "PR581-009",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align unchecked bets files with SRP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-04T13:37:58.492550+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b469a74564c9": {
+      "id": "PR581-010",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align unchecked math files with SRP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-04T13:47:40.905756+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b46af4377e3d": {
+      "id": "PR581-011",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align unchecked users files with SRP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-04T13:59:25.848922+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b46bc05648a6": {
+      "id": "PR581-012",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Clean up remaining dependency-boundary hotspots outside the checklists",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-04T14:06:27.876433+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b46c5816eb69": {
+      "id": "PR581-013",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align unchecked analytics files with OCP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-04T14:14:07.598548+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b46d017f0a88": {
+      "id": "PR581-014",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align unchecked bets files with OCP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-04T14:21:51.237243+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b46e68d9f427": {
+      "id": "PR581-015",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align unchecked markets domain files with OCP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-04T14:31:44.418601+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b46fd22f5767": {
+      "id": "PR581-016",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align unchecked math files with OCP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-04T14:39:05.764371+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b47093e5e0a9": {
+      "id": "PR581-017",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align unchecked users files with OCP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-04T14:50:59.237534+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b471700a52cf": {
+      "id": "PR581-018",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align all analytics files with LSP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-04T15:01:41.026862+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b47217412ee5": {
+      "id": "PR581-019",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align all bets files with LSP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-05T01:27:00.746885+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b4732914ece6": {
+      "id": "PR581-020",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align all markets files with LSP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-05T01:34:18.451183+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b474e600a67f": {
+      "id": "PR581-021",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align all math files with LSP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-05T01:42:14.234479+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b47503b9f937": {
+      "id": "PR581-022",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align all users files with LSP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-05T01:49:59.898204+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b4766409286c": {
+      "id": "PR581-023",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align all analytics files with ISP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-05T14:18:25.366559+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b47775ceaac8": {
+      "id": "PR581-024",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align all bets files with ISP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-05T14:25:42.404127+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b4780051ba68": {
+      "id": "PR581-025",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align all markets files with ISP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-05T14:28:14.588724+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b479d59bcd22": {
+      "id": "PR581-026",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align all math files with ISP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-05T14:34:08.300434+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b47a6a03288f": {
+      "id": "PR581-027",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align all users files with ISP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-05T14:47:34.172865+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b47bcd1f258e": {
+      "id": "PR581-028",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align all analytics files with DIP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-05T14:52:23.690651+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b47cdae357ce": {
+      "id": "PR581-029",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align all bets files with DIP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-05T14:55:26.973646+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b47dace6a0c5": {
+      "id": "PR581-030",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align all markets files with DIP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-05T15:02:52.615644+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b47e351e6b77": {
+      "id": "PR581-031",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align all math files with DIP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-05T15:10:07.313976+00:00"
+    },
+    "019d993c-b2d3-723a-8c33-b47f25ecea5e": {
+      "id": "PR581-032",
+      "project": "socialpredict-pr-581-service-boundary-refactor",
+      "title": "Align all users files with DIP",
+      "status": "done",
+      "archive_key": "pr581-service-boundary-refactor",
+      "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+      "archived_at": "2026-04-17T01:58:00.016476+00:00",
+      "finished_at": "2026-04-05T15:24:03.958457+00:00"
+    }
+  },
+  "task_ids": {
+    "PR581-000": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b45fa407f84c",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Establish extraction-ready service boundaries without rolling out standalone services yet",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-001": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b4601f0a3193",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Preserve extraction-ready handler -> domain -> repository boundaries",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-002": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b46187c481b6",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Complete the markets handler migration to thin service-backed endpoints",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-003": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b462060413bf",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Complete the users handler migration to service-backed flows",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-004": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b46392fb8c61",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Complete the bets, math, and auth-facade migration baseline",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-005": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b46423d68b09",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Keep server routes and OpenAPI inventory aligned",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-006": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b46528d1b6d7",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align unchecked analytics files with SRP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-007": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b46616836a5d",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align unchecked markets domain files with SRP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-008": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b467f3ef6626",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Reduce remaining complexity in markets HTTP handlers",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-009": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b468849f02f0",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align unchecked bets files with SRP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-010": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b469a74564c9",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align unchecked math files with SRP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-011": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b46af4377e3d",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align unchecked users files with SRP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-012": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b46bc05648a6",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Clean up remaining dependency-boundary hotspots outside the checklists",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-013": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b46c5816eb69",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align unchecked analytics files with OCP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-014": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b46d017f0a88",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align unchecked bets files with OCP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-015": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b46e68d9f427",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align unchecked markets domain files with OCP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-016": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b46fd22f5767",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align unchecked math files with OCP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-017": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b47093e5e0a9",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align unchecked users files with OCP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-018": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b471700a52cf",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align all analytics files with LSP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-019": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b47217412ee5",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align all bets files with LSP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-020": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b4732914ece6",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align all markets files with LSP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-021": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b474e600a67f",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align all math files with LSP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-022": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b47503b9f937",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align all users files with LSP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-023": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b4766409286c",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align all analytics files with ISP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-024": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b47775ceaac8",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align all bets files with ISP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-025": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b4780051ba68",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align all markets files with ISP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-026": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b479d59bcd22",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align all math files with ISP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-027": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b47a6a03288f",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align all users files with ISP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-028": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b47bcd1f258e",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align all analytics files with DIP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-029": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b47cdae357ce",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align all bets files with DIP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-030": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b47dace6a0c5",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align all markets files with DIP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-031": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b47e351e6b77",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align all math files with DIP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ],
+    "PR581-032": [
+      {
+        "uid": "019d993c-b2d3-723a-8c33-b47f25ecea5e",
+        "project": "socialpredict-pr-581-service-boundary-refactor",
+        "title": "Align all users files with DIP",
+        "status": "done",
+        "archive_key": "pr581-service-boundary-refactor",
+        "archive_file": "lib/task-archives/socialpredict-pr-581-service-boundary-refactor.json",
+        "archived_at": "2026-04-17T01:58:00.016476+00:00"
+      }
+    ]
+  }
+}

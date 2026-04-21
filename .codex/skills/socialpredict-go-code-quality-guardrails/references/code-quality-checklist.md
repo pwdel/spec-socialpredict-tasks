@@ -1,6 +1,6 @@
 # SocialPredict Go Quality Checklist
 
-## Blocking Gates (Current PR #581 Scope)
+## Blocking Gates (Current Execution Scope)
 
 1. `gofmt -l` must return no files for changed backend Go files.
 2. `go vet ./...` must pass in `backend/`.

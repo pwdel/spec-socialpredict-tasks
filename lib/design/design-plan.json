@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "plan_uid": "00000000-0000-0000-0000-000000000000",
+  "title": "Replace with design plan title",
+  "status": "draft",
+  "source_context": {
+    "task_repo": ".",
+    "target_repo": "../socialpredict",
+    "scope": [
+      "Replace with target scope"
+    ],
+    "source_documents": [],
+    "related_task_uids": []
+  },
+  "authors": [
+    {
+      "agent": "replace-with-agent-name",
+      "design_posture": "other",
+      "notes": "Replace with the contributing designer posture."
+    }
+  ],
+  "summary": {
+    "one_sentence": "Replace with a single-sentence summary of the design problem and direction.",
+    "business_outcomes": [
+      "Replace with desired business or delivery outcome."
+    ],
+    "proposed_direction": "Replace with the recommended direction."
+  },
+  "problem": {
+    "statement": "Replace with the problem statement.",
+    "why_now": "Replace with why this work matters now.",
+    "out_of_scope": [
+      "Replace with explicit out-of-scope items."
+    ]
+  },
+  "design_drivers": {
+    "business_constraints": [],
+    "architecture_drivers": [],
+    "quality_attributes": []
+  },
+  "current_state": {
+    "shape": "Replace with a concise description of the current system shape.",
+    "pain_points": [],
+    "constraints": []
+  },
+  "target_state": {
+    "overview": "Replace with the target-state overview.",
+    "boundaries": [],
+    "integration_seams": [],
+    "ubiquitous_language": [],
+    "use_cases": [],
+    "domain_rules": [],
+    "patterns": []
+  },
+  "decision_log": [],
+  "workstreams": [],
+  "risks": [],
+  "open_questions": [],
+  "next_steps": []
+}
